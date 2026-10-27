@@ -23,7 +23,7 @@ export interface AppConfig {
 const env = import.meta.env;
 
 const createAppConfig = (): AppConfig => ({
-  appName: 'RespondeYA',
+  appName: 'RespondeYa',
   environment: (env.VITE_ENV as Environment) ?? 'development',
   apiBaseUrl: env.VITE_API_BASE_URL ?? '',
   persistenceDriver: (env.VITE_PERSISTENCE_DRIVER as PersistenceDriver) ?? 'local',

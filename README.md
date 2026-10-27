@@ -1,4 +1,4 @@
-# RespondeYA
+# RespondeYa
 
 Guía interactiva de primeros auxilios para personas sin formación clínica. El contenido se
 organiza en **módulos** (reanimación, atragantamiento, hemorragias...) que un administrador

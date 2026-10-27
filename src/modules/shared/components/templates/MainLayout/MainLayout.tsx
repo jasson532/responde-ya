@@ -17,7 +17,7 @@ const MainLayout = () => (
     <footer className="main-layout__footer">
       <div className="app-container">
         <p className="main-layout__disclaimer">
-          RespondeYA es material informativo de apoyo. No reemplaza la atencion de personal de
+          RespondeYa es material informativo de apoyo. No reemplaza la atencion de personal de
           salud. Ante una emergencia, llama primero a la linea de emergencias de tu pais.
         </p>
       </div>

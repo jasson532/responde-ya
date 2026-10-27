@@ -26,7 +26,7 @@ const AppHeader = () => {
             <ShieldPlus />
           </span>
           <span className="app-header__name">
-            Responde<strong>YA</strong>
+            Responde<strong>Ya</strong>
           </span>
         </Link>
 

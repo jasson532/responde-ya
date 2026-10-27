@@ -9,7 +9,7 @@ const ForbiddenPage = () => (
     <EmptyState
       icon={<Lock />}
       title="No tienes permisos para entrar aqui"
-      description="La administracion de contenido esta reservada al rol administrador. Si necesitas ese acceso, solicitalo a quien administra RespondeYA."
+      description="La administracion de contenido esta reservada al rol administrador. Si necesitas ese acceso, solicitalo a quien administra RespondeYa."
       action={
         <LinkButton to={ROUTES.MODULES} variant="secondary" size="lg">
           Volver a los modulos

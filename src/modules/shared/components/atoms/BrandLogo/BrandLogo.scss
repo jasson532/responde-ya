@@ -1,0 +1,26 @@
+@use 'styles/variables' as v;
+@use 'styles/mixins' as m;
+
+.brand-logo {
+  height: auto;
+  // El archivo trae su propio fondo crema: mezclarlo con la superficie evita
+  // que se note el borde del rectangulo.
+  background: v.$color-brand-canvas;
+  user-select: none;
+
+  &--md {
+    width: 180px;
+  }
+
+  &--lg {
+    width: 240px;
+
+    @include m.from(v.$bp-md) {
+      width: 320px;
+    }
+
+    @include m.from(v.$bp-lg) {
+      width: 380px;
+    }
+  }
+}

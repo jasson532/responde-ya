@@ -1,10 +1,22 @@
 // ============================================================
-// Design tokens - RespondeYA
+// Design tokens - RespondeYa
 // Paleta de emergencia: rojo de urgencia + verdes de seguridad.
 // Alto contraste y tipografia grande: el usuario lee bajo estres.
 // ============================================================
 
-// --- Colores de marca ---
+// --- Identidad de marca ---
+// Valores muestreados del logo oficial (modules/shared/assets/images/brand-logo.jpeg).
+// No ajustar a ojo: si cambia el logo, volver a muestrear.
+$color-brand-navy: #002b54;
+$color-brand-navy-soft: #0d3257;
+$color-brand-red: #b60020;
+// Lienzo del logo. Cualquier superficie que lo contenga usa este color para que
+// el JPEG (sin transparencia) no deje un rectangulo visible.
+$color-brand-canvas: #fcfcfa;
+
+// --- Colores de emergencia (acciones e indicadores de gravedad) ---
+// Rojo mas claro que el de marca a proposito: necesita contraste AA sobre blanco
+// en botones y badges pequenos, donde $color-brand-red se ve apagado.
 $color-emergency: #d7263d;
 $color-emergency-dark: #a81b2d;
 $color-emergency-light: #fdecee;

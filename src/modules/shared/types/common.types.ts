@@ -1,5 +1,5 @@
 /**
- * Tipos transversales de RespondeYA.
+ * Tipos transversales de RespondeYa.
  * Aqui NO va logica de negocio de ningun dominio concreto.
  */
 

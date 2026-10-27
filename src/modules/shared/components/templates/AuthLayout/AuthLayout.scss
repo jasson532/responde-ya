@@ -7,50 +7,65 @@
   grid-template-columns: 1fr;
 
   @include m.from(v.$bp-lg) {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1.1fr 1fr;
   }
 
-  &__panel {
+  &__brand {
     display: flex;
     flex-direction: column;
+    align-items: center;
     justify-content: center;
-    gap: v.$space-4;
+    gap: v.$space-5;
     padding: v.$space-6 v.$space-5;
-    background: linear-gradient(160deg, v.$color-emergency, v.$color-emergency-dark);
-    color: #fff;
+    text-align: center;
+
+    // Mismo color que el lienzo del JPEG: el logo no deja borde visible.
+    background: v.$color-brand-canvas;
+    border-bottom: 1px solid v.$color-line;
 
     @include m.from(v.$bp-lg) {
       padding: v.$space-8 v.$space-7;
+      border-bottom: none;
+      border-right: 1px solid v.$color-line;
     }
   }
 
-  &__logo {
-    display: grid;
-    place-items: center;
-    width: 52px;
-    height: 52px;
-    border-radius: v.$radius-lg;
-    background: rgba(255, 255, 255, 0.18);
-
-    svg {
-      width: 1.75rem;
-      height: 1.75rem;
-    }
-  }
-
-  &__title {
-    font-size: v.$font-size-2xl;
-    font-weight: v.$font-weight-medium;
-
-    strong {
-      font-weight: v.$font-weight-bold;
-    }
+  &__logo-wrap {
+    margin: 0;
+    line-height: 0;
   }
 
   &__tagline {
-    max-width: 38ch;
+    max-width: 34ch;
     font-size: v.$font-size-md;
-    color: rgba(255, 255, 255, 0.88);
+    font-weight: v.$font-weight-medium;
+    color: v.$color-brand-navy;
+  }
+
+  &__highlights {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-3;
+    text-align: left;
+
+    li {
+      position: relative;
+      padding-left: v.$space-5;
+      font-size: v.$font-size-sm;
+      color: v.$color-ink-soft;
+
+      // Latido del ECG del logo, reducido a una vineta.
+      &::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0.55em;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: v.$color-brand-red;
+      }
+    }
   }
 
   &__content {
@@ -58,5 +73,9 @@
     place-items: center;
     padding: v.$space-6 v.$space-4;
     background: v.$color-surface;
+
+    @include m.from(v.$bp-md) {
+      padding: v.$space-7 v.$space-6;
+    }
   }
 }

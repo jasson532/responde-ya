@@ -5,6 +5,7 @@
 // Atoms
 export {
   Badge,
+  BrandLogo,
   Button,
   Input,
   LinkButton,

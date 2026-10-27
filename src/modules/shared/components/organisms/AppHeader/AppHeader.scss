@@ -24,13 +24,15 @@
     @include m.focus-ring;
   }
 
+  // Marca compacta: el lockup completo (BrandLogo) es 523x375 y recortarlo a
+  // 36px de alto lo volveria ilegible. Aqui se reproduce su reparto de color.
   &__logo {
     display: grid;
     place-items: center;
     width: 36px;
     height: 36px;
     border-radius: v.$radius-md;
-    background: v.$color-emergency;
+    background: v.$color-brand-navy;
     color: #fff;
 
     svg {
@@ -41,11 +43,12 @@
 
   &__name {
     font-size: v.$font-size-md;
-    font-weight: v.$font-weight-medium;
+    font-weight: v.$font-weight-semibold;
     letter-spacing: -0.01em;
+    color: v.$color-brand-navy;
 
     strong {
-      color: v.$color-emergency;
+      color: v.$color-brand-red;
     }
   }
 
