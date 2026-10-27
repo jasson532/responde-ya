@@ -18,16 +18,15 @@ export {
 export { AlertMessage, EmptyState, FormField, SearchBar } from './components/molecules';
 
 // Organisms
+export { default as AdminRoute } from './components/organisms/AdminRoute/AdminRoute';
 export { default as AppHeader } from './components/organisms/AppHeader/AppHeader';
 export { default as ErrorBoundary } from './components/organisms/ErrorBoundary/ErrorBoundary';
-export { default as ProtectedRoute } from './components/organisms/ProtectedRoute/ProtectedRoute';
 
 // Templates
 export { default as AuthLayout } from './components/templates/AuthLayout/AuthLayout';
 export { default as MainLayout } from './components/templates/MainLayout/MainLayout';
 
 // Pages transversales
-export { default as ForbiddenPage } from './components/pages/ForbiddenPage/ForbiddenPage';
 export { default as NotFoundPage } from './components/pages/NotFoundPage/NotFoundPage';
 
 // Store

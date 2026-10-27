@@ -4,9 +4,9 @@ import Button from 'modules/shared/components/atoms/Button/Button';
 import Input from 'modules/shared/components/atoms/Input/Input';
 import FormField from 'modules/shared/components/molecules/FormField/FormField';
 import type { LoginCredentials } from 'modules/auth/types/auth.types';
-import './LoginForm.scss';
+import './AdminLoginForm.scss';
 
-export interface LoginFormProps {
+export interface AdminLoginFormProps {
   onSubmit: (credentials: LoginCredentials) => void;
   isSubmitting?: boolean;
 }
@@ -30,10 +30,10 @@ const validate = ({ email, password }: LoginCredentials): FieldErrors => {
 };
 
 /**
- * Presentacional: no conoce Redux. Valida formato y delega el envio.
- * Patron container/presentational (ver MCP clean-code-react).
+ * Credenciales de administrador. Presentacional: no conoce Redux, valida
+ * formato y delega el envio. Solo el rol admin se autentica en esta app.
  */
-const LoginForm = ({ onSubmit, isSubmitting = false }: LoginFormProps) => {
+const AdminLoginForm = ({ onSubmit, isSubmitting = false }: AdminLoginFormProps) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState<FieldErrors>({});
@@ -49,15 +49,21 @@ const LoginForm = ({ onSubmit, isSubmitting = false }: LoginFormProps) => {
   };
 
   return (
-    <form className="login-form" onSubmit={handleSubmit} noValidate data-testid="LoginForm">
+    <form
+      className="admin-login-form"
+      onSubmit={handleSubmit}
+      noValidate
+      data-testid="AdminLoginForm"
+    >
       <FormField label="Correo electronico" error={errors.email} required>
         <Input
           type="email"
           name="email"
           autoComplete="email"
-          placeholder="tu@correo.com"
+          placeholder="admin@correo.com"
           value={email}
           onChange={(event) => setEmail(event.target.value)}
+          autoFocus
         />
       </FormField>
 
@@ -80,10 +86,10 @@ const LoginForm = ({ onSubmit, isSubmitting = false }: LoginFormProps) => {
         loading={isSubmitting}
         iconStart={<LogIn />}
       >
-        Entrar
+        Entrar como administrador
       </Button>
     </form>
   );
 };
 
-export default LoginForm;
+export default AdminLoginForm;

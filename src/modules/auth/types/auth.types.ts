@@ -1,6 +1,9 @@
 import { UserRole, type AuditedEntity } from 'modules/shared/types/common.types';
 
-/** Usuario autenticado. NUNCA contiene credenciales. */
+/**
+ * Usuario autenticado, que en esta app es siempre un administrador: el rol
+ * `user` no se autentica. NUNCA contiene credenciales.
+ */
 export interface AuthUser extends AuditedEntity {
   email: string;
   displayName: string;
@@ -12,6 +15,7 @@ export interface LoginCredentials {
   password: string;
 }
 
+/** Sesion de administrador. Los visitantes anonimos no tienen sesion. */
 export interface AuthSession {
   user: AuthUser;
   accessToken: string;
@@ -20,8 +24,8 @@ export interface AuthSession {
 }
 
 /**
- * Contrato de autenticacion. La UI depende de esta interfaz, no de la
- * implementacion. Cambiar de demo local a un IdP real = nuevo adaptador.
+ * Contrato de autenticacion de administradores. La UI depende de esta interfaz,
+ * no de la implementacion. Cambiar de demo local a un IdP real = nuevo adaptador.
  */
 export interface AuthRepository {
   login(credentials: LoginCredentials): Promise<AuthSession>;

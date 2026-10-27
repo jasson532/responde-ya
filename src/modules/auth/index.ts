@@ -3,15 +3,16 @@ export { default as authReducer } from './store/authSlice';
 export {
   bootstrapSession,
   clearAuthError,
-  loginUser,
-  logoutUser,
+  loginAdmin,
+  logoutAdmin,
+  selectAdminUser,
   selectAuthError,
   selectAuthStatus,
-  selectAuthUser,
   selectIsAdmin,
   selectIsAuthBootstrapped,
-  selectIsAuthenticated,
+  selectRole,
 } from './store/authSlice';
+export type { AuthState } from './store/authSlice';
 
 // Types
 export type {

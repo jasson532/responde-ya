@@ -32,18 +32,16 @@ interface DemoAccount {
   role: UserRole;
 }
 
+/**
+ * Solo cuentas de administrador. El rol `user` no se autentica: se obtiene por
+ * defecto al abrir la app, sin credenciales.
+ */
 const DEMO_ACCOUNTS: readonly DemoAccount[] = [
   {
     email: 'admin@respondeya.app',
     password: 'admin123',
     displayName: 'Administrador de contenido',
     role: UserRole.Admin,
-  },
-  {
-    email: 'usuario@respondeya.app',
-    password: 'usuario123',
-    displayName: 'Persona usuaria',
-    role: UserRole.User,
   },
 ];
 
@@ -65,6 +63,13 @@ const invalidCredentials = () =>
     message: 'Correo o contrasena incorrectos.',
   });
 
+const notAnAdmin = () =>
+  new AppError({
+    status: 403,
+    code: ERROR_CODES.FORBIDDEN,
+    message: 'Esa cuenta no tiene permisos de administracion.',
+  });
+
 export const authLocalRepository: AuthRepository = {
   async login({ email, password }: LoginCredentials): Promise<AuthSession> {
     const normalizedEmail = email.trim().toLowerCase();
@@ -74,6 +79,10 @@ export const authLocalRepository: AuthRepository = {
     );
 
     if (!account) throw invalidCredentials();
+
+    // Defensa en profundidad: este login existe solo para administradores.
+    // Si alguna vez se cuela una cuenta con otro rol, no abre sesion.
+    if (account.role !== UserRole.Admin) throw notAnAdmin();
 
     const session: AuthSession = {
       user: toAuthUser(account),
@@ -97,7 +106,12 @@ export const authLocalRepository: AuthRepository = {
 
     if (!session) return null;
 
-    if (session.expiresAt <= Date.now()) {
+    const isExpired = session.expiresAt <= Date.now();
+    const isAdminSession = session.user?.role === UserRole.Admin;
+
+    // Una sesion caducada o que no sea de admin no se restaura: el visitante
+    // sigue siendo anonimo, que ya tiene acceso de lectura.
+    if (isExpired || !isAdminSession) {
       localStore.remove(AUTH_SESSION_STORAGE_KEY);
       localStore.remove(AUTH_TOKEN_STORAGE_KEY);
       return null;
@@ -107,9 +121,8 @@ export const authLocalRepository: AuthRepository = {
   },
 };
 
-/** Cuentas de demo expuestas para mostrarlas en la pantalla de login. */
-export const DEMO_CREDENTIALS = DEMO_ACCOUNTS.map(({ email, password, role }) => ({
+/** Cuenta de demo que se muestra en la pantalla de bienvenida. */
+export const DEMO_CREDENTIALS = DEMO_ACCOUNTS.map(({ email, password }) => ({
   email,
   password,
-  role,
 }));

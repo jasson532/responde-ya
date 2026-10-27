@@ -2,6 +2,6 @@ import { lazy } from 'react';
 import { Route } from 'react-router-dom';
 import { ROUTES } from 'modules/shared/constants/routes';
 
-const LoginPage = lazy(() => import('./pages/LoginPage/LoginPage'));
+const WelcomePage = lazy(() => import('./pages/WelcomePage/WelcomePage'));
 
-export const authRoutes = <Route path={ROUTES.LOGIN} element={<LoginPage />} />;
+export const authRoutes = <Route path={ROUTES.WELCOME} element={<WelcomePage />} />;

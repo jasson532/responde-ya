@@ -7,16 +7,55 @@ crea y publica, y que cualquier persona usuaria consulta paso a paso.
 > **Aviso.** El contenido incluido hoy es material de relleno **no validado clínicamente**.
 > Ver [Contenido semilla](#contenido-semilla) antes de usar la app con usuarios reales.
 
-## Roles
+## Roles y acceso
 
-| Rol     | Puede hacer                                                                 |
-| ------- | --------------------------------------------------------------------------- |
-| `user`  | Buscar módulos publicados, abrirlos y recorrer su contenido interactivo     |
-| `admin` | Todo lo anterior, más crear, editar, publicar y eliminar módulos y secciones |
+| Rol     | Credenciales | Puede hacer                                                      |
+| ------- | ------------ | ---------------------------------------------------------------- |
+| `user`  | **Ninguna**  | Buscar módulos publicados, abrirlos y recorrer su contenido       |
+| `admin` | Correo y contraseña | Todo lo anterior, más crear, editar, publicar y eliminar  |
 
-La autorización se aplica en el router (`ProtectedRoute allowedRoles`), no dentro de cada
-página. Una persona autenticada sin el rol requerido aterriza en `/sin-permisos`, no en el
-login: su sesión es válida, lo que le falta es permiso.
+**El contenido es público.** `user` es el rol por defecto: se obtiene con solo abrir la app.
+Nadie tiene que registrarse ni iniciar sesión para ver un protocolo, y un enlace compartido
+(`/modulos/mod-rcp-adulto`) abre directo sin pasar por ninguna pantalla intermedia. En una
+app de primeros auxilios una pantalla de login cuesta segundos que no se tienen.
+
+`admin` es el único rol que se autentica, y lo único que se custodia es la escritura.
+
+### El flag de admin
+
+`role` en el slice `auth` es la única fuente de verdad, y el flag se deriva de él:
+
+```tsx
+import { selectIsAdmin } from 'modules/auth';
+
+const isAdmin = useAppSelector(selectIsAdmin);   // boolean
+```
+
+No se guarda además un booleano `isAdmin` en el estado: dos campos describiendo el mismo
+hecho se desincronizan en cuanto alguien actualice solo uno.
+
+| Selector                   | Devuelve                                   |
+| -------------------------- | ------------------------------------------ |
+| `selectIsAdmin`            | `boolean` — el flag                        |
+| `selectRole`               | `UserRole.User` o `UserRole.Admin`         |
+| `selectAdminUser`          | Datos del admin, o `null` si es anónimo    |
+| `selectIsAuthBootstrapped` | Si ya se intentó rehidratar la sesión      |
+
+### Flujo de pantallas
+
+```
+/                     Bienvenida: "Ingresar" (directo) | "Soy administrador" (despliega form)
+/modulos              Catálogo            → PÚBLICO
+/modulos/:moduleId    Detalle             → PÚBLICO
+/buscar               Búsqueda            → PÚBLICO
+/admin/*              Administración      → requiere rol admin (AdminRoute)
+```
+
+`AdminRoute` manda al visitante anónimo a `/` con la ruta original guardada en
+`location.state.from`, y tras identificarse vuelve a donde iba. No se le muestra un error:
+no es alguien sin permiso, es alguien que todavía no se ha identificado.
+
+Al cerrar sesión el admin no queda fuera: vuelve a rol `user` y sigue leyendo todo.
 
 ## Stack
 
@@ -39,12 +78,14 @@ cp .env.example .env
 npm run dev          # http://localhost:5173
 ```
 
-Cuentas de demostración (visibles en la pantalla de login con el driver `local`):
+Para ver contenido no hace falta nada: abre y pulsa **Ingresar**.
 
-| Rol   | Correo                   | Contraseña  |
-| ----- | ------------------------ | ----------- |
-| admin | admin@respondeya.app     | admin123    |
-| user  | usuario@respondeya.app   | usuario123  |
+Para administrar, pulsa **Soy administrador** y usa la cuenta de demostración (se muestra en
+pantalla con el driver `local`):
+
+| Correo               | Contraseña |
+| -------------------- | ---------- |
+| admin@respondeya.app | admin123   |
 
 ## Scripts
 
@@ -72,9 +113,11 @@ src/
     │   ├── services/            #   httpClient, logger, appConfig, localStore (singletons)
     │   ├── hooks/ utils/ types/ constants/
     │   └── index.ts             #   contrato público
-    ├── auth/                    # Sesión y roles
+    ├── auth/                    # Rol del visitante y sesión de admin
+    │   ├── components/          #   AdminLoginForm
+    │   ├── pages/WelcomePage/   #   Pantalla de entrada con los dos caminos
     │   ├── services/            #   auth.local.repository | auth.http.repository
-    │   ├── store/authSlice.ts
+    │   ├── store/authSlice.ts   #   role + selectIsAdmin
     │   └── routes.tsx
     └── content/                 # Módulos de primeros auxilios (el dominio central)
         ├── components/          #   StepsSequence, QuizCard, InteractiveChecklist, ...
@@ -147,9 +190,17 @@ la fuente en cada módulo.
 `auth.local.repository.ts` valida credenciales **en el navegador** contra una lista fija. No
 hay hashing, no hay servidor y el token no está firmado. Es un adaptador de demostración.
 
-Para producción hay que escribir un adaptador contra el IdP real (mismo contrato
-`AuthRepository`) y mover la autorización de escritura al backend: hoy el guard de rol es de
-interfaz, no de seguridad.
+**`AdminRoute` es seguridad de interfaz, no de verdad.** Impide llegar a la pantalla de
+administración, no ejecutar la escritura: con el driver `local`, cualquiera con la consola
+abierta puede llamar al repositorio y modificar el contenido. Eso es aceptable mientras los
+datos vivan en el `localStorage` de cada visitante, y deja de serlo en cuanto haya un backend
+compartido.
+
+Para producción:
+
+1. Adaptador contra el IdP real, con el mismo contrato `AuthRepository`.
+2. **Autorización de escritura en el backend**, verificando el token en cada mutación. El
+   contenido se sirve público para lectura; `POST`, `PUT` y `DELETE` exigen rol admin.
 
 ## Pendiente
 

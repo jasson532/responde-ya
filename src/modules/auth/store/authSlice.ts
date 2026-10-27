@@ -6,37 +6,50 @@ import * as authService from 'modules/auth/services/auth.service';
 import type { AuthSession, AuthUser, LoginCredentials } from 'modules/auth/types/auth.types';
 
 export interface AuthState {
-  user: AuthUser | null;
+  /**
+   * Rol efectivo del visitante y unica fuente de verdad sobre permisos.
+   * Arranca en `User`: sin credenciales ya se puede leer todo el contenido.
+   * Pasa a `Admin` solo tras un login correcto.
+   */
+  role: UserRole;
+  /** Datos del administrador autenticado. `null` mientras el visitante es anonimo. */
+  admin: AuthUser | null;
+  /** Estado del intento de login. */
   status: LoadingStatus;
-  /** Hasta que no termine `bootstrapSession` no sabemos si hay sesion. */
+  /**
+   * `true` cuando ya se intento rehidratar una sesion de admin guardada.
+   * Los guards de admin deben esperar a esto; el contenido publico no.
+   */
   isBootstrapped: boolean;
   error: string | null;
 }
 
 const initialState: AuthState = {
-  user: null,
+  role: UserRole.User,
+  admin: null,
   status: LoadingStatus.Idle,
   isBootstrapped: false,
   error: null,
 };
 
-export const loginUser = createAsyncThunk<
-  AuthSession,
-  LoginCredentials,
-  { rejectValue: string }
->('auth/login', async (credentials, { rejectWithValue }) => {
-  try {
-    return await authService.login(credentials);
-  } catch (error) {
-    return rejectWithValue(toErrorMessage(error, 'No pudimos iniciar tu sesion.'));
-  }
-});
+/** Login de administrador. Es el unico rol que se autentica. */
+export const loginAdmin = createAsyncThunk<AuthSession, LoginCredentials, { rejectValue: string }>(
+  'auth/loginAdmin',
+  async (credentials, { rejectWithValue }) => {
+    try {
+      return await authService.login(credentials);
+    } catch (error) {
+      return rejectWithValue(toErrorMessage(error, 'No pudimos verificar tus datos.'));
+    }
+  },
+);
 
-export const logoutUser = createAsyncThunk<void, void>('auth/logout', async () => {
+/** Cierra la sesion de admin. El visitante vuelve a rol `User`, no se queda fuera. */
+export const logoutAdmin = createAsyncThunk<void, void>('auth/logoutAdmin', async () => {
   await authService.logout();
 });
 
-/** Rehidrata la sesion al arrancar la app. Nunca rechaza: sin sesion = anonimo. */
+/** Rehidrata la sesion de admin al arrancar. Nunca rechaza: sin sesion = anonimo. */
 export const bootstrapSession = createAsyncThunk<AuthSession | null, void>(
   'auth/bootstrapSession',
   async () => authService.restoreSession().catch(() => null),
@@ -52,31 +65,37 @@ const authSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(loginUser.pending, (state) => {
+      .addCase(loginAdmin.pending, (state) => {
         state.status = LoadingStatus.Pending;
         state.error = null;
       })
-      .addCase(loginUser.fulfilled, (state, action: PayloadAction<AuthSession>) => {
+      .addCase(loginAdmin.fulfilled, (state, action: PayloadAction<AuthSession>) => {
         state.status = LoadingStatus.Succeeded;
-        state.user = action.payload.user;
+        state.role = action.payload.user.role;
+        state.admin = action.payload.user;
         state.error = null;
       })
-      .addCase(loginUser.rejected, (state, action) => {
+      .addCase(loginAdmin.rejected, (state, action) => {
         state.status = LoadingStatus.Failed;
-        state.user = null;
-        state.error = action.payload ?? 'No pudimos iniciar tu sesion.';
+        state.role = UserRole.User;
+        state.admin = null;
+        state.error = action.payload ?? 'No pudimos verificar tus datos.';
       })
-      .addCase(logoutUser.fulfilled, (state) => {
-        state.user = null;
+      .addCase(logoutAdmin.fulfilled, (state) => {
+        state.role = UserRole.User;
+        state.admin = null;
         state.status = LoadingStatus.Idle;
         state.error = null;
       })
       .addCase(bootstrapSession.fulfilled, (state, action) => {
-        state.user = action.payload?.user ?? null;
+        const restored = action.payload;
+        state.role = restored?.user.role ?? UserRole.User;
+        state.admin = restored?.user ?? null;
         state.isBootstrapped = true;
       })
       .addCase(bootstrapSession.rejected, (state) => {
-        state.user = null;
+        state.role = UserRole.User;
+        state.admin = null;
         state.isBootstrapped = true;
       });
   },
@@ -84,11 +103,28 @@ const authSlice = createSlice({
 
 export const { clearAuthError } = authSlice.actions;
 
-// --- Selectores ---
-export const selectAuthUser = (state: RootState): AuthUser | null => state.auth.user;
-export const selectIsAuthenticated = (state: RootState): boolean => state.auth.user !== null;
+// ---------------------------------------------------------------------------
+// Selectores
+// ---------------------------------------------------------------------------
+
+/** Rol efectivo del visitante. */
+export const selectRole = (state: RootState): UserRole => state.auth.role;
+
+/**
+ * EL FLAG DE ADMIN. Es lo que consultan los guards y la interfaz para decidir
+ * si se muestran las acciones de escritura:
+ *
+ *   const isAdmin = useAppSelector(selectIsAdmin);
+ *
+ * Se deriva de `role` en vez de guardarse como booleano aparte: dos campos
+ * para el mismo hecho se desincronizan en cuanto alguien actualice solo uno.
+ */
 export const selectIsAdmin = (state: RootState): boolean =>
-  state.auth.user?.role === UserRole.Admin;
+  state.auth.role === UserRole.Admin;
+
+/** Datos del admin autenticado, o `null` si el visitante es anonimo. */
+export const selectAdminUser = (state: RootState): AuthUser | null => state.auth.admin;
+
 export const selectAuthStatus = (state: RootState): LoadingStatus => state.auth.status;
 export const selectAuthError = (state: RootState): string | null => state.auth.error;
 export const selectIsAuthBootstrapped = (state: RootState): boolean =>

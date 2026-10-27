@@ -1,8 +1,0 @@
-@use 'styles/variables' as v;
-
-.forbidden-page {
-  display: grid;
-  place-items: center;
-  min-height: 70vh;
-  padding: v.$space-5;
-}

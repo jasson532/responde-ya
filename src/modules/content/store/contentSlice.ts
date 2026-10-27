@@ -78,8 +78,10 @@ export const createModule = createAsyncThunk<
   { state: RootState; rejectValue: string }
 >('content/createModule', async (draft, { getState, rejectWithValue }) => {
   try {
-    const authorId = getState().auth.user?.id;
-    if (!authorId) return rejectWithValue('Debes iniciar sesion para crear contenido.');
+    const authorId = getState().auth.admin?.id;
+    if (!authorId) {
+      return rejectWithValue('Necesitas sesion de administrador para crear contenido.');
+    }
     return await contentService.createModule(draft, authorId);
   } catch (error) {
     return rejectWithValue(toErrorMessage(error, 'No pudimos crear el modulo.'));

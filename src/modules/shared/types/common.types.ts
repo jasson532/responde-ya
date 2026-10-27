@@ -11,7 +11,16 @@ export enum LoadingStatus {
   Failed = 'failed',
 }
 
-/** Roles de la aplicacion. El contenido lo administra Admin; User solo consume. */
+/**
+ * Roles de la aplicacion.
+ *
+ * `User` es el rol POR DEFECTO y NO requiere credenciales: cualquier visitante
+ * que abre la app lo tiene y puede leer todo el contenido publicado. En una app
+ * de primeros auxilios pedir login antes de mostrar un protocolo cuesta
+ * segundos que no se tienen.
+ *
+ * `Admin` es el unico rol que se autentica, y es el unico que puede escribir.
+ */
 export enum UserRole {
   Admin = 'admin',
   User = 'user',

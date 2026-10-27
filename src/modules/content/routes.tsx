@@ -11,17 +11,19 @@ const AdminModuleFormPage = lazy(
   () => import('./pages/AdminModuleFormPage/AdminModuleFormPage'),
 );
 
-/** Rutas de consumo: cualquier usuario autenticado. */
+/**
+ * Rutas de consumo: PUBLICAS. Sin guard y sin esperar a que se rehidrate
+ * ninguna sesion, para que un enlace compartido abra el protocolo al instante.
+ */
 export const contentRoutes = (
   <>
-    <Route path={ROUTES.HOME} element={<Navigate to={ROUTES.MODULES} replace />} />
     <Route path={ROUTES.MODULES} element={<ModulesCatalogPage />} />
     <Route path={ROUTES.SEARCH} element={<ModulesCatalogPage />} />
     <Route path={ROUTES.MODULE_DETAIL} element={<ModuleDetailPage />} />
   </>
 );
 
-/** Rutas de administracion: se montan tras un guard de rol admin. */
+/** Rutas de administracion: se montan detras de `AdminRoute`. */
 export const contentAdminRoutes = (
   <>
     <Route path={ROUTES.ADMIN} element={<Navigate to={ROUTES.ADMIN_MODULES} replace />} />

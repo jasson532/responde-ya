@@ -3,22 +3,21 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { store } from 'modules/shared/store';
 import { useAppDispatch } from 'modules/shared/store/hooks';
-import { UserRole } from 'modules/shared/types/common.types';
 import { ROUTES } from 'modules/shared/constants/routes';
 import Spinner from 'modules/shared/components/atoms/Spinner/Spinner';
 import ErrorBoundary from 'modules/shared/components/organisms/ErrorBoundary/ErrorBoundary';
-import ProtectedRoute from 'modules/shared/components/organisms/ProtectedRoute/ProtectedRoute';
+import AdminRoute from 'modules/shared/components/organisms/AdminRoute/AdminRoute';
 import AuthLayout from 'modules/shared/components/templates/AuthLayout/AuthLayout';
 import MainLayout from 'modules/shared/components/templates/MainLayout/MainLayout';
-import ForbiddenPage from 'modules/shared/components/pages/ForbiddenPage/ForbiddenPage';
 import NotFoundPage from 'modules/shared/components/pages/NotFoundPage/NotFoundPage';
 import { bootstrapSession } from 'modules/auth';
 import { authRoutes } from 'modules/auth/routes';
 import { contentAdminRoutes, contentRoutes } from 'modules/content/routes';
 
-const ADMIN_ONLY = [UserRole.Admin] as const;
-
-/** Rehidrata la sesion guardada antes de que los guards decidan. */
+/**
+ * Rehidrata una eventual sesion de admin. No bloquea nada: el contenido es
+ * publico y se renderiza sin esperar este resultado. Solo `AdminRoute` espera.
+ */
 const SessionBootstrapper = () => {
   const dispatch = useAppDispatch();
 
@@ -35,19 +34,14 @@ const AppRoutes = () => (
 
     <Suspense fallback={<Spinner size="lg" label="Cargando" />}>
       <Routes>
-        {/* Publicas */}
+        {/* Bienvenida: acceso directo al contenido o identificacion como admin */}
         <Route element={<AuthLayout />}>{authRoutes}</Route>
 
-        {/* Autenticadas */}
-        <Route element={<ProtectedRoute />}>
-          <Route element={<MainLayout />}>
-            {contentRoutes}
-            <Route path={ROUTES.FORBIDDEN} element={<ForbiddenPage />} />
-          </Route>
-        </Route>
+        {/* Contenido: publico, sin autenticacion */}
+        <Route element={<MainLayout />}>{contentRoutes}</Route>
 
-        {/* Solo admin: mismo layout, guard adicional por rol */}
-        <Route element={<ProtectedRoute allowedRoles={ADMIN_ONLY} />}>
+        {/* Administracion: requiere rol admin */}
+        <Route element={<AdminRoute />}>
           <Route element={<MainLayout />}>{contentAdminRoutes}</Route>
         </Route>
 
