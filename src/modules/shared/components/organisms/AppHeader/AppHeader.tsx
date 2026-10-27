@@ -33,9 +33,9 @@ const AppHeader = () => {
           </span>
         </Link>
 
-        <nav className="app-header__nav" aria-label="Navegacion principal">
+        <nav className="app-header__nav" aria-label="Navegación principal">
           <NavLink to={ROUTES.MODULES} className="app-header__link">
-            Modulos
+            Módulos
           </NavLink>
           <NavLink to={ROUTES.SEARCH} className="app-header__link">
             Buscar
@@ -43,7 +43,7 @@ const AppHeader = () => {
           {isAdmin && (
             <NavLink to={ROUTES.ADMIN_MODULES} className="app-header__link">
               <Settings aria-hidden="true" />
-              Administrar
+              Gestionar contenido
             </NavLink>
           )}
         </nav>
@@ -63,7 +63,7 @@ const AppHeader = () => {
               </Button>
             </>
           ) : (
-            // Discreto a proposito: el visitante anonimo no necesita cuenta.
+            // Discreto a propósito: el visitante anonimo no necesita cuenta.
             <NavLink to={ROUTES.WELCOME} className="app-header__link" end>
               <ShieldUser aria-hidden="true" />
               Soy administrador

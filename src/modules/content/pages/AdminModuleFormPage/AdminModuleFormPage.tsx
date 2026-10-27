@@ -64,12 +64,12 @@ const AdminModuleFormPage = () => {
   };
 
   if (isEditing && (detailStatus === LoadingStatus.Pending || detailStatus === LoadingStatus.Idle)) {
-    return <Spinner size="lg" label="Cargando el modulo" />;
+    return <Spinner size="lg" label="Cargando el módulo" />;
   }
 
   if (isEditing && !module) {
     return (
-      <AlertMessage tone="error" title="No encontramos ese modulo">
+      <AlertMessage tone="error" title="No encontramos ese módulo">
         {error ?? 'Puede que haya sido eliminado.'}
       </AlertMessage>
     );
@@ -83,7 +83,7 @@ const AdminModuleFormPage = () => {
       </Link>
 
       <h1 className="admin-module-form__title">
-        {isEditing ? 'Editar modulo' : 'Nuevo modulo'}
+        {isEditing ? 'Editar módulo' : 'Nuevo módulo'}
       </h1>
 
       {error && <AlertMessage tone="error">{error}</AlertMessage>}

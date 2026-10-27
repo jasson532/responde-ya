@@ -1,0 +1,85 @@
+@use 'styles/variables' as v;
+@use 'styles/mixins' as m;
+
+.list-row {
+  display: flex;
+  align-items: center;
+  gap: v.$space-4;
+  width: 100%;
+  padding: v.$space-4;
+  background: v.$color-surface;
+  border-radius: v.$radius-lg;
+  box-shadow: v.$shadow-xs;
+
+  &__body {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__title {
+    font-size: v.$font-size-base;
+    font-weight: v.$font-weight-bold;
+    color: v.$color-brand-navy;
+    line-height: v.$line-height-snug;
+  }
+
+  &__subtitle {
+    font-size: v.$font-size-sm;
+    color: v.$color-ink-muted;
+
+    @include m.line-clamp(2);
+  }
+
+  &__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: v.$space-2;
+    margin-top: v.$space-2;
+  }
+
+  &__trailing {
+    display: flex;
+    align-items: center;
+    gap: v.$space-2;
+    flex-shrink: 0;
+  }
+
+  &__chevron {
+    display: flex;
+    flex-shrink: 0;
+    color: v.$color-ink-muted;
+    transition: transform v.$transition-fast;
+
+    svg {
+      width: 1.2rem;
+      height: 1.2rem;
+    }
+  }
+
+  &--link {
+    @include m.focus-ring;
+
+    transition:
+      box-shadow v.$transition-fast,
+      transform v.$transition-fast;
+
+    @media (hover: hover) and (pointer: fine) {
+      &:hover {
+        box-shadow: v.$shadow-md;
+
+        .list-row__chevron {
+          transform: translateX(3px);
+          color: v.$color-emergency;
+        }
+      }
+    }
+
+    &:active {
+      transform: scale(0.99);
+    }
+  }
+}

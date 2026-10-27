@@ -7,7 +7,7 @@ import type { AuthSession, AuthUser, LoginCredentials } from 'modules/auth/types
 
 export interface AuthState {
   /**
-   * Rol efectivo del visitante y unica fuente de verdad sobre permisos.
+   * Rol efectivo del visitante y única fuente de verdad sobre permisos.
    * Arranca en `User`: sin credenciales ya se puede leer todo el contenido.
    * Pasa a `Admin` solo tras un login correcto.
    */
@@ -17,8 +17,8 @@ export interface AuthState {
   /** Estado del intento de login. */
   status: LoadingStatus;
   /**
-   * `true` cuando ya se intento rehidratar una sesion de admin guardada.
-   * Los guards de admin deben esperar a esto; el contenido publico no.
+   * `true` cuando ya se intento rehidratar una sesión de admin guardada.
+   * Los guards de admin deben esperar a esto; el contenido público no.
    */
   isBootstrapped: boolean;
   error: string | null;
@@ -32,7 +32,7 @@ const initialState: AuthState = {
   error: null,
 };
 
-/** Login de administrador. Es el unico rol que se autentica. */
+/** Login de administrador. Es el único rol que se autentica. */
 export const loginAdmin = createAsyncThunk<AuthSession, LoginCredentials, { rejectValue: string }>(
   'auth/loginAdmin',
   async (credentials, { rejectWithValue }) => {
@@ -44,12 +44,12 @@ export const loginAdmin = createAsyncThunk<AuthSession, LoginCredentials, { reje
   },
 );
 
-/** Cierra la sesion de admin. El visitante vuelve a rol `User`, no se queda fuera. */
+/** Cierra la sesión de admin. El visitante vuelve a rol `User`, no se queda fuera. */
 export const logoutAdmin = createAsyncThunk<void, void>('auth/logoutAdmin', async () => {
   await authService.logout();
 });
 
-/** Rehidrata la sesion de admin al arrancar. Nunca rechaza: sin sesion = anonimo. */
+/** Rehidrata la sesión de admin al arrancar. Nunca rechaza: sin sesión = anonimo. */
 export const bootstrapSession = createAsyncThunk<AuthSession | null, void>(
   'auth/bootstrapSession',
   async () => authService.restoreSession().catch(() => null),

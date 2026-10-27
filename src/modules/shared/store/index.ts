@@ -4,9 +4,9 @@ import { contentReducer } from 'modules/content';
 import uiReducer from './slices/uiSlice';
 
 /**
- * Unico lugar de la app que conoce los reducers de todos los modulos.
+ * Único lugar de la app que conoce los reducers de todos los módulos.
  * Ver steering `estructura-proyecto`: es la excepcion a la regla de
- * no-dependencia entre modulos.
+ * no-dependencia entre módulos.
  */
 export const store = configureStore({
   reducer: {

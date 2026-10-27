@@ -13,7 +13,7 @@ const AdminModuleFormPage = lazy(
 
 /**
  * Rutas de consumo: PUBLICAS. Sin guard y sin esperar a que se rehidrate
- * ninguna sesion, para que un enlace compartido abra el protocolo al instante.
+ * ninguna sesión, para que un enlace compartido abra el protocolo al instante.
  */
 export const contentRoutes = (
   <>
@@ -23,7 +23,7 @@ export const contentRoutes = (
   </>
 );
 
-/** Rutas de administracion: se montan detras de `AdminRoute`. */
+/** Rutas de administración: se montan detras de `AdminRoute`. */
 export const contentAdminRoutes = (
   <>
     <Route path={ROUTES.ADMIN} element={<Navigate to={ROUTES.ADMIN_MODULES} replace />} />

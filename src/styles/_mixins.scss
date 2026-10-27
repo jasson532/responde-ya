@@ -28,11 +28,33 @@
 }
 
 // --- Superficie tipo tarjeta ---
-@mixin card-surface($padding: v.$space-5) {
+@mixin card-surface($padding: v.$space-5, $radius: v.$radius-xl) {
   background: v.$color-surface;
   border: 1px solid v.$color-line;
-  border-radius: v.$radius-lg;
+  border-radius: $radius;
   padding: $padding;
+}
+
+/** Tarjeta elevada sin borde: la sombra hace el trabajo. */
+@mixin card-floating($padding: v.$space-5, $radius: v.$radius-xl) {
+  background: v.$color-surface;
+  border-radius: $radius;
+  padding: $padding;
+  box-shadow: v.$shadow-sm;
+}
+
+/** Realce al pasar el cursor, solo en dispositivos con puntero real. */
+@mixin hover-lift($distance: 3px) {
+  @media (hover: hover) and (pointer: fine) {
+    transition:
+      transform v.$transition-base,
+      box-shadow v.$transition-base;
+
+    &:hover {
+      transform: translateY(-$distance);
+      box-shadow: v.$shadow-md;
+    }
+  }
 }
 
 // --- Truncado de texto a N lineas ---
@@ -61,4 +83,25 @@
   @media (prefers-reduced-motion: no-preference) {
     @content;
   }
+}
+
+/** Oculta la barra de scroll conservando el desplazamiento. */
+@mixin hide-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/** Fila deslizable horizontal con margen de sangrado hasta el borde. */
+@mixin bleed-scroller($gutter: v.$space-4) {
+  display: flex;
+  overflow-x: auto;
+  margin-inline: -$gutter;
+  padding-inline: $gutter;
+  scroll-snap-type: x proximity;
+
+  @include hide-scrollbar;
 }

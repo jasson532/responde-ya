@@ -41,7 +41,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
         <h1 className="error-boundary__title">Algo se rompio de nuestro lado</h1>
         <p className="error-boundary__text">
           Si estas atendiendo una emergencia, llama de inmediato a la linea de emergencias de
-          tu pais.
+          tu país.
         </p>
         <Button variant="primary" size="lg" onClick={this.handleReload}>
           Volver al inicio

@@ -38,21 +38,21 @@ const EMPTY_DRAFT: ContentModuleDraft = {
 
 const SEVERITY_OPTIONS: readonly SelectOption[] = [
   { value: ModuleSeverity.Critical, label: 'Riesgo vital' },
-  { value: ModuleSeverity.Urgent, label: 'Atencion urgente' },
-  { value: ModuleSeverity.Basic, label: 'Cuidado basico' },
+  { value: ModuleSeverity.Urgent, label: 'Atención urgente' },
+  { value: ModuleSeverity.Basic, label: 'Cuidado básico' },
 ];
 
 const validate = (draft: ContentModuleDraft): FieldErrors => {
   const errors: FieldErrors = {};
 
   if (draft.title.trim().length < 3) {
-    errors.title = 'El titulo debe tener al menos 3 caracteres.';
+    errors.title = 'El título debe tener al menos 3 caracteres.';
   }
   if (draft.summary.trim().length < 10) {
     errors.summary = 'Escribe un resumen de al menos 10 caracteres.';
   }
   if (!Number.isFinite(draft.estimatedMinutes) || draft.estimatedMinutes < 1) {
-    errors.estimatedMinutes = 'La duracion debe ser de 1 minuto o mas.';
+    errors.estimatedMinutes = 'La duración debe ser de 1 minuto o mas.';
   }
 
   return errors;
@@ -91,7 +91,7 @@ const ModuleForm = ({
 
   return (
     <form className="module-form" onSubmit={handleSubmit} noValidate data-testid="ModuleForm">
-      <FormField label="Titulo del modulo" error={errors.title} required>
+      <FormField label="Título del módulo" error={errors.title} required>
         <Input
           value={draft.title}
           onChange={(event) => patch('title', event.target.value)}
@@ -101,7 +101,7 @@ const ModuleForm = ({
 
       <FormField
         label="Resumen"
-        hint="Una frase que le diga al usuario cuando usar este modulo."
+        hint="Una frase que le diga al usuario cuando usar este módulo."
         error={errors.summary}
         required
       >
@@ -121,7 +121,7 @@ const ModuleForm = ({
           />
         </FormField>
 
-        <FormField label="Duracion estimada (minutos)" error={errors.estimatedMinutes}>
+        <FormField label="Duración estimada (minutos)" error={errors.estimatedMinutes}>
           <Input
             type="number"
             min={1}
@@ -133,7 +133,7 @@ const ModuleForm = ({
       </div>
 
       <FormField
-        label="Etiquetas de busqueda"
+        label="Etiquetas de búsqueda"
         hint="Separadas por comas. Son las palabras que el usuario escribiria en una emergencia."
       >
         <Input
@@ -189,7 +189,7 @@ const ModuleForm = ({
 
       <div className="module-form__actions">
         <Button type="submit" variant="primary" loading={isSubmitting} iconStart={<Save />}>
-          Guardar modulo
+          Guardar módulo
         </Button>
         <Button type="button" variant="ghost" onClick={onCancel}>
           Cancelar

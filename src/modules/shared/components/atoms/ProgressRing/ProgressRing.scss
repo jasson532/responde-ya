@@ -1,0 +1,64 @@
+@use 'styles/variables' as v;
+
+.progress-ring {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+
+  svg {
+    position: absolute;
+    inset: 0;
+    overflow: visible;
+  }
+
+  &__track {
+    fill: none;
+    stroke: v.$color-line;
+  }
+
+  &__value {
+    fill: none;
+    stroke-linecap: round;
+    transition: stroke-dashoffset v.$transition-spring;
+  }
+
+  &__text {
+    display: flex;
+    align-items: baseline;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+
+    strong {
+      font-size: 1.05rem;
+      font-weight: v.$font-weight-extrabold;
+      color: v.$color-brand-navy;
+    }
+  }
+
+  &__total {
+    font-size: 0.7rem;
+    font-weight: v.$font-weight-semibold;
+    color: v.$color-ink-muted;
+  }
+
+  &--emergency &__value {
+    stroke: v.$color-emergency;
+  }
+
+  &--safe &__value {
+    stroke: v.$color-safe;
+  }
+
+  &--info &__value {
+    stroke: v.$color-info;
+  }
+
+  &.is-complete &__value {
+    stroke: v.$color-safe;
+  }
+
+  &.is-complete &__text strong {
+    color: v.$color-safe;
+  }
+}

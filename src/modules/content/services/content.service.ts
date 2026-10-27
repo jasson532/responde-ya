@@ -10,7 +10,7 @@ import { contentHttpRepository } from './content.http.repository';
 import { contentLocalRepository } from './content.local.repository';
 
 /**
- * Punto unico de acceso al contenido. Selecciona el adaptador segun
+ * Punto único de acceso al contenido. Selecciona el adaptador segun
  * configuracion (Strategy). Cambiar de localStorage a API no toca ni thunks
  * ni componentes.
  */

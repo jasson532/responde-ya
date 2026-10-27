@@ -14,12 +14,12 @@ const CONFIG: Record<ModuleSeverity, { label: string; tone: BadgeTone; icon: Rea
     icon: <HeartPulse />,
   },
   [ModuleSeverity.Urgent]: {
-    label: 'Atencion urgente',
+    label: 'Atención urgente',
     tone: 'warning',
     icon: <AlertTriangle />,
   },
   [ModuleSeverity.Basic]: {
-    label: 'Cuidado basico',
+    label: 'Cuidado básico',
     tone: 'safe',
     icon: <Info />,
   },

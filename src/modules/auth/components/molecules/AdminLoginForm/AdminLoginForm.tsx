@@ -24,7 +24,7 @@ const validate = ({ email, password }: LoginCredentials): FieldErrors => {
   if (!email.trim()) errors.email = 'Escribe tu correo.';
   else if (!EMAIL_PATTERN.test(email.trim())) errors.email = 'Ese correo no parece valido.';
 
-  if (!password) errors.password = 'Escribe tu contrasena.';
+  if (!password) errors.password = 'Escribe tu contraseña.';
 
   return errors;
 };
@@ -55,7 +55,7 @@ const AdminLoginForm = ({ onSubmit, isSubmitting = false }: AdminLoginFormProps)
       noValidate
       data-testid="AdminLoginForm"
     >
-      <FormField label="Correo electronico" error={errors.email} required>
+      <FormField label="Correo electrónico" error={errors.email} required>
         <Input
           type="email"
           name="email"
@@ -67,12 +67,12 @@ const AdminLoginForm = ({ onSubmit, isSubmitting = false }: AdminLoginFormProps)
         />
       </FormField>
 
-      <FormField label="Contrasena" error={errors.password} required>
+      <FormField label="Contraseña" error={errors.password} required>
         <Input
           type="password"
           name="password"
           autoComplete="current-password"
-          placeholder="Tu contrasena"
+          placeholder="Tu contraseña"
           value={password}
           onChange={(event) => setPassword(event.target.value)}
         />

@@ -59,16 +59,60 @@ Al cerrar sesión el admin no queda fuera: vuelve a rol `user` y sigue leyendo t
 
 ## Stack
 
-| Pieza           | Elección             | Por qué                                              |
-| --------------- | -------------------- | ---------------------------------------------------- |
-| Build           | Vite 8               | Mismo stack que el resto de los proyectos del equipo |
-| UI              | React 19 + TypeScript| Estándar ADL, sin `any` ni `PropTypes`               |
-| Estado global   | Redux Toolkit 2      | Slices por módulo, hooks tipados                     |
-| Rutas           | React Router 7       | Rutas por módulo con lazy loading                    |
-| Estilos         | SCSS co-locado       | Tokens en `src/styles`, BEM por componente           |
-| HTTP            | Axios (singleton)    | Interceptors centralizados de auth y errores         |
-| Lint            | oxlint + prettier    | Igual que `alaria-app`                               |
-| Iconos          | lucide-react         | Registro cerrado en `content/constants/moduleIcons`  |
+| Pieza         | Elección                            | Por qué                                              |
+| ------------- | ----------------------------------- | ---------------------------------------------------- |
+| Build         | Vite 8                              | Mismo stack que el resto de los proyectos del equipo |
+| UI            | React 19 + TypeScript               | Estándar ADL, sin `any` ni `PropTypes`               |
+| Estado global | Redux Toolkit 2                     | Slices por módulo, hooks tipados                     |
+| Rutas         | React Router 7                      | Rutas por módulo con lazy loading                    |
+| Estilos       | SCSS co-locado                      | Tokens en `src/styles`, BEM por componente           |
+| HTTP          | Axios (singleton)                   | Interceptors centralizados de auth y errores         |
+| Lint          | oxlint + prettier                   | Igual que `alaria-app`                               |
+| Iconos        | lucide-react                        | Registro cerrado en `content/constants/moduleIcons`  |
+| Tipografía    | Plus Jakarta Sans (`@fontsource`)   | Autoalojada: sin peticiones a terceros, va sin red   |
+
+### Lo que NO se instaló, y por qué
+
+No hay librería de animación (`framer-motion` o similar). Añade del orden de 50 kB gzip a una
+aplicación cuyo valor depende de abrir rápido durante una emergencia. El movimiento se hace
+con transiciones CSS y `prefers-reduced-motion`, que cubre el 100% de lo que se necesita aquí.
+Si en algún momento hace falta movimiento compartido entre vistas, se reevalúa.
+
+Tampoco hay librería de gráficos: el anillo de progreso son dos círculos SVG y un
+`stroke-dashoffset`.
+
+## Diseño
+
+Lenguaje visual de aplicación móvil de salud: superficies claras con tintes pastel, radios
+amplios, sombras difusas y tipografía grande. Rojo reservado para urgencia y acción primaria;
+el azul marino de marca lleva el peso de la tipografía.
+
+La referencia visual y el mapeo patrón por patrón están en
+[`docs/design-reference/`](docs/design-reference/README.md).
+
+### Navegación según el ancho
+
+Dos navegaciones excluyentes, cada una oculta en el breakpoint de la otra:
+
+| Ancho    | Navegación                                    |
+| -------- | --------------------------------------------- |
+| < 1024px | `BottomNav` (pestañas abajo) + `TopBar`       |
+| ≥ 1024px | `AppHeader` (cabecera fija)                   |
+
+Las pestañas van abajo en móvil porque es donde llega el pulgar. `AppShell` compone el
+armazón; la barra superior contextual la pone cada página, que es la única que conoce su
+título y si procede un botón de volver.
+
+### Piezas del sistema
+
+| Componente     | Para qué                                                   |
+| -------------- | ---------------------------------------------------------- |
+| `IconBubble`   | Icono con tinte pastel. Unifica fichas, filas y cabeceras  |
+| `Chip`         | Filtro en pastilla con `aria-pressed`                      |
+| `ProgressRing` | Anillo de avance en SVG con `role="progressbar"`           |
+| `ListRow`      | Fila con icono, título, subtítulo y chevron                |
+| `ModuleTile`   | Ficha de la rejilla; el tinte lo marca la gravedad         |
+| `LinkButton`   | Navegación con aspecto de botón (nunca un `Link` en `button`) |
 
 ## Arranque
 
@@ -177,13 +221,27 @@ No son adorno: una persona usa esto bajo estrés, con una mano, a veces a oscura
 
 ## Contenido semilla
 
-`src/modules/content/services/content.seed.ts` trae tres módulos de ejemplo (reanimación,
-atragantamiento, hemorragia). Resumen guías de primeros auxilios de difusión general y **no
-han sido revisados por personal de salud**. Existen solo para que la app sea demostrable y
-para ejercitar el renderizador de bloques.
+`src/modules/content/services/content.seed.ts` trae tres módulos: **RCP solo con las manos**,
+atragantamiento y hemorragia externa.
 
-Antes de cualquier uso real: reemplazar ese archivo con el contenido oficial validado y citar
-la fuente en cada módulo.
+El de RCP está redactado a partir de guías públicas, con las fuentes citadas en el propio
+archivo (American Heart Association y Cruz Roja) y parafraseado, no copiado. Los otros dos
+resumen guías de difusión general sin fuente concreta.
+
+**Nada de esto ha sido revisado por personal de salud.** Antes de cualquier uso real:
+reemplazar el archivo con el contenido oficial validado por la organización y citar esa
+fuente en cada módulo.
+
+### Versionado de la semilla
+
+El contenido semilla solo se escribía si `localStorage` estaba vacío, así que quien ya había
+abierto la app nunca veía los módulos nuevos. Ahora hay `SEED_VERSION`:
+
+1. Al cambiar la semilla, **subir `SEED_VERSION`** en `content.seed.ts`.
+2. Si se retira un módulo, añadir su id a `RETIRED_SEED_IDS`. Sin eso la migración no puede
+   distinguir un módulo retirado de uno que creó un administrador, y lo conservaría.
+3. En el siguiente arranque, los módulos de la semilla se reinstalan y **los creados por un
+   administrador se conservan** intactos.
 
 ## Seguridad: qué falta para producción
 

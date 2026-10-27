@@ -15,7 +15,7 @@ const AuthLayout = () => (
       </p>
 
       <ul className="auth-layout__highlights">
-        <li>Modulos por situacion, de lo mas urgente a lo mas leve</li>
+        <li>Módulos por situacion, de lo mas urgente a lo mas leve</li>
         <li>Pasos que marcas mientras actuas</li>
         <li>Llamada a emergencias a un toque</li>
       </ul>

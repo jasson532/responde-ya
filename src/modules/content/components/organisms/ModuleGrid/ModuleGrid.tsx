@@ -3,7 +3,7 @@ import Spinner from 'modules/shared/components/atoms/Spinner/Spinner';
 import AlertMessage from 'modules/shared/components/molecules/AlertMessage/AlertMessage';
 import EmptyState from 'modules/shared/components/molecules/EmptyState/EmptyState';
 import { LoadingStatus } from 'modules/shared/types/common.types';
-import ModuleCard from 'modules/content/components/molecules/ModuleCard/ModuleCard';
+import ModuleTile from 'modules/content/components/molecules/ModuleTile/ModuleTile';
 import type { ContentModule } from 'modules/content/types/content.types';
 import './ModuleGrid.scss';
 
@@ -12,29 +12,32 @@ export interface ModuleGridProps {
   status: LoadingStatus;
   error?: string | null;
   onRetry?: () => void;
+  /** Destaca la primera ficha a ancho completo. */
+  highlightFirst?: boolean;
   emptyTitle?: string;
   emptyDescription?: string;
 }
 
 /**
- * Presentacional. Recibe datos y estado; no despacha nada.
- * Asi la misma rejilla sirve al catalogo publico y a la vista de busqueda.
+ * Presentacional. Recibe datos y estado; no despacha nada, así la misma
+ * rejilla sirve al catálogo y a la búsqueda.
  */
 const ModuleGrid = ({
   modules,
   status,
   error,
   onRetry,
-  emptyTitle = 'Aun no hay modulos publicados',
-  emptyDescription = 'Cuando el administrador publique contenido aparecera aqui.',
+  highlightFirst = false,
+  emptyTitle = 'Aún no hay módulos publicados',
+  emptyDescription = 'Cuando el administrador publique contenido aparecerá aquí.',
 }: ModuleGridProps) => {
   if (status === LoadingStatus.Pending) {
-    return <Spinner size="lg" label="Cargando modulos" />;
+    return <Spinner size="lg" label="Cargando módulos" />;
   }
 
   if (status === LoadingStatus.Failed) {
     return (
-      <AlertMessage tone="error" title="No pudimos cargar los modulos" onRetry={onRetry}>
+      <AlertMessage tone="error" title="No pudimos cargar los módulos" onRetry={onRetry}>
         {error ?? 'Intenta de nuevo en un momento.'}
       </AlertMessage>
     );
@@ -48,9 +51,12 @@ const ModuleGrid = ({
 
   return (
     <ul className="module-grid" data-testid="ModuleGrid">
-      {modules.map((module) => (
-        <li key={module.id} className="module-grid__item">
-          <ModuleCard module={module} />
+      {modules.map((module, index) => (
+        <li
+          key={module.id}
+          className={`module-grid__item ${highlightFirst && index === 0 ? 'is-featured' : ''}`.trim()}
+        >
+          <ModuleTile module={module} featured={highlightFirst && index === 0} />
         </li>
       ))}
     </ul>

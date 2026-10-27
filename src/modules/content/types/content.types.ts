@@ -2,17 +2,17 @@ import type { AuditedEntity } from 'modules/shared/types/common.types';
 
 /**
  * NOTA DE NAMING
- * "Modulo" es ambiguo en este proyecto: existe el modulo de codigo
- * (`src/modules/*`) y el modulo de contenido que crea el administrador.
+ * "Módulo" es ambiguo en este proyecto: existe el módulo de codigo
+ * (`src/modules/*`) y el módulo de contenido que crea el administrador.
  * La entidad de negocio se llama SIEMPRE `ContentModule` en codigo y
- * se muestra como "modulo" en la interfaz.
+ * se muestra como "módulo" en la interfaz.
  */
 
 /** Que tan urgente es la situacion. Define el color y el orden de prioridad. */
 export enum ModuleSeverity {
   /** Riesgo vital: cada segundo cuenta (paro cardiaco, atragantamiento). */
   Critical = 'critical',
-  /** Requiere atencion rapida pero no es inmediatamente mortal. */
+  /** Requiere atención rapida pero no es inmediatamente mortal. */
   Urgent = 'urgent',
   /** Primeros auxilios basicos (cortes leves, golpes). */
   Basic = 'basic',
@@ -40,7 +40,7 @@ export enum ContentBlockKind {
   Image = 'image',
   /** Video demostrativo. */
   Video = 'video',
-  /** Pregunta de practica con retroalimentacion. */
+  /** Pregunta de práctica con retroalimentacion. */
   Quiz = 'quiz',
   /** Boton de llamada directa a emergencias. */
   EmergencyCall = 'emergencyCall',
@@ -61,7 +61,7 @@ export interface StepItem {
   title: string;
   description: string;
   imageUrl?: string;
-  /** Duracion sugerida del paso, en segundos (ej. 30 compresiones). */
+  /** Duración sugerida del paso, en segundos (ej. 30 compresiones). */
   durationSeconds?: number;
 }
 
@@ -135,10 +135,10 @@ export type ContentBlock =
   | EmergencyCallBlock;
 
 // ---------------------------------------------------------------------------
-// Leccion y modulo
+// Leccion y módulo
 // ---------------------------------------------------------------------------
 
-/** Una leccion es una pantalla de contenido dentro de un modulo. */
+/** Una leccion es una pantalla de contenido dentro de un módulo. */
 export interface Lesson extends AuditedEntity {
   title: string;
   summary: string;

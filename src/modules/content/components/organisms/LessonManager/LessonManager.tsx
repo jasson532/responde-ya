@@ -19,9 +19,9 @@ export interface LessonManagerProps {
 }
 
 /**
- * Gestion de las secciones (lecciones) de un modulo.
+ * Gestion de las secciones (lecciones) de un módulo.
  * El editor de bloques interactivos es el siguiente incremento: hoy una
- * seccion se crea vacia y sus bloques se cargan desde el repositorio.
+ * sección se crea vacia y sus bloques se cargan desde el repositorio.
  */
 const LessonManager = ({ module }: LessonManagerProps) => {
   const dispatch = useAppDispatch();
@@ -37,7 +37,7 @@ const LessonManager = ({ module }: LessonManagerProps) => {
     event.preventDefault();
 
     if (title.trim().length < 3) {
-      setError('El titulo de la seccion debe tener al menos 3 caracteres.');
+      setError('El título de la sección debe tener al menos 3 caracteres.');
       return;
     }
 
@@ -58,11 +58,11 @@ const LessonManager = ({ module }: LessonManagerProps) => {
 
   return (
     <section className="lesson-manager" data-testid="LessonManager">
-      <h2 className="lesson-manager__title">Secciones del modulo</h2>
+      <h2 className="lesson-manager__title">Secciones del módulo</h2>
 
       {module.lessons.length === 0 ? (
         <p className="lesson-manager__empty">
-          Este modulo aun no tiene secciones. Agrega la primera abajo.
+          Este módulo aun no tiene secciones. Agrega la primera abajo.
         </p>
       ) : (
         <ol className="lesson-manager__list">
@@ -96,9 +96,9 @@ const LessonManager = ({ module }: LessonManagerProps) => {
       )}
 
       <form className="lesson-manager__form" onSubmit={handleCreate} noValidate>
-        <h3 className="lesson-manager__form-title">Agregar seccion</h3>
+        <h3 className="lesson-manager__form-title">Agregar sección</h3>
 
-        <FormField label="Titulo de la seccion" error={error} required>
+        <FormField label="Título de la sección" error={error} required>
           <Input
             value={title}
             onChange={(event) => setTitle(event.target.value)}
@@ -106,7 +106,7 @@ const LessonManager = ({ module }: LessonManagerProps) => {
           />
         </FormField>
 
-        <FormField label="Resumen" hint="Opcional. Una linea sobre que cubre la seccion.">
+        <FormField label="Resumen" hint="Opcional. Una linea sobre que cubre la sección.">
           <Textarea
             rows={2}
             value={summary}
@@ -116,7 +116,7 @@ const LessonManager = ({ module }: LessonManagerProps) => {
         </FormField>
 
         <Button type="submit" variant="secondary" loading={isSubmitting} iconStart={<Plus />}>
-          Agregar seccion
+          Agregar sección
         </Button>
       </form>
     </section>

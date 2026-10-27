@@ -10,7 +10,7 @@ import type {
 
 /**
  * Adaptador HTTP. Se activa con VITE_PERSISTENCE_DRIVER=http.
- * Los endpoints estan declarados en `shared/constants/apiEndpoints.ts`.
+ * Los endpoints están declarados en `shared/constants/apiEndpoints.ts`.
  */
 export const contentHttpRepository: ContentRepository = {
   async listModules(filters?: ModuleFilters): Promise<ContentModule[]> {

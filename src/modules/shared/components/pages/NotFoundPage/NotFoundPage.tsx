@@ -9,10 +9,10 @@ const NotFoundPage = () => (
     <EmptyState
       icon={<Compass />}
       title="Esta pagina no existe"
-      description="Puede que el enlace haya cambiado. Vuelve al listado de modulos para encontrar lo que necesitas."
+      description="Puede que el enlace haya cambiado. Vuelve al listado de módulos para encontrar lo que necesitas."
       action={
         <LinkButton to={ROUTES.MODULES} variant="primary" size="lg">
-          Ver modulos
+          Ver módulos
         </LinkButton>
       }
     />

@@ -1,6 +1,11 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { PhoneCall, Siren } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from 'modules/shared/store/hooks';
 import SearchBar from 'modules/shared/components/molecules/SearchBar/SearchBar';
+import SectionHeader from 'modules/shared/components/molecules/SectionHeader/SectionHeader';
+import Chip from 'modules/shared/components/atoms/Chip/Chip';
+import TopBar from 'modules/shared/components/organisms/TopBar/TopBar';
+import { EMERGENCY_PHONE } from 'modules/shared/constants/emergency';
 import {
   fetchModules,
   selectContentError,
@@ -11,12 +16,17 @@ import { ModuleSeverity } from 'modules/content/types/content.types';
 import ModuleGrid from 'modules/content/components/organisms/ModuleGrid/ModuleGrid';
 import './ModulesCatalogPage.scss';
 
-const SEVERITY_FILTERS = [
+interface SeverityFilter {
+  value: ModuleSeverity | undefined;
+  label: string;
+}
+
+const SEVERITY_FILTERS: readonly SeverityFilter[] = [
   { value: undefined, label: 'Todo' },
   { value: ModuleSeverity.Critical, label: 'Riesgo vital' },
   { value: ModuleSeverity.Urgent, label: 'Urgente' },
-  { value: ModuleSeverity.Basic, label: 'Basico' },
-] as const;
+  { value: ModuleSeverity.Basic, label: 'Básico' },
+];
 
 const ModulesCatalogPage = () => {
   const dispatch = useAppDispatch();
@@ -33,46 +43,83 @@ const ModulesCatalogPage = () => {
 
   useEffect(load, [load]);
 
+  const isFiltering = query.length > 0 || severity !== undefined;
+
+  const criticalCount = useMemo(
+    () => modules.filter((module) => module.severity === ModuleSeverity.Critical).length,
+    [modules],
+  );
+
   return (
-    <section className="modules-catalog" data-testid="ModulesCatalogPage">
-      <header className="modules-catalog__header">
-        <h1 className="modules-catalog__title">Que esta pasando?</h1>
-        <p className="modules-catalog__subtitle">
-          Elige la situacion y te mostramos que hacer, paso a paso.
-        </p>
-      </header>
+    <>
+      <TopBar title="Módulos" />
 
-      <SearchBar onSearch={setQuery} />
+      <div className="catalog app-container rise-in" data-testid="ModulesCatalogPage">
+        <header className="catalog__hero">
+          <p className="catalog__eyebrow">
+            <Siren aria-hidden="true" />
+            Guía de primeros auxilios
+          </p>
+          <h1 className="catalog__title">¿Qué está pasando?</h1>
+          <p className="catalog__subtitle">
+            Elige la situación y te mostramos qué hacer, paso a paso.
+          </p>
+        </header>
 
-      <div className="modules-catalog__filters" role="group" aria-label="Filtrar por gravedad">
-        {SEVERITY_FILTERS.map((filter) => (
-          <button
-            key={filter.label}
-            type="button"
-            className={`modules-catalog__filter ${severity === filter.value ? 'is-active' : ''}`.trim()}
-            aria-pressed={severity === filter.value}
-            onClick={() => setSeverity(filter.value)}
-          >
-            {filter.label}
-          </button>
-        ))}
+        {/* Llamar es la acción más importante de la app: va arriba, grande y
+            como enlace tel: para que marque directo desde el móvil. */}
+        <a className="catalog__call" href={`tel:${EMERGENCY_PHONE.number}`}>
+          <span className="catalog__call-icon" aria-hidden="true">
+            <PhoneCall />
+          </span>
+          <span className="catalog__call-body">
+            <span className="catalog__call-label">Emergencia en curso</span>
+            <span className="catalog__call-number">
+              Llamar al {EMERGENCY_PHONE.number}
+            </span>
+          </span>
+        </a>
+
+        <SearchBar onSearch={setQuery} />
+
+        <div className="catalog__filters" role="group" aria-label="Filtrar por gravedad">
+          {SEVERITY_FILTERS.map((filter) => (
+            <Chip
+              key={filter.label}
+              isActive={severity === filter.value}
+              onClick={() => setSeverity(filter.value)}
+            >
+              {filter.label}
+            </Chip>
+          ))}
+        </div>
+
+        <SectionHeader
+          title={isFiltering ? 'Resultados' : 'Actúa primero'}
+          description={
+            isFiltering
+              ? `${modules.length} ${modules.length === 1 ? 'módulo' : 'módulos'}`
+              : criticalCount > 0
+                ? 'Lo de riesgo vital va primero. Cada segundo cuenta.'
+                : 'Ordenado de lo más urgente a lo más leve.'
+          }
+        />
+
+        <ModuleGrid
+          modules={modules}
+          status={status}
+          error={error}
+          onRetry={load}
+          highlightFirst={!isFiltering}
+          emptyTitle={query ? `Sin resultados para «${query}»` : 'Aún no hay módulos'}
+          emptyDescription={
+            query
+              ? 'Prueba con otra palabra, por ejemplo «quemadura» o «sangrado».'
+              : 'Cuando el administrador publique contenido aparecerá aquí.'
+          }
+        />
       </div>
-
-      <ModuleGrid
-        modules={modules}
-        status={status}
-        error={error}
-        onRetry={load}
-        emptyTitle={
-          query ? `Sin resultados para "${query}"` : 'Aun no hay modulos publicados'
-        }
-        emptyDescription={
-          query
-            ? 'Prueba con otra palabra, por ejemplo "quemadura" o "sangrado".'
-            : 'Cuando el administrador publique contenido aparecera aqui.'
-        }
-      />
-    </section>
+    </>
   );
 };
 

@@ -1,0 +1,31 @@
+@use 'styles/variables' as v;
+@use 'styles/mixins' as m;
+
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+
+  &__main {
+    flex: 1;
+    width: 100%;
+  }
+
+  &__footer {
+    margin-top: v.$space-7;
+    padding-block: v.$space-5;
+    border-top: 1px solid v.$color-line;
+
+    // En móvil la barra de pestañas taparía el pie: se reserva su alto.
+    @include m.until(v.$bp-lg) {
+      padding-bottom: calc(v.$bottom-nav-height + v.$space-5 + env(safe-area-inset-bottom));
+    }
+  }
+
+  &__disclaimer {
+    max-width: 80ch;
+    font-size: v.$font-size-xs;
+    line-height: v.$line-height-base;
+    color: v.$color-ink-muted;
+  }
+}

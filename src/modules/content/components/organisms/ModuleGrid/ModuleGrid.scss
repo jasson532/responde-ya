@@ -1,12 +1,28 @@
 @use 'styles/variables' as v;
+@use 'styles/mixins' as m;
 
 .module-grid {
   display: grid;
-  gap: v.$space-4;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+  gap: v.$space-3;
+  // Dos columnas desde el móvil más estrecho: es la rejilla de iconos que
+  // la gente espera en una app, y duplica el contenido visible sin scroll.
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+
+  @include m.from(v.$bp-md) {
+    gap: v.$space-4;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  @include m.from(v.$bp-lg) {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
 
   &__item {
     display: flex;
+
+    &.is-featured {
+      grid-column: 1 / -1;
+    }
   }
 
   &__item > * {

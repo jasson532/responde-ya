@@ -2,49 +2,55 @@
 @use 'styles/mixins' as m;
 
 .app-header {
-  position: sticky;
-  top: 0;
-  z-index: v.$z-header;
-  background: v.$color-surface;
-  border-bottom: 1px solid v.$color-line;
+  // En móvil manda TopBar + BottomNav
+  display: none;
+
+  @include m.from(v.$bp-lg) {
+    display: block;
+    position: sticky;
+    top: 0;
+    z-index: v.$z-header;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid v.$color-line;
+  }
 
   &__inner {
     display: flex;
     align-items: center;
-    gap: v.$space-4;
-    min-height: 64px;
-    flex-wrap: wrap;
+    gap: v.$space-5;
+    height: 72px;
   }
 
   &__brand {
     display: flex;
     align-items: center;
-    gap: v.$space-2;
+    gap: v.$space-3;
 
     @include m.focus-ring;
   }
 
   // Marca compacta: el lockup completo (BrandLogo) es 523x375 y recortarlo a
-  // 36px de alto lo volveria ilegible. Aqui se reproduce su reparto de color.
+  // 40px de alto lo volvería ilegible. Aquí se reproduce su reparto de color.
   &__logo {
     display: grid;
     place-items: center;
-    width: 36px;
-    height: 36px;
+    width: 40px;
+    height: 40px;
     border-radius: v.$radius-md;
     background: v.$color-brand-navy;
     color: #fff;
 
     svg {
-      width: 1.25rem;
-      height: 1.25rem;
+      width: 1.3rem;
+      height: 1.3rem;
     }
   }
 
   &__name {
     font-size: v.$font-size-md;
-    font-weight: v.$font-weight-semibold;
-    letter-spacing: -0.01em;
+    font-weight: v.$font-weight-extrabold;
+    letter-spacing: v.$tracking-tight;
     color: v.$color-brand-navy;
 
     strong {
@@ -56,29 +62,22 @@
     display: flex;
     align-items: center;
     gap: v.$space-1;
-    margin-left: auto;
-    order: 3;
-    width: 100%;
-    overflow-x: auto;
-
-    @include m.from(v.$bp-md) {
-      order: 0;
-      width: auto;
-      margin-left: v.$space-5;
-      margin-right: auto;
-    }
+    margin-right: auto;
   }
 
   &__link {
     display: inline-flex;
     align-items: center;
     gap: v.$space-2;
-    padding: v.$space-2 v.$space-3;
-    border-radius: v.$radius-md;
+    padding: v.$space-2 v.$space-4;
+    border-radius: v.$radius-pill;
     font-size: v.$font-size-sm;
-    font-weight: v.$font-weight-medium;
+    font-weight: v.$font-weight-bold;
     color: v.$color-ink-soft;
     white-space: nowrap;
+    transition:
+      background-color v.$transition-fast,
+      color v.$transition-fast;
 
     @include m.focus-ring;
 
@@ -89,7 +88,7 @@
 
     &:hover {
       background: v.$color-surface-alt;
-      color: v.$color-ink;
+      color: v.$color-brand-navy;
     }
 
     &.active {
@@ -101,17 +100,12 @@
   &__user {
     display: flex;
     align-items: center;
-    gap: v.$space-2;
-    margin-left: auto;
+    gap: v.$space-3;
   }
 
   &__user-name {
-    display: none;
     font-size: v.$font-size-sm;
+    font-weight: v.$font-weight-semibold;
     color: v.$color-ink-soft;
-
-    @include m.from(v.$bp-lg) {
-      display: inline;
-    }
   }
 }

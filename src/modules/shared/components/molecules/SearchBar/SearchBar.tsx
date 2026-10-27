@@ -50,7 +50,7 @@ const SearchBar = ({
           type="button"
           className="search-bar__clear"
           onClick={() => setQuery('')}
-          aria-label="Limpiar busqueda"
+          aria-label="Limpiar búsqueda"
         >
           <X aria-hidden="true" />
         </button>

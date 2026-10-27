@@ -29,7 +29,7 @@ interface LocationState {
  * Pantalla de entrada. Dos caminos:
  *
  * 1. "Ingresar" — acceso inmediato al contenido, sin credenciales. Es el camino
- *    del 99% de las visitas, asi que es la accion primaria y la mas grande.
+ *    del 99% de las visitas, así que es la acción primaria y la mas grande.
  * 2. "Soy administrador" — despliega el formulario bajo demanda. Se oculta por
  *    defecto para no sugerirle a nadie que necesita una cuenta.
  */
@@ -48,8 +48,8 @@ const WelcomePage = () => {
   /** Ruta de admin desde la que el guard redirigio, si aplica. */
   const intendedAdminPath = (location.state as LocationState | null)?.from?.pathname;
 
-  // Si el guard nos trajo aqui, el formulario arranca abierto: el visitante ya
-  // manifesto su intencion de entrar a administracion.
+  // Si el guard nos trajo aquí, el formulario arranca abierto: el visitante ya
+  // manifesto su intencion de entrar a administración.
   const [isFormOpen, setIsFormOpen] = useState(Boolean(intendedAdminPath));
 
   useEffect(() => () => void dispatch(clearAuthError()), [dispatch]);
@@ -75,7 +75,7 @@ const WelcomePage = () => {
       <header className="welcome-page__header">
         <h2 className="welcome-page__title">Ingresa y consulta</h2>
         <p className="welcome-page__subtitle">
-          No necesitas cuenta ni contrasena. Entra y busca lo que esta pasando.
+          No necesitas cuenta ni contraseña. Entra y busca lo que esta pasando.
         </p>
       </header>
 
@@ -96,7 +96,7 @@ const WelcomePage = () => {
       {isAdmin ? (
         <div className="welcome-page__admin-active">
           <p className="welcome-page__admin-active-text">
-            Ya tienes sesion como <strong>{admin?.displayName}</strong>.
+            Ya tienes sesión como <strong>{admin?.displayName}</strong>.
           </p>
           <LinkButton to={ROUTES.ADMIN_MODULES} variant="secondary" size="md" fullWidth>
             Ir a administrar contenido
@@ -121,7 +121,7 @@ const WelcomePage = () => {
               <>
                 {intendedAdminPath && !error && (
                   <AlertMessage tone="info">
-                    Identificate como administrador para entrar a esa seccion.
+                    Identifícate como administrador para entrar a esa sección.
                   </AlertMessage>
                 )}
 

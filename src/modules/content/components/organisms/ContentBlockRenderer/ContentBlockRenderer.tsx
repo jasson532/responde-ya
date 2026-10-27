@@ -12,7 +12,7 @@ export interface ContentBlockRendererProps {
 
 /**
  * Traduce un bloque de datos al componente que lo representa.
- * El `switch` es exhaustivo: agregar un `ContentBlockKind` sin manejarlo aqui
+ * El `switch` es exhaustivo: agregar un `ContentBlockKind` sin manejarlo aquí
  * rompe la compilacion (ver `assertNever`), no la pantalla del usuario.
  */
 const renderBlock = (block: ContentBlock) => {

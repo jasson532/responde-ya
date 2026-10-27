@@ -15,7 +15,7 @@ export interface LoginCredentials {
   password: string;
 }
 
-/** Sesion de administrador. Los visitantes anonimos no tienen sesion. */
+/** Sesión de administrador. Los visitantes anonimos no tienen sesión. */
 export interface AuthSession {
   user: AuthUser;
   accessToken: string;

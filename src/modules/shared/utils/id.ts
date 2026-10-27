@@ -1,4 +1,4 @@
-/** Genera un id unico. Usa crypto.randomUUID cuando esta disponible. */
+/** Genera un id único. Usa crypto.randomUUID cuando esta disponible. */
 export const createId = (): string => {
   if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
     return crypto.randomUUID();
@@ -6,7 +6,7 @@ export const createId = (): string => {
   return `id-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 };
 
-/** Convierte un titulo en slug legible para URLs. */
+/** Convierte un título en slug legible para URLs. */
 export const slugify = (value: string): string =>
   value
     .normalize('NFD')

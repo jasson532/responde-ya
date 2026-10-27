@@ -1,0 +1,46 @@
+@use 'styles/variables' as v;
+@use 'styles/mixins' as m;
+
+.section-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: v.$space-4;
+
+  &__text {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-1;
+  }
+
+  &__title {
+    font-size: v.$font-size-lg;
+  }
+
+  &__description {
+    font-size: v.$font-size-sm;
+    color: v.$color-ink-muted;
+  }
+
+  &__action {
+    display: inline-flex;
+    align-items: center;
+    gap: v.$space-1;
+    flex-shrink: 0;
+    font-size: v.$font-size-sm;
+    font-weight: v.$font-weight-bold;
+    color: v.$color-emergency;
+
+    @include m.focus-ring;
+
+    svg {
+      width: 1rem;
+      height: 1rem;
+      transition: transform v.$transition-fast;
+    }
+
+    &:hover svg {
+      transform: translateX(2px);
+    }
+  }
+}

@@ -5,13 +5,13 @@ import { ROUTES } from 'modules/shared/constants/routes';
 import Spinner from 'modules/shared/components/atoms/Spinner/Spinner';
 
 /**
- * Guard de las rutas de administracion.
+ * Guard de las rutas de administración.
  *
  * Reemplaza al antiguo `ProtectedRoute`: el contenido ya no se protege, es
- * publico. Lo unico que hay que custodiar es la escritura.
+ * público. Lo único que hay que custodiar es la escritura.
  *
  * Un visitante anonimo no es "alguien sin permiso" sino "alguien que todavia no
- * se ha identificado", asi que se le manda a la pantalla de bienvenida con la
+ * se ha identificado", así que se le manda a la pantalla de bienvenida con la
  * ruta original guardada, no a una pantalla de error.
  *
  * AVISO: esto es seguridad de interfaz, no de verdad. Impide llegar a la
@@ -22,10 +22,10 @@ const AdminRoute = () => {
   const isBootstrapped = useAppSelector(selectIsAuthBootstrapped);
   const location = useLocation();
 
-  // Mientras se rehidrata la sesion no se puede decidir: redirigir aqui
-  // expulsaria a un admin que si tiene sesion guardada.
+  // Mientras se rehidrata la sesión no se puede decidir: redirigir aquí
+  // expulsaria a un admin que si tiene sesión guardada.
   if (!isBootstrapped) {
-    return <Spinner size="lg" label="Verificando tu sesion" />;
+    return <Spinner size="lg" label="Verificando tu sesión" />;
   }
 
   if (!isAdmin) {

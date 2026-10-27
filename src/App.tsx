@@ -8,15 +8,15 @@ import Spinner from 'modules/shared/components/atoms/Spinner/Spinner';
 import ErrorBoundary from 'modules/shared/components/organisms/ErrorBoundary/ErrorBoundary';
 import AdminRoute from 'modules/shared/components/organisms/AdminRoute/AdminRoute';
 import AuthLayout from 'modules/shared/components/templates/AuthLayout/AuthLayout';
-import MainLayout from 'modules/shared/components/templates/MainLayout/MainLayout';
+import AppShell from 'modules/shared/components/templates/AppShell/AppShell';
 import NotFoundPage from 'modules/shared/components/pages/NotFoundPage/NotFoundPage';
 import { bootstrapSession } from 'modules/auth';
 import { authRoutes } from 'modules/auth/routes';
 import { contentAdminRoutes, contentRoutes } from 'modules/content/routes';
 
 /**
- * Rehidrata una eventual sesion de admin. No bloquea nada: el contenido es
- * publico y se renderiza sin esperar este resultado. Solo `AdminRoute` espera.
+ * Rehidrata una eventual sesión de admin. No bloquea nada: el contenido es
+ * público y se renderiza sin esperar este resultado. Solo `AdminRoute` espera.
  */
 const SessionBootstrapper = () => {
   const dispatch = useAppDispatch();
@@ -37,12 +37,12 @@ const AppRoutes = () => (
         {/* Bienvenida: acceso directo al contenido o identificacion como admin */}
         <Route element={<AuthLayout />}>{authRoutes}</Route>
 
-        {/* Contenido: publico, sin autenticacion */}
-        <Route element={<MainLayout />}>{contentRoutes}</Route>
+        {/* Contenido: público, sin autenticacion */}
+        <Route element={<AppShell />}>{contentRoutes}</Route>
 
-        {/* Administracion: requiere rol admin */}
+        {/* Administración: requiere rol admin */}
         <Route element={<AdminRoute />}>
-          <Route element={<MainLayout />}>{contentAdminRoutes}</Route>
+          <Route element={<AppShell />}>{contentAdminRoutes}</Route>
         </Route>
 
         <Route path={ROUTES.NOT_FOUND} element={<NotFoundPage />} />

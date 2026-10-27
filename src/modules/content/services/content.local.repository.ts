@@ -1,5 +1,9 @@
 import localStore from 'modules/shared/services/storage/localStore';
-import { CONTENT_MODULES_STORAGE_KEY } from 'modules/shared/constants/storageKeys';
+import logger from 'modules/shared/services/logger/logger';
+import {
+  CONTENT_MODULES_STORAGE_KEY,
+  CONTENT_SEED_META_STORAGE_KEY,
+} from 'modules/shared/constants/storageKeys';
 import { createId, nowIso, slugify } from 'modules/shared/utils/id';
 import { notFound, validationError } from 'modules/shared/utils/errors';
 import {
@@ -10,20 +14,80 @@ import {
   type LessonDraft,
   type ModuleFilters,
 } from 'modules/content/types/content.types';
-import { SEED_MODULES } from './content.seed';
+import { RETIRED_SEED_IDS, SEED_MODULES, SEED_VERSION } from './content.seed';
 
 /**
  * Adaptador de persistencia local (localStorage). Permite operar sin backend:
  * demo offline y desarrollo. Mismo contrato que el adaptador HTTP.
  */
 
+interface SeedMeta {
+  version: number;
+  /** Ids que instaló la semilla, para distinguirlos de los creados por un admin. */
+  seedIds: string[];
+}
+
+const currentSeedMeta = (): SeedMeta => ({
+  version: SEED_VERSION,
+  seedIds: SEED_MODULES.map((module) => module.id),
+});
+
+const installSeed = (): ContentModule[] => {
+  const fresh = structuredClone(SEED_MODULES);
+  localStore.write(CONTENT_MODULES_STORAGE_KEY, fresh);
+  localStore.write(CONTENT_SEED_META_STORAGE_KEY, currentSeedMeta());
+  return fresh;
+};
+
+/**
+ * Pone al día el contenido semilla sin tocar lo que creó un administrador.
+ *
+ * - Los módulos que vienen de la semilla se reemplazan por la versión nueva:
+ *   son contenido nuestro y la fuente de verdad es el código.
+ * - Los módulos de una semilla anterior que ya no existen se retiran.
+ * - Todo lo demás (creado por un admin) se conserva y se reordena al final.
+ */
+const migrateSeed = (stored: ContentModule[]): ContentModule[] => {
+  const previous = localStore.read<SeedMeta | null>(CONTENT_SEED_META_STORAGE_KEY, null);
+
+  // Un módulo es "de la semilla" si está en la semilla actual, si lo declaró la
+  // instalación anterior, o si figura entre los retirados. Lo último cubre a
+  // quienes instalaron la v1, que no guardaba metadatos.
+  const seedOwnedIds = new Set<string>([
+    ...SEED_MODULES.map((module) => module.id),
+    ...(previous?.seedIds ?? []),
+    ...RETIRED_SEED_IDS,
+  ]);
+
+  const authored = stored.filter((module) => !seedOwnedIds.has(module.id));
+
+  const merged = [
+    ...structuredClone(SEED_MODULES),
+    ...authored.map((module, index) => ({
+      ...module,
+      order: SEED_MODULES.length + index + 1,
+    })),
+  ];
+
+  localStore.write(CONTENT_MODULES_STORAGE_KEY, merged);
+  localStore.write(CONTENT_SEED_META_STORAGE_KEY, currentSeedMeta());
+
+  logger.info('Contenido semilla actualizado', {
+    from: previous?.version ?? 'sin versión',
+    to: SEED_VERSION,
+    conservados: authored.length,
+  });
+
+  return merged;
+};
+
 const readAll = (): ContentModule[] => {
   const stored = localStore.read<ContentModule[] | null>(CONTENT_MODULES_STORAGE_KEY, null);
 
-  if (stored === null) {
-    localStore.write(CONTENT_MODULES_STORAGE_KEY, SEED_MODULES);
-    return structuredClone(SEED_MODULES);
-  }
+  if (stored === null) return installSeed();
+
+  const meta = localStore.read<SeedMeta | null>(CONTENT_SEED_META_STORAGE_KEY, null);
+  if (meta?.version !== SEED_VERSION) return migrateSeed(stored);
 
   return stored;
 };
@@ -54,13 +118,13 @@ const matchesFilters = (module: ContentModule, filters?: ModuleFilters): boolean
 
 const findModuleOrThrow = (modules: ContentModule[], moduleId: string): ContentModule => {
   const found = modules.find((module) => module.id === moduleId);
-  if (!found) throw notFound('Ese modulo no existe o fue eliminado.');
+  if (!found) throw notFound('Ese módulo no existe o fue eliminado.');
   return found;
 };
 
 const assertTitle = (title?: string) => {
   if (title !== undefined && title.trim().length < 3) {
-    throw validationError('El titulo debe tener al menos 3 caracteres.');
+    throw validationError('El título debe tener al menos 3 caracteres.');
   }
 };
 
@@ -193,7 +257,7 @@ export const contentLocalRepository: ContentRepository = {
     const module = findModuleOrThrow(modules, moduleId);
 
     if (!module.lessons.some((lesson) => lesson.id === lessonId)) {
-      throw notFound('Ese paso no existe en el modulo.');
+      throw notFound('Ese paso no existe en el módulo.');
     }
 
     const updated: ContentModule = {
@@ -232,7 +296,7 @@ export const contentLocalRepository: ContentRepository = {
   },
 };
 
-/** Restaura el contenido semilla. Util para la demo. */
+/** Restaura el contenido semilla y descarta lo creado por un admin. */
 export const resetLocalContent = (): void => {
-  localStore.write(CONTENT_MODULES_STORAGE_KEY, SEED_MODULES);
+  installSeed();
 };

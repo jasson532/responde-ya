@@ -60,14 +60,14 @@ const invalidCredentials = () =>
   new AppError({
     status: 401,
     code: ERROR_CODES.UNAUTHORIZED,
-    message: 'Correo o contrasena incorrectos.',
+    message: 'Correo o contraseña incorrectos.',
   });
 
 const notAnAdmin = () =>
   new AppError({
     status: 403,
     code: ERROR_CODES.FORBIDDEN,
-    message: 'Esa cuenta no tiene permisos de administracion.',
+    message: 'Esa cuenta no tiene permisos de administración.',
   });
 
 export const authLocalRepository: AuthRepository = {
@@ -81,7 +81,7 @@ export const authLocalRepository: AuthRepository = {
     if (!account) throw invalidCredentials();
 
     // Defensa en profundidad: este login existe solo para administradores.
-    // Si alguna vez se cuela una cuenta con otro rol, no abre sesion.
+    // Si alguna vez se cuela una cuenta con otro rol, no abre sesión.
     if (account.role !== UserRole.Admin) throw notAnAdmin();
 
     const session: AuthSession = {
@@ -109,7 +109,7 @@ export const authLocalRepository: AuthRepository = {
     const isExpired = session.expiresAt <= Date.now();
     const isAdminSession = session.user?.role === UserRole.Admin;
 
-    // Una sesion caducada o que no sea de admin no se restaura: el visitante
+    // Una sesión caducada o que no sea de admin no se restaura: el visitante
     // sigue siendo anonimo, que ya tiene acceso de lectura.
     if (isExpired || !isAdminSession) {
       localStore.remove(AUTH_SESSION_STORAGE_KEY);

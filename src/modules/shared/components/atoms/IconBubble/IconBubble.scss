@@ -1,0 +1,78 @@
+@use 'styles/variables' as v;
+
+.icon-bubble {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  border-radius: v.$radius-lg;
+
+  svg {
+    width: 50%;
+    height: 50%;
+    stroke-width: 2.1;
+  }
+
+  &--round {
+    border-radius: 50%;
+  }
+
+  // --- Tamanos ---
+  &--sm {
+    width: 32px;
+    height: 32px;
+    border-radius: v.$radius-sm;
+  }
+
+  &--md {
+    width: 44px;
+    height: 44px;
+    border-radius: v.$radius-md;
+  }
+
+  &--lg {
+    width: 56px;
+    height: 56px;
+  }
+
+  &--xl {
+    width: 72px;
+    height: 72px;
+    border-radius: v.$radius-xl;
+  }
+
+  // --- Tonos ---
+  &--emergency {
+    background: v.$color-emergency-light;
+    color: v.$color-emergency;
+  }
+
+  &--warning {
+    background: v.$color-warning-light;
+    color: v.$color-warning;
+  }
+
+  &--safe {
+    background: v.$color-safe-light;
+    color: v.$color-safe;
+  }
+
+  &--info {
+    background: v.$color-info-light;
+    color: v.$color-info;
+  }
+
+  &--violet {
+    background: v.$color-violet-light;
+    color: v.$color-violet;
+  }
+
+  &--teal {
+    background: v.$color-teal-light;
+    color: v.$color-teal;
+  }
+
+  &--neutral {
+    background: v.$color-surface-alt;
+    color: v.$color-ink-soft;
+  }
+}

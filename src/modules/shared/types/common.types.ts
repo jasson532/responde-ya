@@ -1,6 +1,6 @@
 /**
  * Tipos transversales de RespondeYa.
- * Aqui NO va logica de negocio de ningun dominio concreto.
+ * Aquí NO va logica de negocio de ningun dominio concreto.
  */
 
 /** Estado de carga de cualquier operacion asincrona. */
@@ -19,7 +19,7 @@ export enum LoadingStatus {
  * de primeros auxilios pedir login antes de mostrar un protocolo cuesta
  * segundos que no se tienen.
  *
- * `Admin` es el unico rol que se autentica, y es el unico que puede escribir.
+ * `Admin` es el único rol que se autentica, y es el único que puede escribir.
  */
 export enum UserRole {
   Admin = 'admin',

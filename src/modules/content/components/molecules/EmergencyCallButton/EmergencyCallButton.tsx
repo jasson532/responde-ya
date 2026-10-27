@@ -7,8 +7,8 @@ export interface EmergencyCallButtonProps {
 }
 
 /**
- * Enlace `tel:` en vez de boton: en movil marca directo y sigue funcionando
- * sin JavaScript. En una emergencia es la accion mas importante de la pantalla.
+ * Enlace `tel:` en vez de botón: en movil marca directo y sigue funcionando
+ * sin JavaScript. En una emergencia es la acción mas importante de la pantalla.
  */
 const EmergencyCallButton = ({ phoneNumber, label }: EmergencyCallButtonProps) => (
   <a

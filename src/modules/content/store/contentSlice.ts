@@ -52,7 +52,7 @@ export const fetchModules = createAsyncThunk<
   try {
     return await contentService.listModules(filters);
   } catch (error) {
-    return rejectWithValue(toErrorMessage(error, 'No pudimos cargar los modulos.'));
+    return rejectWithValue(toErrorMessage(error, 'No pudimos cargar los módulos.'));
   }
 });
 
@@ -64,7 +64,7 @@ export const fetchModuleById = createAsyncThunk<
   try {
     return await contentService.getModuleById(moduleId);
   } catch (error) {
-    return rejectWithValue(toErrorMessage(error, 'No pudimos cargar el modulo.'));
+    return rejectWithValue(toErrorMessage(error, 'No pudimos cargar el módulo.'));
   }
 });
 
@@ -80,11 +80,11 @@ export const createModule = createAsyncThunk<
   try {
     const authorId = getState().auth.admin?.id;
     if (!authorId) {
-      return rejectWithValue('Necesitas sesion de administrador para crear contenido.');
+      return rejectWithValue('Necesitas sesión de administrador para crear contenido.');
     }
     return await contentService.createModule(draft, authorId);
   } catch (error) {
-    return rejectWithValue(toErrorMessage(error, 'No pudimos crear el modulo.'));
+    return rejectWithValue(toErrorMessage(error, 'No pudimos crear el módulo.'));
   }
 });
 
@@ -107,7 +107,7 @@ export const deleteModule = createAsyncThunk<string, string, { rejectValue: stri
       await contentService.deleteModule(moduleId);
       return moduleId;
     } catch (error) {
-      return rejectWithValue(toErrorMessage(error, 'No pudimos eliminar el modulo.'));
+      return rejectWithValue(toErrorMessage(error, 'No pudimos eliminar el módulo.'));
     }
   },
 );
@@ -202,7 +202,7 @@ const contentSlice = createSlice({
       })
       .addCase(fetchModules.rejected, (state, action) => {
         state.listStatus = LoadingStatus.Failed;
-        state.error = action.payload ?? 'No pudimos cargar los modulos.';
+        state.error = action.payload ?? 'No pudimos cargar los módulos.';
       })
 
       // --- detalle ---
@@ -216,17 +216,17 @@ const contentSlice = createSlice({
       })
       .addCase(fetchModuleById.rejected, (state, action) => {
         state.detailStatus = LoadingStatus.Failed;
-        state.error = action.payload ?? 'No pudimos cargar el modulo.';
+        state.error = action.payload ?? 'No pudimos cargar el módulo.';
       })
 
-      // --- eliminar modulo ---
+      // --- eliminar módulo ---
       .addCase(deleteModule.fulfilled, (state, action) => {
         state.mutationStatus = LoadingStatus.Succeeded;
         state.modules = state.modules.filter((module) => module.id !== action.payload);
         if (state.selectedModule?.id === action.payload) state.selectedModule = null;
       })
 
-      // --- mutaciones que devuelven el modulo completo ---
+      // --- mutaciones que devuelven el módulo completo ---
       .addMatcher(
         isFulfilled(createModule, updateModule, createLesson, updateLesson, deleteLesson),
         (state, action) => {
@@ -266,7 +266,7 @@ export const selectMutationStatus = (state: RootState): LoadingStatus =>
 export const selectContentError = (state: RootState): string | null => state.content.error;
 export const selectContentFilters = (state: RootState): ModuleFilters => state.content.filters;
 
-/** Modulos criticos primero: en una emergencia el orden importa. */
+/** Módulos criticos primero: en una emergencia el orden importa. */
 export const selectModulesBySeverity = createSelector([selectModules], (modules) => {
   const weight: Record<ModuleSeverity, number> = {
     [ModuleSeverity.Critical]: 0,

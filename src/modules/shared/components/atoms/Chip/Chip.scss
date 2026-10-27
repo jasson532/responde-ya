@@ -1,0 +1,63 @@
+@use 'styles/variables' as v;
+@use 'styles/mixins' as m;
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: v.$space-2;
+  flex-shrink: 0;
+  padding: v.$space-2 v.$space-4;
+  border-radius: v.$radius-pill;
+  background: v.$color-surface;
+  border: 1.5px solid v.$color-line;
+  font-size: v.$font-size-sm;
+  font-weight: v.$font-weight-semibold;
+  color: v.$color-ink-soft;
+  white-space: nowrap;
+  scroll-snap-align: start;
+  transition:
+    background-color v.$transition-fast,
+    border-color v.$transition-fast,
+    color v.$transition-fast;
+
+  @include m.focus-ring;
+
+  &__icon svg {
+    width: 0.95rem;
+    height: 0.95rem;
+  }
+
+  &__count {
+    display: inline-grid;
+    place-items: center;
+    min-width: 20px;
+    height: 20px;
+    padding-inline: v.$space-1;
+    border-radius: v.$radius-pill;
+    background: v.$color-surface-alt;
+    font-size: v.$font-size-xs;
+    font-weight: v.$font-weight-bold;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    &:hover:not(.is-active) {
+      border-color: v.$color-ink-muted;
+      color: v.$color-ink;
+    }
+  }
+
+  &:active {
+    transform: scale(0.97);
+  }
+
+  &.is-active {
+    background: v.$color-emergency;
+    border-color: v.$color-emergency;
+    color: #fff;
+
+    .chip__count {
+      background: rgba(255, 255, 255, 0.22);
+      color: #fff;
+    }
+  }
+}

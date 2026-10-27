@@ -12,11 +12,11 @@ export interface LinkButtonProps extends LinkProps {
 }
 
 /**
- * Navegacion con apariencia de boton. Existe porque anidar un `Link` dentro de
+ * Navegación con apariencia de botón. Existe porque anidar un `Link` dentro de
  * un `button` produce controles interactivos anidados: HTML invalido que rompe
- * la navegacion por teclado y confunde a los lectores de pantalla.
+ * la navegación por teclado y confunde a los lectores de pantalla.
  *
- * Regla: si la accion NAVEGA usa LinkButton; si EJECUTA algo usa Button.
+ * Regla: si la acción NAVEGA usa LinkButton; si EJECUTA algo usa Button.
  */
 const LinkButton = ({
   variant = 'primary',

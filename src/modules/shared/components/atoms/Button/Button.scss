@@ -6,26 +6,29 @@
   align-items: center;
   justify-content: center;
   gap: v.$space-2;
-  border-radius: v.$radius-md;
-  font-weight: v.$font-weight-semibold;
+  border-radius: v.$radius-pill;
+  font-weight: v.$font-weight-bold;
+  letter-spacing: -0.01em;
   text-align: center;
   white-space: nowrap;
   transition:
     background-color v.$transition-fast,
     color v.$transition-fast,
     border-color v.$transition-fast,
+    box-shadow v.$transition-fast,
     transform v.$transition-fast;
 
   @include m.focus-ring;
   @include m.touch-target;
 
   &:disabled {
-    opacity: 0.55;
+    opacity: 0.5;
     cursor: not-allowed;
+    box-shadow: none;
   }
 
   &:not(:disabled):active {
-    transform: translateY(1px);
+    transform: scale(0.975);
   }
 
   &__icon {
@@ -35,6 +38,7 @@
     svg {
       width: 1.15em;
       height: 1.15em;
+      stroke-width: 2.3;
     }
   }
 
@@ -44,17 +48,17 @@
 
   // --- Tamanos ---
   &--sm {
-    padding: v.$space-2 v.$space-3;
+    padding: v.$space-2 v.$space-4;
     font-size: v.$font-size-sm;
   }
 
   &--md {
-    padding: v.$space-3 v.$space-4;
+    padding: v.$space-3 v.$space-5;
     font-size: v.$font-size-base;
   }
 
   &--lg {
-    padding: v.$space-4 v.$space-5;
+    padding: v.$space-4 v.$space-6;
     font-size: v.$font-size-md;
   }
 
@@ -62,16 +66,18 @@
   &--primary {
     background: v.$color-emergency;
     color: #fff;
+    box-shadow: v.$shadow-sm;
 
     &:not(:disabled):hover {
       background: v.$color-emergency-dark;
+      box-shadow: v.$shadow-md;
     }
   }
 
   &--secondary {
     background: v.$color-surface;
-    color: v.$color-ink;
-    border: 1px solid v.$color-line;
+    color: v.$color-brand-navy;
+    border: 1.5px solid v.$color-line;
 
     &:not(:disabled):hover {
       background: v.$color-surface-alt;
@@ -85,32 +91,33 @@
 
     &:not(:disabled):hover {
       background: v.$color-surface-alt;
-      color: v.$color-ink;
+      color: v.$color-brand-navy;
     }
   }
 
   &--danger {
-    background: transparent;
-    color: v.$color-emergency;
-    border: 1px solid currentcolor;
+    background: v.$color-emergency-light;
+    color: v.$color-emergency-dark;
 
     &:not(:disabled):hover {
-      background: v.$color-emergency-light;
+      background: v.$color-emergency;
+      color: #fff;
     }
   }
 
+  /**
+   * Accion de maxima urgencia (llamar, iniciar un protocolo). Deliberadamente
+   * mas grande y con sombra de color para que se encuentre sin leer.
+   */
   &--emergency {
-    background: v.$color-emergency;
+    background: linear-gradient(135deg, v.$color-emergency, v.$color-emergency-dark);
     color: #fff;
-    font-size: v.$font-size-lg;
-    padding: v.$space-5 v.$space-6;
-    border-radius: v.$radius-lg;
-    box-shadow: v.$shadow-md;
-    text-transform: uppercase;
-    letter-spacing: 0.02em;
+    font-size: v.$font-size-md;
+    padding: v.$space-4 v.$space-6;
+    box-shadow: v.$shadow-emergency;
 
     &:not(:disabled):hover {
-      background: v.$color-emergency-dark;
+      box-shadow: v.$shadow-lg;
     }
   }
 
