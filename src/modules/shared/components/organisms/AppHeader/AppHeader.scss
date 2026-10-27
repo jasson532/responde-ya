@@ -1,0 +1,114 @@
+@use 'styles/variables' as v;
+@use 'styles/mixins' as m;
+
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: v.$z-header;
+  background: v.$color-surface;
+  border-bottom: 1px solid v.$color-line;
+
+  &__inner {
+    display: flex;
+    align-items: center;
+    gap: v.$space-4;
+    min-height: 64px;
+    flex-wrap: wrap;
+  }
+
+  &__brand {
+    display: flex;
+    align-items: center;
+    gap: v.$space-2;
+
+    @include m.focus-ring;
+  }
+
+  &__logo {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: v.$radius-md;
+    background: v.$color-emergency;
+    color: #fff;
+
+    svg {
+      width: 1.25rem;
+      height: 1.25rem;
+    }
+  }
+
+  &__name {
+    font-size: v.$font-size-md;
+    font-weight: v.$font-weight-medium;
+    letter-spacing: -0.01em;
+
+    strong {
+      color: v.$color-emergency;
+    }
+  }
+
+  &__nav {
+    display: flex;
+    align-items: center;
+    gap: v.$space-1;
+    margin-left: auto;
+    order: 3;
+    width: 100%;
+    overflow-x: auto;
+
+    @include m.from(v.$bp-md) {
+      order: 0;
+      width: auto;
+      margin-left: v.$space-5;
+      margin-right: auto;
+    }
+  }
+
+  &__link {
+    display: inline-flex;
+    align-items: center;
+    gap: v.$space-2;
+    padding: v.$space-2 v.$space-3;
+    border-radius: v.$radius-md;
+    font-size: v.$font-size-sm;
+    font-weight: v.$font-weight-medium;
+    color: v.$color-ink-soft;
+    white-space: nowrap;
+
+    @include m.focus-ring;
+
+    svg {
+      width: 1rem;
+      height: 1rem;
+    }
+
+    &:hover {
+      background: v.$color-surface-alt;
+      color: v.$color-ink;
+    }
+
+    &.active {
+      background: v.$color-emergency-light;
+      color: v.$color-emergency-dark;
+    }
+  }
+
+  &__user {
+    display: flex;
+    align-items: center;
+    gap: v.$space-2;
+    margin-left: auto;
+  }
+
+  &__user-name {
+    display: none;
+    font-size: v.$font-size-sm;
+    color: v.$color-ink-soft;
+
+    @include m.from(v.$bp-lg) {
+      display: inline;
+    }
+  }
+}

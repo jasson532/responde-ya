@@ -1,0 +1,52 @@
+@use 'styles/variables' as v;
+@use 'styles/mixins' as m;
+
+.modules-catalog {
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-5;
+
+  &__title {
+    font-size: v.$font-size-xl;
+
+    @include m.from(v.$bp-md) {
+      font-size: v.$font-size-2xl;
+    }
+  }
+
+  &__subtitle {
+    margin-top: v.$space-2;
+    color: v.$color-ink-soft;
+    font-size: v.$font-size-md;
+  }
+
+  &__filters {
+    display: flex;
+    gap: v.$space-2;
+    overflow-x: auto;
+    padding-bottom: v.$space-1;
+  }
+
+  &__filter {
+    padding: v.$space-2 v.$space-4;
+    border-radius: v.$radius-pill;
+    border: 1px solid v.$color-line;
+    background: v.$color-surface;
+    font-size: v.$font-size-sm;
+    font-weight: v.$font-weight-medium;
+    color: v.$color-ink-soft;
+    white-space: nowrap;
+
+    @include m.focus-ring;
+
+    &:hover {
+      border-color: v.$color-ink-muted;
+    }
+
+    &.is-active {
+      background: v.$color-emergency;
+      border-color: v.$color-emergency;
+      color: #fff;
+    }
+  }
+}

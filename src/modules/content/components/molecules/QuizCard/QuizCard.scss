@@ -1,0 +1,95 @@
+@use 'styles/variables' as v;
+@use 'styles/mixins' as m;
+
+.quiz-card {
+  @include m.card-surface;
+
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-4;
+  background: v.$color-info-light;
+  border-color: rgba(31, 111, 235, 0.22);
+
+  &__question {
+    font-size: v.$font-size-md;
+  }
+
+  &__options {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-2;
+  }
+
+  &__option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: v.$space-3;
+    width: 100%;
+    padding: v.$space-3 v.$space-4;
+    text-align: left;
+    background: v.$color-surface;
+    border: 2px solid v.$color-line;
+    border-radius: v.$radius-md;
+    transition:
+      border-color v.$transition-fast,
+      background-color v.$transition-fast;
+
+    @include m.focus-ring;
+    @include m.touch-target;
+
+    svg {
+      width: 1.2rem;
+      height: 1.2rem;
+      flex-shrink: 0;
+    }
+
+    &:not(:disabled):hover {
+      border-color: v.$color-info;
+    }
+
+    &.is-selected {
+      border-color: v.$color-info;
+    }
+
+    &.is-correct {
+      border-color: v.$color-safe;
+      background: v.$color-safe-light;
+      color: #0a6f3f;
+    }
+
+    &.is-wrong {
+      border-color: v.$color-emergency;
+      background: v.$color-emergency-light;
+      color: v.$color-emergency-dark;
+    }
+
+    &:disabled {
+      cursor: default;
+    }
+  }
+
+  &__feedback {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: v.$space-2;
+  }
+
+  &__verdict {
+    font-weight: v.$font-weight-bold;
+
+    &.is-correct {
+      color: #0a6f3f;
+    }
+
+    &.is-wrong {
+      color: v.$color-emergency-dark;
+    }
+  }
+
+  &__explanation {
+    font-size: v.$font-size-sm;
+    color: v.$color-ink-soft;
+  }
+}

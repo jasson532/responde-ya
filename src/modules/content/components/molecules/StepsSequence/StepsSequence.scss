@@ -1,0 +1,94 @@
+@use 'styles/variables' as v;
+@use 'styles/mixins' as m;
+
+.steps-sequence {
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-4;
+
+  &__title {
+    font-size: v.$font-size-lg;
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-3;
+    counter-reset: step;
+  }
+
+  &__item {
+    display: flex;
+    gap: v.$space-4;
+    padding: v.$space-4;
+    background: v.$color-surface;
+    border: 1px solid v.$color-line;
+    border-left: 4px solid v.$color-emergency;
+    border-radius: v.$radius-md;
+    transition: opacity v.$transition-base;
+
+    &.is-done {
+      border-left-color: v.$color-safe;
+      background: v.$color-safe-light;
+    }
+  }
+
+  &__marker {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: v.$color-emergency-light;
+    color: v.$color-emergency-dark;
+    font-weight: v.$font-weight-bold;
+    font-size: v.$font-size-md;
+
+    @include m.focus-ring;
+
+    svg {
+      width: 1.25rem;
+      height: 1.25rem;
+    }
+
+    .is-done & {
+      background: v.$color-safe;
+      color: #fff;
+    }
+  }
+
+  &__body {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-2;
+  }
+
+  &__step-title {
+    font-size: v.$font-size-md;
+  }
+
+  &__step-text {
+    color: v.$color-ink-soft;
+  }
+
+  &__duration {
+    display: inline-flex;
+    align-items: center;
+    gap: v.$space-1;
+    font-size: v.$font-size-xs;
+    font-weight: v.$font-weight-semibold;
+    color: v.$color-ink-muted;
+
+    svg {
+      width: 0.9rem;
+      height: 0.9rem;
+    }
+  }
+
+  &__image {
+    margin-top: v.$space-2;
+    border-radius: v.$radius-md;
+    border: 1px solid v.$color-line;
+  }
+}

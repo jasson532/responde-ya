@@ -1,0 +1,55 @@
+@use 'styles/variables' as v;
+@use 'styles/mixins' as m;
+
+.interactive-checklist {
+  @include m.card-surface;
+
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-3;
+
+  &__title {
+    font-size: v.$font-size-md;
+  }
+
+  &__progress {
+    font-size: v.$font-size-xs;
+    font-weight: v.$font-weight-semibold;
+    color: v.$color-ink-muted;
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-2;
+  }
+
+  &__label {
+    display: flex;
+    align-items: flex-start;
+    gap: v.$space-3;
+    padding: v.$space-2;
+    border-radius: v.$radius-sm;
+    cursor: pointer;
+
+    &:hover {
+      background: v.$color-surface-alt;
+    }
+
+    span.is-checked {
+      color: v.$color-ink-muted;
+      text-decoration: line-through;
+    }
+  }
+
+  &__input {
+    width: 22px;
+    height: 22px;
+    margin-top: 2px;
+    flex-shrink: 0;
+    accent-color: v.$color-safe;
+    cursor: pointer;
+
+    @include m.focus-ring;
+  }
+}

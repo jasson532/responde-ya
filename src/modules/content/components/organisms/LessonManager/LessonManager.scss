@@ -1,0 +1,79 @@
+@use 'styles/variables' as v;
+@use 'styles/mixins' as m;
+
+.lesson-manager {
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-4;
+  max-width: 720px;
+  padding-top: v.$space-5;
+  border-top: 2px solid v.$color-line;
+
+  &__title {
+    font-size: v.$font-size-lg;
+  }
+
+  &__empty {
+    font-size: v.$font-size-sm;
+    color: v.$color-ink-muted;
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-3;
+  }
+
+  &__item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: v.$space-4;
+    flex-wrap: wrap;
+
+    @include m.card-surface(v.$space-4);
+  }
+
+  &__item-main {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-1;
+    flex: 1 1 260px;
+  }
+
+  &__item-title {
+    font-size: v.$font-size-base;
+  }
+
+  &__item-summary {
+    font-size: v.$font-size-sm;
+    color: v.$color-ink-soft;
+  }
+
+  &__item-count {
+    font-size: v.$font-size-xs;
+    color: v.$color-ink-muted;
+  }
+
+  &__form {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-4;
+    align-items: flex-start;
+    padding: v.$space-4;
+    background: v.$color-surface-alt;
+    border-radius: v.$radius-md;
+
+    > * {
+      width: 100%;
+    }
+
+    button {
+      width: auto;
+    }
+  }
+
+  &__form-title {
+    font-size: v.$font-size-base;
+  }
+}

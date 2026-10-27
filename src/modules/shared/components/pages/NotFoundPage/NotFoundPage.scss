@@ -1,0 +1,8 @@
+@use 'styles/variables' as v;
+
+.not-found-page {
+  display: grid;
+  place-items: center;
+  min-height: 70vh;
+  padding: v.$space-5;
+}

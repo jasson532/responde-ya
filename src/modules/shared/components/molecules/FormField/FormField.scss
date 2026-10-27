@@ -1,0 +1,29 @@
+@use 'styles/variables' as v;
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-2;
+
+  &__label {
+    font-size: v.$font-size-sm;
+    font-weight: v.$font-weight-semibold;
+    color: v.$color-ink;
+  }
+
+  &__required {
+    margin-left: v.$space-1;
+    color: v.$color-emergency;
+  }
+
+  &__hint {
+    font-size: v.$font-size-xs;
+    color: v.$color-ink-muted;
+  }
+
+  &__error {
+    font-size: v.$font-size-xs;
+    font-weight: v.$font-weight-medium;
+    color: v.$color-emergency;
+  }
+}

@@ -1,0 +1,41 @@
+@use 'styles/variables' as v;
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: v.$space-3;
+  padding: v.$space-7 v.$space-4;
+  color: v.$color-ink-soft;
+
+  &__icon {
+    display: grid;
+    place-items: center;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: v.$color-surface-alt;
+    color: v.$color-ink-muted;
+
+    svg {
+      width: 1.75rem;
+      height: 1.75rem;
+    }
+  }
+
+  &__title {
+    font-size: v.$font-size-lg;
+    color: v.$color-ink;
+  }
+
+  &__description {
+    max-width: 44ch;
+    font-size: v.$font-size-sm;
+    color: v.$color-ink-muted;
+  }
+
+  &__action {
+    margin-top: v.$space-2;
+  }
+}

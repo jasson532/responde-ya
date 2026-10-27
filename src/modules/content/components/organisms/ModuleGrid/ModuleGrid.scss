@@ -1,0 +1,15 @@
+@use 'styles/variables' as v;
+
+.module-grid {
+  display: grid;
+  gap: v.$space-4;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+
+  &__item {
+    display: flex;
+  }
+
+  &__item > * {
+    width: 100%;
+  }
+}

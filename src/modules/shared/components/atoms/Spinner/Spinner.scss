@@ -1,0 +1,51 @@
+@use 'styles/variables' as v;
+
+@keyframes spinner-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: v.$space-5 0;
+
+  &--inline {
+    width: auto;
+    padding: 0;
+  }
+
+  &__circle {
+    display: block;
+    border-radius: 50%;
+    border-style: solid;
+    border-color: currentcolor;
+    border-top-color: transparent;
+    animation: spinner-rotate 700ms linear infinite;
+  }
+
+  &--sm &__circle {
+    width: 1rem;
+    height: 1rem;
+    border-width: 2px;
+  }
+
+  &--md &__circle {
+    width: 1.75rem;
+    height: 1.75rem;
+    border-width: 3px;
+  }
+
+  &--lg &__circle {
+    width: 2.75rem;
+    height: 2.75rem;
+    border-width: 4px;
+  }
+
+  &:not(&--inline) &__circle {
+    color: v.$color-emergency;
+  }
+}

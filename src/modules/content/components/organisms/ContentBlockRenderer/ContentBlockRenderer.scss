@@ -1,0 +1,57 @@
+@use 'styles/variables' as v;
+
+.content-block-renderer {
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-5;
+}
+
+.content-block {
+  &__paragraph {
+    font-size: v.$font-size-md;
+    color: v.$color-ink-soft;
+    max-width: 72ch;
+  }
+
+  &__warning {
+    display: flex;
+    align-items: flex-start;
+    gap: v.$space-3;
+    padding: v.$space-4;
+    border-radius: v.$radius-md;
+    background: v.$color-warning-light;
+    border-left: 4px solid v.$color-warning;
+    color: #7d5109;
+
+    &.is-critical {
+      background: v.$color-emergency-light;
+      border-left-color: v.$color-emergency;
+      color: v.$color-emergency-dark;
+    }
+  }
+
+  &__warning-icon svg {
+    width: 1.3rem;
+    height: 1.3rem;
+    flex-shrink: 0;
+  }
+
+  &__figure {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-2;
+
+    img,
+    video {
+      width: 100%;
+      border-radius: v.$radius-md;
+      border: 1px solid v.$color-line;
+    }
+
+    figcaption {
+      font-size: v.$font-size-xs;
+      color: v.$color-ink-muted;
+    }
+  }
+}

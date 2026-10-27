@@ -1,0 +1,37 @@
+@use 'styles/variables' as v;
+@use 'styles/mixins' as m;
+
+.input {
+  width: 100%;
+  padding: v.$space-3 v.$space-4;
+  font-size: v.$font-size-base;
+  color: v.$color-ink;
+  background: v.$color-surface;
+  border: 1px solid v.$color-line;
+  border-radius: v.$radius-md;
+  transition:
+    border-color v.$transition-fast,
+    box-shadow v.$transition-fast;
+
+  @include m.focus-ring;
+  @include m.touch-target;
+
+  &::placeholder {
+    color: v.$color-ink-muted;
+  }
+
+  &:hover:not(:disabled) {
+    border-color: v.$color-ink-muted;
+  }
+
+  &:disabled {
+    background: v.$color-surface-alt;
+    color: v.$color-ink-muted;
+    cursor: not-allowed;
+  }
+
+  &[aria-invalid='true'] {
+    border-color: v.$color-emergency;
+    background: v.$color-emergency-light;
+  }
+}

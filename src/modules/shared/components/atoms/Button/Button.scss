@@ -1,0 +1,124 @@
+@use 'styles/variables' as v;
+@use 'styles/mixins' as m;
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: v.$space-2;
+  border-radius: v.$radius-md;
+  font-weight: v.$font-weight-semibold;
+  text-align: center;
+  white-space: nowrap;
+  transition:
+    background-color v.$transition-fast,
+    color v.$transition-fast,
+    border-color v.$transition-fast,
+    transform v.$transition-fast;
+
+  @include m.focus-ring;
+  @include m.touch-target;
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+
+  &:not(:disabled):active {
+    transform: translateY(1px);
+  }
+
+  &__icon {
+    display: inline-flex;
+    align-items: center;
+
+    svg {
+      width: 1.15em;
+      height: 1.15em;
+    }
+  }
+
+  &__label {
+    line-height: 1;
+  }
+
+  // --- Tamanos ---
+  &--sm {
+    padding: v.$space-2 v.$space-3;
+    font-size: v.$font-size-sm;
+  }
+
+  &--md {
+    padding: v.$space-3 v.$space-4;
+    font-size: v.$font-size-base;
+  }
+
+  &--lg {
+    padding: v.$space-4 v.$space-5;
+    font-size: v.$font-size-md;
+  }
+
+  // --- Variantes ---
+  &--primary {
+    background: v.$color-emergency;
+    color: #fff;
+
+    &:not(:disabled):hover {
+      background: v.$color-emergency-dark;
+    }
+  }
+
+  &--secondary {
+    background: v.$color-surface;
+    color: v.$color-ink;
+    border: 1px solid v.$color-line;
+
+    &:not(:disabled):hover {
+      background: v.$color-surface-alt;
+      border-color: v.$color-ink-muted;
+    }
+  }
+
+  &--ghost {
+    background: transparent;
+    color: v.$color-ink-soft;
+
+    &:not(:disabled):hover {
+      background: v.$color-surface-alt;
+      color: v.$color-ink;
+    }
+  }
+
+  &--danger {
+    background: transparent;
+    color: v.$color-emergency;
+    border: 1px solid currentcolor;
+
+    &:not(:disabled):hover {
+      background: v.$color-emergency-light;
+    }
+  }
+
+  &--emergency {
+    background: v.$color-emergency;
+    color: #fff;
+    font-size: v.$font-size-lg;
+    padding: v.$space-5 v.$space-6;
+    border-radius: v.$radius-lg;
+    box-shadow: v.$shadow-md;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+
+    &:not(:disabled):hover {
+      background: v.$color-emergency-dark;
+    }
+  }
+
+  &--full {
+    width: 100%;
+  }
+
+  &.is-loading {
+    cursor: progress;
+  }
+}

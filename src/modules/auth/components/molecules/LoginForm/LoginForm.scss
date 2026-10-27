@@ -1,0 +1,8 @@
+@use 'styles/variables' as v;
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-4;
+  width: 100%;
+}

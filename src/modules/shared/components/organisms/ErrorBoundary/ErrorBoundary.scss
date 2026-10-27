@@ -1,0 +1,23 @@
+@use 'styles/variables' as v;
+
+.error-boundary {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: v.$space-4;
+  min-height: 100vh;
+  padding: v.$space-6 v.$space-4;
+  text-align: center;
+  background: v.$color-surface;
+
+  &__title {
+    font-size: v.$font-size-xl;
+    color: v.$color-emergency;
+  }
+
+  &__text {
+    max-width: 46ch;
+    color: v.$color-ink-soft;
+  }
+}

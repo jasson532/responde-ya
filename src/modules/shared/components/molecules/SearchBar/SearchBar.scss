@@ -1,0 +1,55 @@
+@use 'styles/variables' as v;
+@use 'styles/mixins' as m;
+
+.search-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  &__icon {
+    position: absolute;
+    left: v.$space-4;
+    display: flex;
+    color: v.$color-ink-muted;
+    pointer-events: none;
+
+    svg {
+      width: 1.15rem;
+      height: 1.15rem;
+    }
+  }
+
+  &__input.input {
+    padding-left: calc(v.$space-4 * 2 + 1.15rem);
+    padding-right: calc(v.$space-4 * 2);
+    border-radius: v.$radius-pill;
+    font-size: v.$font-size-md;
+
+    &::-webkit-search-cancel-button {
+      appearance: none;
+    }
+  }
+
+  &__clear {
+    position: absolute;
+    right: v.$space-3;
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    color: v.$color-ink-muted;
+
+    @include m.focus-ring;
+
+    &:hover {
+      background: v.$color-surface-alt;
+      color: v.$color-ink;
+    }
+
+    svg {
+      width: 1rem;
+      height: 1rem;
+    }
+  }
+}

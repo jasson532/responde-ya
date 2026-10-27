@@ -1,0 +1,62 @@
+@use 'styles/variables' as v;
+@use 'styles/mixins' as m;
+
+.auth-layout {
+  display: grid;
+  min-height: 100%;
+  grid-template-columns: 1fr;
+
+  @include m.from(v.$bp-lg) {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  &__panel {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: v.$space-4;
+    padding: v.$space-6 v.$space-5;
+    background: linear-gradient(160deg, v.$color-emergency, v.$color-emergency-dark);
+    color: #fff;
+
+    @include m.from(v.$bp-lg) {
+      padding: v.$space-8 v.$space-7;
+    }
+  }
+
+  &__logo {
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    border-radius: v.$radius-lg;
+    background: rgba(255, 255, 255, 0.18);
+
+    svg {
+      width: 1.75rem;
+      height: 1.75rem;
+    }
+  }
+
+  &__title {
+    font-size: v.$font-size-2xl;
+    font-weight: v.$font-weight-medium;
+
+    strong {
+      font-weight: v.$font-weight-bold;
+    }
+  }
+
+  &__tagline {
+    max-width: 38ch;
+    font-size: v.$font-size-md;
+    color: rgba(255, 255, 255, 0.88);
+  }
+
+  &__content {
+    display: grid;
+    place-items: center;
+    padding: v.$space-6 v.$space-4;
+    background: v.$color-surface;
+  }
+}

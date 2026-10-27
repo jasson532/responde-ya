@@ -1,0 +1,37 @@
+@use 'variables' as v;
+@use 'mixins' as m;
+@use 'reset';
+
+// --- Utilidades globales minimas ---
+// Todo lo demas vive en el .scss co-locado de cada componente.
+
+.sr-only {
+  @include m.visually-hidden;
+}
+
+.app-container {
+  width: 100%;
+  max-width: 1120px;
+  margin-inline: auto;
+  padding-inline: v.$space-4;
+
+  @include m.from(v.$bp-md) {
+    padding-inline: v.$space-5;
+  }
+}
+
+.skip-link {
+  position: absolute;
+  top: v.$space-2;
+  left: v.$space-2;
+  z-index: v.$z-toast;
+  padding: v.$space-2 v.$space-4;
+  background: v.$color-ink;
+  color: #fff;
+  border-radius: v.$radius-sm;
+  transform: translateY(-200%);
+
+  &:focus-visible {
+    transform: translateY(0);
+  }
+}

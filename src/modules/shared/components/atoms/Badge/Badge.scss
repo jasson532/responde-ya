@@ -1,0 +1,43 @@
+@use 'styles/variables' as v;
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: v.$space-1;
+  padding: v.$space-1 v.$space-3;
+  font-size: v.$font-size-xs;
+  font-weight: v.$font-weight-semibold;
+  line-height: 1.4;
+  border-radius: v.$radius-pill;
+  white-space: nowrap;
+
+  &__icon svg {
+    width: 0.9rem;
+    height: 0.9rem;
+  }
+
+  &--neutral {
+    background: v.$color-surface-alt;
+    color: v.$color-ink-soft;
+  }
+
+  &--emergency {
+    background: v.$color-emergency-light;
+    color: v.$color-emergency-dark;
+  }
+
+  &--safe {
+    background: v.$color-safe-light;
+    color: v.$color-safe;
+  }
+
+  &--warning {
+    background: v.$color-warning-light;
+    color: #9a6410;
+  }
+
+  &--info {
+    background: v.$color-info-light;
+    color: v.$color-info;
+  }
+}

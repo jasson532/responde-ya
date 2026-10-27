@@ -1,0 +1,92 @@
+@use 'styles/variables' as v;
+@use 'styles/mixins' as m;
+
+.admin-modules {
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-5;
+
+  &__header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: v.$space-4;
+  }
+
+  &__title {
+    font-size: v.$font-size-xl;
+  }
+
+  &__subtitle {
+    margin-top: v.$space-2;
+    color: v.$color-ink-soft;
+    font-size: v.$font-size-sm;
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-3;
+  }
+
+  &__row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: v.$space-4;
+
+    @include m.card-surface(v.$space-4);
+  }
+
+  &__row-main {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-2;
+    flex: 1 1 320px;
+  }
+
+  &__row-title {
+    font-size: v.$font-size-md;
+  }
+
+  &__row-summary {
+    font-size: v.$font-size-sm;
+    color: v.$color-ink-soft;
+
+    @include m.line-clamp(2);
+  }
+
+  &__row-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: v.$space-2;
+  }
+
+  &__row-count {
+    font-size: v.$font-size-xs;
+    color: v.$color-ink-muted;
+  }
+
+  &__actions {
+    display: flex;
+    gap: v.$space-2;
+  }
+
+  &__confirm {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-2;
+    padding: v.$space-3;
+    background: v.$color-emergency-light;
+    border-radius: v.$radius-md;
+  }
+
+  &__confirm-text {
+    font-size: v.$font-size-sm;
+    font-weight: v.$font-weight-semibold;
+    color: v.$color-emergency-dark;
+  }
+}

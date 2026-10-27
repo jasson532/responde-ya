@@ -1,0 +1,131 @@
+@use 'styles/variables' as v;
+@use 'styles/mixins' as m;
+
+.module-detail {
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-5;
+
+  &__back {
+    display: inline-flex;
+    align-items: center;
+    gap: v.$space-2;
+    align-self: flex-start;
+    font-size: v.$font-size-sm;
+    font-weight: v.$font-weight-medium;
+    color: v.$color-ink-muted;
+
+    @include m.focus-ring;
+
+    svg {
+      width: 1rem;
+      height: 1rem;
+    }
+
+    &:hover {
+      color: v.$color-ink;
+    }
+  }
+
+  &__header {
+    display: flex;
+    gap: v.$space-4;
+    padding: v.$space-5;
+    border-radius: v.$radius-lg;
+    background: v.$color-surface;
+    border: 1px solid v.$color-line;
+    border-left: 5px solid v.$color-line;
+
+    &--critical {
+      border-left-color: v.$color-emergency;
+    }
+
+    &--urgent {
+      border-left-color: v.$color-warning;
+    }
+
+    &--basic {
+      border-left-color: v.$color-safe;
+    }
+  }
+
+  &__icon {
+    display: grid;
+    place-items: center;
+    width: 56px;
+    height: 56px;
+    flex-shrink: 0;
+    border-radius: v.$radius-md;
+    background: v.$color-surface-alt;
+    color: v.$color-ink-soft;
+
+    svg {
+      width: 1.75rem;
+      height: 1.75rem;
+    }
+  }
+
+  &__head-text {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-3;
+  }
+
+  &__title {
+    font-size: v.$font-size-xl;
+  }
+
+  &__summary {
+    color: v.$color-ink-soft;
+    max-width: 68ch;
+  }
+
+  &__meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: v.$space-3;
+  }
+
+  &__duration {
+    display: inline-flex;
+    align-items: center;
+    gap: v.$space-1;
+    font-size: v.$font-size-xs;
+    color: v.$color-ink-muted;
+
+    svg {
+      width: 0.9rem;
+      height: 0.9rem;
+    }
+  }
+
+  &__lessons {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-6;
+  }
+
+  &__lesson {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-4;
+  }
+
+  &__lesson-head {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-2;
+    padding-bottom: v.$space-3;
+    border-bottom: 2px solid v.$color-line;
+  }
+
+  &__lesson-title {
+    font-size: v.$font-size-lg;
+  }
+
+  &__lesson-summary {
+    font-size: v.$font-size-sm;
+    color: v.$color-ink-muted;
+  }
+}
