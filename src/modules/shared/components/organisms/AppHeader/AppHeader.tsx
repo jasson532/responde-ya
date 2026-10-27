@@ -23,9 +23,8 @@ const AppHeader = () => {
   return (
     <header className="app-header" data-testid="AppHeader">
       <div className="app-header__inner app-container">
-        {/* El logo lleva al contenido, no a la bienvenida: para quien ya esta
-            dentro, la pantalla de entrada es un paso atras sin valor. */}
-        <Link to={ROUTES.MODULES} className="app-header__brand">
+        {/* La marca lleva al inicio, como se espera de un logo de cabecera. */}
+        <Link to={ROUTES.WELCOME} className="app-header__brand" aria-label="RespondeYa, ir al inicio">
           <span className="app-header__logo" aria-hidden="true">
             <ShieldPlus />
           </span>
