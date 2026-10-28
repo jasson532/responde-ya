@@ -1,133 +1,16 @@
 @use 'styles/variables' as v;
 @use 'styles/mixins' as m;
 
-.catalog {
+.home {
   display: flex;
   flex-direction: column;
   gap: v.$space-4;
-  padding-top: v.$space-5;
+  padding-top: v.$space-4;
 
-  &__hero {
-    display: flex;
-    flex-direction: column;
-    gap: v.$space-2;
-  }
-
-  &__eyebrow {
-    display: inline-flex;
-    align-items: center;
-    gap: v.$space-2;
-    font-size: v.$font-size-xs;
-    font-weight: v.$font-weight-extrabold;
-    text-transform: uppercase;
-    letter-spacing: v.$tracking-wide;
-    color: v.$color-emergency;
-
-    svg {
-      width: 0.95rem;
-      height: 0.95rem;
-    }
-  }
-
-  &__title {
-    font-size: v.$font-size-2xl;
-
-    @include m.from(v.$bp-md) {
-      font-size: v.$font-size-3xl;
-    }
-  }
-
-  &__subtitle {
-    max-width: 48ch;
-    font-size: v.$font-size-md;
+  &__lead {
+    padding-inline: v.$space-1;
+    font-size: v.$font-size-base;
     color: v.$color-ink-soft;
-  }
-
-  // --- Tarjeta de llamada a emergencias ---
-  &__call {
-    display: flex;
-    align-items: center;
-    gap: v.$space-4;
-    margin-top: v.$space-1;
-    padding: v.$space-4 v.$space-5;
-    border-radius: v.$radius-xl;
-    background: linear-gradient(135deg, v.$color-emergency, v.$color-emergency-dark);
-    color: #fff;
-    box-shadow: v.$shadow-emergency;
-
-    @include m.focus-ring(v.$color-brand-navy);
-
-    transition:
-      transform v.$transition-fast,
-      box-shadow v.$transition-fast;
-
-    @media (hover: hover) and (pointer: fine) {
-      &:hover {
-        transform: translateY(-2px);
-        box-shadow: v.$shadow-lg;
-      }
-    }
-
-    &:active {
-      transform: scale(0.99);
-    }
-  }
-
-  &__call-icon {
-    display: grid;
-    place-items: center;
-    width: 52px;
-    height: 52px;
-    flex-shrink: 0;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.2);
-
-    svg {
-      width: 1.5rem;
-      height: 1.5rem;
-    }
-
-    @include m.motion-safe {
-      animation: call-pulse 2.4s ease-in-out infinite;
-    }
-  }
-
-  &__call-body {
-    display: flex;
-    flex-direction: column;
-  }
-
-  &__call-label {
-    font-size: v.$font-size-sm;
-    color: rgba(255, 255, 255, 0.85);
-  }
-
-  &__call-number {
-    font-size: v.$font-size-lg;
-    font-weight: v.$font-weight-extrabold;
-    letter-spacing: v.$tracking-tight;
-  }
-
-  // --- Filtros ---
-  &__filters {
-    gap: v.$space-2;
-
-    @include m.bleed-scroller(v.$space-4);
-
-    @include m.from(v.$bp-md) {
-      margin-inline: 0;
-      padding-inline: 0;
-      flex-wrap: wrap;
-    }
-  }
-}
-
-@keyframes call-pulse {
-  0%,
-  100% {
-    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.35);
-  }
-  50% {
-    box-shadow: 0 0 0 10px rgba(255, 255, 255, 0);
+    max-width: 52ch;
   }
 }

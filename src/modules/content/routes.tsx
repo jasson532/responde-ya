@@ -6,6 +6,7 @@ const ModulesCatalogPage = lazy(
   () => import('./pages/ModulesCatalogPage/ModulesCatalogPage'),
 );
 const ModuleDetailPage = lazy(() => import('./pages/ModuleDetailPage/ModuleDetailPage'));
+const SearchPage = lazy(() => import('./pages/SearchPage/SearchPage'));
 const AdminModulesPage = lazy(() => import('./pages/AdminModulesPage/AdminModulesPage'));
 const AdminModuleFormPage = lazy(
   () => import('./pages/AdminModuleFormPage/AdminModuleFormPage'),
@@ -18,7 +19,7 @@ const AdminModuleFormPage = lazy(
 export const contentRoutes = (
   <>
     <Route path={ROUTES.MODULES} element={<ModulesCatalogPage />} />
-    <Route path={ROUTES.SEARCH} element={<ModulesCatalogPage />} />
+    <Route path={ROUTES.SEARCH} element={<SearchPage />} />
     <Route path={ROUTES.MODULE_DETAIL} element={<ModuleDetailPage />} />
   </>
 );

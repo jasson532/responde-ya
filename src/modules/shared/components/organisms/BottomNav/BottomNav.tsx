@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { House, Search, Settings, ShieldUser, Siren } from 'lucide-react';
+import { House, Search, Settings, ShieldUser } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useAppSelector } from 'modules/shared/store/hooks';
 import { selectIsAdmin } from 'modules/auth/store/authSlice';
@@ -23,9 +23,16 @@ interface NavItem {
 const BottomNav = () => {
   const isAdmin = useAppSelector(selectIsAdmin);
 
+  /**
+   * «Inicio» apunta a los módulos, no a `/`.
+   *
+   * La pantalla de bienvenida (`/`) es una puerta de entrada que se cruza una
+   * vez; el inicio real, con el saludo y la rejilla, es `/modulos`. Tener una
+   * pestaña «Inicio» y otra «Módulos» para dos pantallas parecidas solo
+   * obligaba a adivinar cuál era cuál.
+   */
   const items: NavItem[] = [
-    { to: ROUTES.WELCOME, label: 'Inicio', icon: <House />, end: true },
-    { to: ROUTES.MODULES, label: 'Módulos', icon: <Siren /> },
+    { to: ROUTES.MODULES, label: 'Inicio', icon: <House /> },
     { to: ROUTES.SEARCH, label: 'Buscar', icon: <Search /> },
     isAdmin
       ? { to: ROUTES.ADMIN_MODULES, label: 'Gestionar', icon: <Settings /> }

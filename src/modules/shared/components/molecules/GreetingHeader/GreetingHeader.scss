@@ -1,0 +1,46 @@
+@use 'styles/variables' as v;
+@use 'styles/mixins' as m;
+
+.greeting {
+  display: flex;
+  align-items: center;
+  gap: v.$space-4;
+  padding: v.$space-4;
+  border-radius: v.$radius-xl;
+  background: v.$color-surface;
+  box-shadow: v.$shadow-xs;
+
+  &__avatar {
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: v.$color-emergency-light;
+    color: v.$color-emergency;
+
+    svg {
+      width: 1.6rem;
+      height: 1.6rem;
+      stroke-width: 2;
+    }
+  }
+
+  &__text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  &__hello {
+    font-size: v.$font-size-lg;
+    letter-spacing: v.$tracking-tight;
+  }
+
+  &__welcome {
+    font-size: v.$font-size-sm;
+    color: v.$color-ink-muted;
+  }
+}

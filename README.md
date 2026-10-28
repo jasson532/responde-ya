@@ -90,6 +90,22 @@ el azul marino de marca lleva el peso de la tipografía.
 La referencia visual y el mapeo patrón por patrón están en
 [`docs/design-reference/`](docs/design-reference/README.md).
 
+### Una pantalla, una tarea
+
+| Pantalla    | Ruta        | Para qué                                                     |
+| ----------- | ----------- | ------------------------------------------------------------ |
+| Bienvenida  | `/`         | Puerta de entrada. Se cruza una vez                          |
+| Inicio      | `/modulos`  | Saludo y rejilla. Reconocer la situación de un vistazo       |
+| Buscar      | `/buscar`   | Buscador y filtros. Para cuando ya sabes qué buscas          |
+| Detalle     | `/modulos/:id` | El protocolo paso a paso                                  |
+
+El inicio no lleva buscador, filtros ni barra superior: el saludo es su cabecera y la rejilla
+ordenada por gravedad ya resuelve el reconocimiento. Meter controles ahí solo añadía cosas
+que mirar antes de poder actuar.
+
+En el menú inferior **«Inicio» apunta a `/modulos`**, no a `/`. Tener una pestaña «Inicio» y
+otra «Módulos» para dos pantallas parecidas obligaba a adivinar cuál era cuál.
+
 ### Navegación según el ancho
 
 Dos navegaciones excluyentes, cada una oculta en el breakpoint de la otra:

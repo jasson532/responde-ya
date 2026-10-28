@@ -4,8 +4,8 @@
 .module-grid {
   display: grid;
   gap: v.$space-3;
-  // Dos columnas desde el móvil más estrecho: es la rejilla de iconos que
-  // la gente espera en una app, y duplica el contenido visible sin scroll.
+  // Dos columnas desde el móvil más estrecho: es la rejilla que la gente
+  // espera en una app y duplica el contenido visible sin hacer scroll.
   grid-template-columns: repeat(2, minmax(0, 1fr));
 
   @include m.from(v.$bp-md) {
@@ -19,10 +19,6 @@
 
   &__item {
     display: flex;
-
-    &.is-featured {
-      grid-column: 1 / -1;
-    }
   }
 
   &__item > * {

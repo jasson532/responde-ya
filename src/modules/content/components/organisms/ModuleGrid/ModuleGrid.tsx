@@ -12,22 +12,19 @@ export interface ModuleGridProps {
   status: LoadingStatus;
   error?: string | null;
   onRetry?: () => void;
-  /** Destaca la primera ficha a ancho completo. */
-  highlightFirst?: boolean;
   emptyTitle?: string;
   emptyDescription?: string;
 }
 
 /**
  * Presentacional. Recibe datos y estado; no despacha nada, así la misma
- * rejilla sirve al catálogo y a la búsqueda.
+ * rejilla sirve al inicio y a la búsqueda.
  */
 const ModuleGrid = ({
   modules,
   status,
   error,
   onRetry,
-  highlightFirst = false,
   emptyTitle = 'Aún no hay módulos publicados',
   emptyDescription = 'Cuando el administrador publique contenido aparecerá aquí.',
 }: ModuleGridProps) => {
@@ -51,12 +48,9 @@ const ModuleGrid = ({
 
   return (
     <ul className="module-grid" data-testid="ModuleGrid">
-      {modules.map((module, index) => (
-        <li
-          key={module.id}
-          className={`module-grid__item ${highlightFirst && index === 0 ? 'is-featured' : ''}`.trim()}
-        >
-          <ModuleTile module={module} featured={highlightFirst && index === 0} />
+      {modules.map((module) => (
+        <li key={module.id} className="module-grid__item">
+          <ModuleTile module={module} />
         </li>
       ))}
     </ul>
