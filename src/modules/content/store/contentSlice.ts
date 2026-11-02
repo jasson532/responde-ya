@@ -13,6 +13,7 @@ import type { RootState } from 'modules/shared/store';
 import * as contentService from 'modules/content/services/content.service';
 import {
   ModuleSeverity,
+  ModuleStatus,
   type ContentModule,
   type ContentModuleDraft,
   type LessonDraft,
@@ -274,8 +275,19 @@ export const selectModulesBySeverity = createSelector([selectModules], (modules)
     [ModuleSeverity.Basic]: 2,
   };
 
+  /**
+   * Lo anunciado va al final, por encima incluso de la gravedad: una tarjeta
+   * que no se puede abrir no debe quitarle el primer sitio a una que sí, y el
+   * atragantamiento es «riesgo vital» igual que la RCP.
+   */
+  const isLocked = (module: ContentModule) =>
+    module.status === ModuleStatus.ComingSoon ? 1 : 0;
+
   return [...modules].sort(
-    (a, b) => weight[a.severity] - weight[b.severity] || a.order - b.order,
+    (a, b) =>
+      isLocked(a) - isLocked(b) ||
+      weight[a.severity] - weight[b.severity] ||
+      a.order - b.order,
   );
 });
 

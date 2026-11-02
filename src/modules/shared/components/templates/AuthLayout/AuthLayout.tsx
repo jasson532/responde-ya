@@ -1,26 +1,19 @@
 import { Outlet } from 'react-router-dom';
-import BrandLogo from 'modules/shared/components/atoms/BrandLogo/BrandLogo';
 import './AuthLayout.scss';
 
+/**
+ * Lienzo de la portada: una sola columna centrada.
+ *
+ * Antes partía la pantalla en dos (panel de marca a un lado, contenido al
+ * otro). El prototipo apila logo, ilustración y acción en una columna, y con
+ * dos columnas el logo acababa AL LADO del botón en vez de encima.
+ *
+ * Todo el contenido —incluido el logo, que es el `h1` de la pantalla— lo pone
+ * `WelcomePage`: es la única ruta que usa este layout y necesita decidir el
+ * orden vertical. Aquí solo queda el lienzo de marca y el centrado.
+ */
 const AuthLayout = () => (
   <div className="auth-layout" data-testid="AuthLayout">
-    <aside className="auth-layout__brand">
-      {/* El logo es el h1 visual de la pantalla; su `alt` aporta el nombre. */}
-      <h1 className="auth-layout__logo-wrap">
-        <BrandLogo size="lg" priority />
-      </h1>
-
-      <p className="auth-layout__tagline">
-        Primeros auxilios explicados paso a paso, para cuando no hay tiempo de buscar.
-      </p>
-
-      <ul className="auth-layout__highlights">
-        <li>Módulos por situacion, de lo mas urgente a lo mas leve</li>
-        <li>Pasos que marcas mientras actuas</li>
-        <li>Llamada a emergencias a un toque</li>
-      </ul>
-    </aside>
-
     <main className="auth-layout__content">
       <Outlet />
     </main>

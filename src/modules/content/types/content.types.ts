@@ -18,9 +18,19 @@ export enum ModuleSeverity {
   Basic = 'basic',
 }
 
+/**
+ * Visibilidad del módulo. Es un solo eje a propósito: un módulo está oculto,
+ * abierto o anunciado, nunca dos cosas a la vez. Un booleano `comingSoon` al
+ * lado de `status` serían dos campos describiendo el mismo hecho, y acabarían
+ * desincronizados.
+ */
 export enum ModuleStatus {
+  /** Solo lo ve el administrador. */
   Draft = 'draft',
+  /** Visible y se puede abrir. */
   Published = 'published',
+  /** Visible en el catálogo pero sin abrir: se anuncia, no se consulta. */
+  ComingSoon = 'comingSoon',
 }
 
 // ---------------------------------------------------------------------------
@@ -44,6 +54,14 @@ export enum ContentBlockKind {
   Quiz = 'quiz',
   /** Boton de llamada directa a emergencias. */
   EmergencyCall = 'emergencyCall',
+  /** Cifras grandes: lo que hay que recordar de un vistazo. */
+  Stats = 'stats',
+  /** Metronomo visual para marcar el ritmo de las compresiones. */
+  Metronome = 'metronome',
+  /** Dos columnas enfrentadas: lo que si y lo que nunca. */
+  DoDont = 'doDont',
+  /** Fichas con icono, titular y detalle: señales que reconocer o indicaciones. */
+  KeyPoints = 'keyPoints',
 }
 
 export interface BlockBase {
@@ -123,6 +141,100 @@ export interface EmergencyCallBlock extends BlockBase {
   label: string;
 }
 
+export interface StatItem {
+  id: string;
+  /** La cifra, grande. Ej. «100-120», «5 cm». */
+  value: string;
+  /** Que mide, pequeno. Ej. «por minuto». */
+  label: string;
+}
+
+/**
+ * Cifras clave en grande. Sustituye a los parrafos del tipo «comprime entre 100
+ * y 120 veces por minuto hundiendo el pecho unos 5 cm»: el dato se busca con la
+ * vista, no se lee.
+ */
+export interface StatsBlock extends BlockBase {
+  kind: ContentBlockKind.Stats;
+  title?: string;
+  stats: StatItem[];
+}
+
+/**
+ * Metronomo visual. Un circulo que late al ritmo indicado para comprimir a la
+ * vez. Ninguna descripcion escrita del ritmo sirve de esto.
+ */
+export interface MetronomeBlock extends BlockBase {
+  kind: ContentBlockKind.Metronome;
+  /** Pulsaciones por minuto. Para RCP de adulto, entre 100 y 120. */
+  beatsPerMinute: number;
+  title?: string;
+  /** Pie breve. Ej. «Comprime en cada pulso». */
+  hint?: string;
+  /**
+   * Cada cuantos segundos avisar de relevar a quien comprime.
+   * Las guias recomiendan unos 120 s: pasado ese tiempo la calidad cae por
+   * fatiga sin que la persona lo note. Omitirlo desactiva el aviso.
+   */
+  relaySeconds?: number;
+}
+
+export interface DoDontItem {
+  id: string;
+  text: string;
+}
+
+/**
+ * Lo que si y lo que nunca, enfrentados. Condensa varias advertencias sueltas
+ * en una sola lectura comparativa.
+ */
+export interface DoDontBlock extends BlockBase {
+  kind: ContentBlockKind.DoDont;
+  doTitle?: string;
+  dontTitle?: string;
+  doItems: DoDontItem[];
+  dontItems: DoDontItem[];
+}
+
+/**
+ * Intención de una ficha. Decide el icono y el color, nada más.
+ *
+ * No se llama por el color (`red`, `blue`) a propósito: el día que cambie la
+ * paleta, un valor llamado `red` guardado en el navegador de alguien seguiría
+ * diciendo «rojo» cuando ya no lo sea.
+ */
+export enum KeyPointTone {
+  /** Señal de alarma. Lo que indica que hay una emergencia. */
+  Alert = 'alert',
+  /** Algo que hay que comprobar o que puede confundir. */
+  Question = 'question',
+  /** Acción correcta, confirmada. */
+  Check = 'check',
+}
+
+export interface KeyPointItem {
+  id: string;
+  tone: KeyPointTone;
+  /** El titular, en negrita. Ej. «No responde». */
+  title: string;
+  /** La explicación corta. Ej. «No reacciona al hablarle…». */
+  detail: string;
+}
+
+/**
+ * Fichas con icono, titular y detalle.
+ *
+ * Es el patrón que el prototipo repite en dos pantallas: las señales del paro
+ * («No responde», «No respira normalmente») y las indicaciones al llamar
+ * («Comunica la emergencia», «Sigue las indicaciones»). No sirve un
+ * `Checklist`, que es marcable, ni `Steps`, que implica un orden obligatorio.
+ */
+export interface KeyPointsBlock extends BlockBase {
+  kind: ContentBlockKind.KeyPoints;
+  title?: string;
+  points: KeyPointItem[];
+}
+
 /** Union discriminada por `kind`: el renderer hace exhaustive switch. */
 export type ContentBlock =
   | ParagraphBlock
@@ -132,7 +244,11 @@ export type ContentBlock =
   | ImageBlock
   | VideoBlock
   | QuizBlock
-  | EmergencyCallBlock;
+  | EmergencyCallBlock
+  | StatsBlock
+  | MetronomeBlock
+  | DoDontBlock
+  | KeyPointsBlock;
 
 // ---------------------------------------------------------------------------
 // Leccion y módulo

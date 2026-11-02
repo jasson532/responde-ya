@@ -1,10 +1,12 @@
 import {
   ContentBlockKind,
+  KeyPointTone,
   ModuleSeverity,
   ModuleStatus,
   type ContentModule,
 } from 'modules/content/types/content.types';
 import { EMERGENCY_PHONE } from 'modules/shared/constants/emergency';
+import compressionsArtUrl from 'modules/shared/assets/images/img-welcome.jpg';
 
 /**
  * ============================================================================
@@ -40,7 +42,7 @@ import { EMERGENCY_PHONE } from 'modules/shared/constants/emergency';
  * creado un administrador. Sin esto, quien ya abrió la app se queda con el
  * contenido viejo para siempre.
  */
-export const SEED_VERSION = 2;
+export const SEED_VERSION = 6;
 
 /**
  * Ids que la semilla publicó alguna vez y ya no incluye.
@@ -54,6 +56,12 @@ export const SEED_VERSION = 2;
 export const RETIRED_SEED_IDS: readonly string[] = [
   // v1 -> v2: lo sustituye 'mod-rcp-solo-manos', más completo y específico.
   'mod-rcp-adulto',
+  // v3 -> v4: retirado por decisión del usuario.
+  'mod-hemorragia',
+  // v5 -> v6: retirado por decisión del usuario. Estuvo publicado y luego como
+  // «próximamente», así que puede estar en el navegador de cualquiera de las
+  // dos formas; la migración lo borra en ambos casos.
+  'mod-atragantamiento',
 ];
 
 const SEED_AUTHOR_ID = 'demo-admin';
@@ -77,7 +85,7 @@ export const SEED_MODULES: ContentModule[] = [
       'Si un adolescente o adulto se desploma de repente y no responde: llama y comprime. Sin dar respiraciones, sin formación previa.',
     severity: ModuleSeverity.Critical,
     status: ModuleStatus.Published,
-    iconName: 'HeartPulse',
+    iconName: 'cpr',
     tags: [
       'rcp',
       'reanimación',
@@ -89,378 +97,137 @@ export const SEED_MODULES: ContentModule[] = [
       'compresiones',
       'masaje cardiaco',
     ],
-    estimatedMinutes: 5,
+    estimatedMinutes: 3,
     order: 1,
     authorId: SEED_AUTHOR_ID,
+    /**
+     * Las tres secciones del índice del prototipo (pantalla 2), en su orden.
+     *
+     * Los pasos 04 «Uso del DEA» y 05 «Algoritmo y video» quedan fuera por
+     * decisión del usuario, y con ellos la indicación «Solicita un DEA» que la
+     * pantalla 4 incluía entre las tres de la llamada.
+     */
     lessons: [
-      // --- Sección 1: lo que hay que hacer YA ---
+      // --- 01 → pantalla 3 del prototipo, «Reconoce la emergencia» ---
       {
-        ...audit('les-rcp-actua'),
-        title: 'Actúa ahora',
-        summary: 'Dos acciones. Nada más. Empieza por la primera.',
+        ...audit('les-rcp-reconoce'),
+        title: 'Reconoce el paro cardíaco',
+        summary: 'Identifica los signos',
         order: 1,
         blocks: [
           {
-            id: 'blk-rcp-call',
+            id: 'blk-rec-signals',
             order: 1,
-            kind: ContentBlockKind.EmergencyCall,
-            phoneNumber: EMERGENCY_PHONE.number,
-            label: 'Primero esto: pide ayuda',
-          },
-          {
-            id: 'blk-rcp-intro',
-            order: 2,
-            kind: ContentBlockKind.Paragraph,
-            text: 'La RCP solo con las manos es para adolescentes y adultos a quienes ves desplomarse de repente. No necesitas dar respiraciones ni haber hecho un curso. Hacer algo siempre es mejor que no hacer nada: sin compresiones, el corazón detenido no mueve sangre al cerebro.',
-          },
-          {
-            id: 'blk-rcp-steps',
-            order: 3,
-            kind: ContentBlockKind.Steps,
-            title: 'Secuencia completa',
-            steps: [
+            kind: ContentBlockKind.KeyPoints,
+            title: 'Identifica estas señales',
+            points: [
               {
-                id: 'stp-rcp-1',
-                title: 'Comprueba si responde',
-                description:
-                  'Llámala en voz alta y sacude sus hombros con firmeza. Si no reacciona ni se mueve, trátala como un paro cardiaco.',
+                id: 'kp-rec-responde',
+                tone: KeyPointTone.Alert,
+                title: 'No responde',
+                detail: 'No reacciona al hablarle o tocar sus hombros.',
               },
               {
-                id: 'stp-rcp-2',
-                title: 'Pide ayuda y pon el altavoz',
-                description:
-                  `Grita pidiendo ayuda a quien tengas cerca. Llama al ${EMERGENCY_PHONE.number} y activa el altavoz: así te guían mientras tienes las dos manos libres. Pide un desfibrilador (DEA) si hay uno en el lugar.`,
-              },
-              {
-                id: 'stp-rcp-3',
-                title: 'Mira si respira con normalidad',
-                description:
-                  'Observa el pecho durante 10 segundos como máximo. Si no se mueve, o si solo da boqueadas ruidosas y aisladas, empieza a comprimir. Esas boqueadas no son respirar.',
-                durationSeconds: 10,
-              },
-              {
-                id: 'stp-rcp-4',
-                title: 'Comprime el centro del pecho',
-                description:
-                  'Pon el talón de una mano en el centro del pecho, entre los pezones, y la otra mano encima entrelazando los dedos. Brazos rectos y hombros sobre tus manos. Comprime fuerte y rápido.',
-              },
-              {
-                id: 'stp-rcp-5',
-                title: 'No pares hasta que llegue ayuda',
-                description:
-                  'Continúa sin interrupciones hasta que llegue el personal de emergencias, haya un desfibrilador listo para usar, o la persona se mueva y respire por sí misma.',
+                id: 'kp-rec-respira',
+                tone: KeyPointTone.Question,
+                title: 'No respira normalmente',
+                detail: 'Puede presentar jadeos agónicos.',
               },
             ],
           },
           {
-            id: 'blk-rcp-warn-gasp',
-            order: 4,
-            kind: ContentBlockKind.Warning,
-            isCritical: true,
-            text: 'Si solo da boqueadas, NO está respirando. Es una señal de paro cardiaco y hay que comprimir. Mucha gente se detiene aquí por creer que la persona respira.',
+            id: 'blk-rec-call',
+            order: 2,
+            kind: ContentBlockKind.EmergencyCall,
+            phoneNumber: EMERGENCY_PHONE.number,
+            label: 'Pide ayuda',
           },
         ],
       },
 
-      // --- Sección 2: técnica ---
+      // --- 02 → pantalla 4 del prototipo, «Activa la ayuda» ---
       {
-        ...audit('les-rcp-tecnica'),
-        title: 'Comprime bien',
-        summary: 'Fuerte, rápido y dejando que el pecho suba. Los tres a la vez.',
+        ...audit('les-rcp-activa'),
+        title: 'Activa emergencias',
+        summary: 'Pide ayuda oportunamente',
         order: 2,
         blocks: [
           {
-            id: 'blk-tec-intro',
+            id: 'blk-act-call',
             order: 1,
-            kind: ContentBlockKind.Paragraph,
-            text: 'La calidad de las compresiones decide el resultado. Tres cosas importan al mismo tiempo: la profundidad, el ritmo y dejar que el pecho vuelva a su posición entre una compresión y la siguiente.',
+            kind: ContentBlockKind.EmergencyCall,
+            phoneNumber: EMERGENCY_PHONE.number,
+            // El componente ya rotula «Llamar al 123» en grande; la etiqueta
+            // de arriba aporta el país, como el pie del prototipo.
+            label: 'En Colombia',
           },
           {
-            id: 'blk-tec-check',
+            id: 'blk-act-points',
             order: 2,
-            kind: ContentBlockKind.Checklist,
-            title: 'Comprueba tu técnica',
-            items: [
+            kind: ContentBlockKind.KeyPoints,
+            points: [
               {
-                id: 'chk-tec-1',
-                text: 'Manos en el centro del pecho, una sobre la otra, dedos entrelazados',
+                id: 'kp-act-comunica',
+                tone: KeyPointTone.Check,
+                title: 'Comunica la emergencia',
+                detail: 'Indica dónde estás y qué ocurre.',
               },
-              { id: 'chk-tec-2', text: 'Brazos rectos y hombros justo encima de tus manos' },
               {
-                id: 'chk-tec-3',
-                text: 'Hundes el pecho al menos 5 cm en un adulto (sin pasar de 6)',
+                id: 'kp-act-indicaciones',
+                tone: KeyPointTone.Check,
+                title: 'Sigue las indicaciones',
+                detail: 'Pon el teléfono en altavoz.',
               },
-              { id: 'chk-tec-4', text: 'Entre 100 y 120 compresiones por minuto' },
-              { id: 'chk-tec-5', text: 'Dejas que el pecho suba del todo cada vez' },
-              { id: 'chk-tec-6', text: 'La persona está sobre una superficie firme, no en un colchón blando' },
             ],
-          },
-          {
-            id: 'blk-tec-ritmo',
-            order: 3,
-            kind: ContentBlockKind.Paragraph,
-            text: 'Para mantener el ritmo, piensa en una canción de entre 100 y 120 pulsos por minuto. «Stayin\u2019 Alive» de los Bee Gees es el ejemplo clásico de las campañas de RCP y va a unos 103 pulsos por minuto. Comprime a cada pulso.',
-          },
-          {
-            id: 'blk-tec-warn-recoil',
-            order: 4,
-            kind: ContentBlockKind.Warning,
-            isCritical: true,
-            text: 'No te apoyes sobre el pecho entre compresiones. Si no se expande del todo, el corazón no se vuelve a llenar y las siguientes compresiones mueven menos sangre.',
-          },
-          {
-            id: 'blk-tec-warn-pulse',
-            order: 5,
-            kind: ContentBlockKind.Warning,
-            isCritical: true,
-            text: 'No interrumpas para buscar el pulso ni para comprobar si ya respira. Cada pausa larga baja las probabilidades de supervivencia.',
-          },
-          {
-            id: 'blk-tec-warn-ribs',
-            order: 6,
-            kind: ContentBlockKind.Warning,
-            isCritical: false,
-            text: 'Puede que oigas crujidos en el pecho. Es frecuente y no es razón para parar: una costilla fisurada se trata después, un paro cardiaco sin compresiones no.',
-          },
-          {
-            id: 'blk-tec-relevo',
-            order: 7,
-            kind: ContentBlockKind.Paragraph,
-            text: 'Comprimir bien cansa en uno o dos minutos y la calidad cae sin que lo notes. Si hay otra persona, túrnense cada dos minutos y hagan el cambio en menos de cinco segundos.',
           },
         ],
       },
 
-      // --- Sección 3: cuándo no aplica ---
+      // --- 03 → pantalla 5 del prototipo, «Compresiones torácicas» ---
       {
-        ...audit('les-rcp-excepciones'),
-        title: 'Cuándo NO sirve',
-        summary: 'Hay casos que necesitan respiraciones, no solo compresiones.',
+        ...audit('les-rcp-comprime'),
+        title: 'Inicia compresiones',
+        summary: 'Recomendaciones básicas',
         order: 3,
         blocks: [
           {
-            id: 'blk-exc-intro',
+            id: 'blk-com-image',
             order: 1,
-            kind: ContentBlockKind.Paragraph,
-            text: 'La RCP solo con las manos está pensada para el paro cardiaco súbito de un adolescente o adulto. Cuando la causa es la falta de oxígeno, el aire de las respiraciones sí hace falta y la RCP convencional es mejor.',
+            kind: ContentBlockKind.Image,
+            url: compressionsArtUrl,
+            alt: 'Una persona con los brazos rectos comprime el centro del pecho de alguien tendido en el suelo',
           },
           {
-            id: 'blk-exc-warn',
+            id: 'blk-com-stats',
             order: 2,
-            kind: ContentBlockKind.Warning,
-            isCritical: true,
-            text: 'En bebés y niños, en ahogamiento por inmersión, en sobredosis, o cuando la persona colapsó por un problema para respirar: hace falta RCP con respiraciones. Llama a emergencias y deja que te guíen por teléfono.',
+            kind: ContentBlockKind.Stats,
+            title: 'Manos en el centro del pecho',
+            stats: [
+              { id: 'st-com-bpm', value: '100-120', label: 'compresiones por minuto' },
+              { id: 'st-com-depth', value: '5-6 cm', label: 'profundidad en adultos' },
+            ],
           },
           {
-            id: 'blk-exc-paragraph-2',
+            id: 'blk-com-recoil',
             order: 3,
             kind: ContentBlockKind.Paragraph,
-            text: 'Si no sabes hacer respiraciones o no quieres hacerlas, comprime igual. Compresiones sin respiraciones es muchísimo mejor que quedarse mirando.',
+            text: 'Permite que el pecho vuelva a su posición entre compresiones.',
           },
           {
-            id: 'blk-exc-check',
+            // El metrónomo no sale en el prototipo, pero es lo único de la app
+            // que enseña el ritmo en vez de describirlo. Se queda aquí, que es
+            // la sección a la que pertenece.
+            id: 'blk-com-metronome',
             order: 4,
-            kind: ContentBlockKind.Checklist,
-            title: 'Señales de que es paro cardiaco súbito',
-            items: [
-              { id: 'chk-exc-1', text: 'Se desplomó de golpe, delante de ti' },
-              { id: 'chk-exc-2', text: 'No responde cuando la llamas ni cuando la sacudes' },
-              { id: 'chk-exc-3', text: 'No respira, o solo da boqueadas aisladas' },
-            ],
-          },
-        ],
-      },
-
-      // --- Sección 4: práctica ---
-      {
-        ...audit('les-rcp-práctica'),
-        title: 'Compruébalo',
-        summary: 'Dos preguntas para fijar lo esencial antes de necesitarlo.',
-        order: 4,
-        blocks: [
-          {
-            id: 'blk-quiz-ritmo',
-            order: 1,
-            kind: ContentBlockKind.Quiz,
-            question: '¿A qué ritmo hay que comprimir?',
-            options: [
-              { id: 'opt-ritmo-a', text: 'Entre 40 y 60 por minuto', isCorrect: false },
-              { id: 'opt-ritmo-b', text: 'Entre 100 y 120 por minuto', isCorrect: true },
-              { id: 'opt-ritmo-c', text: 'Lo más rápido que puedas', isCorrect: false },
-            ],
-            explanation:
-              'Entre 100 y 120 por minuto. Más lento no mueve suficiente sangre; más rápido no deja que el pecho se expanda y el corazón no se llena.',
-          },
-          {
-            id: 'blk-quiz-boqueadas',
-            order: 2,
-            kind: ContentBlockKind.Quiz,
-            question:
-              'La persona no responde y da boqueadas ruidosas de vez en cuando. ¿Qué haces?',
-            options: [
-              {
-                id: 'opt-boq-a',
-                text: 'Esperar, porque está respirando',
-                isCorrect: false,
-              },
-              {
-                id: 'opt-boq-b',
-                text: 'Empezar las compresiones',
-                isCorrect: true,
-              },
-              {
-                id: 'opt-boq-c',
-                text: 'Buscarle el pulso en el cuello antes de decidir',
-                isCorrect: false,
-              },
-            ],
-            explanation:
-              'Esas boqueadas aisladas no son respirar: son una señal de paro cardiaco. Hay que empezar a comprimir y no perder tiempo buscando el pulso.',
+            kind: ContentBlockKind.Metronome,
+            beatsPerMinute: 110,
+            relaySeconds: 120,
+            title: 'Comprime en cada pulso',
+            hint: 'Fuerte, rápido y deja que el pecho suba.',
           },
         ],
       },
     ],
   },
 
-  // =========================================================================
-  // Atragantamiento
-  // =========================================================================
-  {
-    ...audit('mod-atragantamiento'),
-    title: 'Atragantamiento',
-    slug: 'atragantamiento',
-    summary: 'Cómo ayudar a alguien que no puede respirar porque algo obstruye su vía aérea.',
-    severity: ModuleSeverity.Critical,
-    status: ModuleStatus.Published,
-    iconName: 'Wind',
-    tags: ['atragantamiento', 'obstrucción', 'heimlich', 'se ahoga', 'no puede respirar'],
-    estimatedMinutes: 3,
-    order: 2,
-    authorId: SEED_AUTHOR_ID,
-    lessons: [
-      {
-        ...audit('les-atrag-actuar'),
-        title: 'Identifica y actúa',
-        summary: 'Distingue una obstrucción leve de una completa.',
-        order: 1,
-        blocks: [
-          {
-            id: 'blk-atrag-intro',
-            order: 1,
-            kind: ContentBlockKind.Paragraph,
-            text: 'Si la persona tose con fuerza y puede hablar, la obstrucción es parcial: anímala a seguir tosiendo. Si no puede hablar, toser ni respirar, actúa de inmediato.',
-          },
-          {
-            id: 'blk-atrag-steps',
-            order: 2,
-            kind: ContentBlockKind.Steps,
-            title: 'Obstrucción completa en un adulto consciente',
-            steps: [
-              {
-                id: 'stp-atrag-1',
-                title: 'Avisa y colócate',
-                description:
-                  `Pide que llamen al ${EMERGENCY_PHONE.number}. Colócate detrás de la persona y sostenla por el torso.`,
-              },
-              {
-                id: 'stp-atrag-2',
-                title: 'Cinco golpes entre los omóplatos',
-                description:
-                  'Inclínala hacia adelante y da hasta cinco golpes firmes con el talón de la mano entre los omóplatos.',
-              },
-              {
-                id: 'stp-atrag-3',
-                title: 'Cinco compresiones abdominales',
-                description:
-                  'Rodea su abdomen por encima del ombligo y comprime hacia adentro y hacia arriba hasta cinco veces.',
-              },
-              {
-                id: 'stp-atrag-4',
-                title: 'Alterna hasta liberar',
-                description:
-                  'Repite la secuencia de golpes y compresiones. Si pierde el conocimiento, inicia reanimación cardiopulmonar.',
-              },
-            ],
-          },
-          {
-            id: 'blk-atrag-warning',
-            order: 3,
-            kind: ContentBlockKind.Warning,
-            isCritical: true,
-            text: 'No intentes sacar el objeto con los dedos a ciegas: puedes empujarlo más adentro.',
-          },
-        ],
-      },
-    ],
-  },
-
-  // =========================================================================
-  // Hemorragia externa
-  // =========================================================================
-  {
-    ...audit('mod-hemorragia'),
-    title: 'Hemorragia externa',
-    slug: 'hemorragia-externa',
-    summary: 'Cómo controlar un sangrado abundante mientras llega la ayuda.',
-    severity: ModuleSeverity.Urgent,
-    status: ModuleStatus.Published,
-    iconName: 'Droplet',
-    tags: ['sangrado', 'herida', 'hemorragia', 'corte'],
-    estimatedMinutes: 3,
-    order: 3,
-    authorId: SEED_AUTHOR_ID,
-    lessons: [
-      {
-        ...audit('les-hemo-controlar'),
-        title: 'Controla el sangrado',
-        summary: 'La presión directa y continua es la medida principal.',
-        order: 1,
-        blocks: [
-          {
-            id: 'blk-hemo-checklist',
-            order: 1,
-            kind: ContentBlockKind.Checklist,
-            title: 'Antes de tocar la herida',
-            items: [
-              { id: 'chk-hemo-1', text: 'Confirma que el lugar es seguro' },
-              { id: 'chk-hemo-2', text: 'Usa guantes o una barrera limpia si tienes' },
-              { id: 'chk-hemo-3', text: `Pide que llamen al ${EMERGENCY_PHONE.number}` },
-            ],
-          },
-          {
-            id: 'blk-hemo-steps',
-            order: 2,
-            kind: ContentBlockKind.Steps,
-            steps: [
-              {
-                id: 'stp-hemo-1',
-                title: 'Aplica presión directa',
-                description:
-                  'Cubre la herida con una gasa o tela limpia y presiona con firmeza sin levantar la mano.',
-              },
-              {
-                id: 'stp-hemo-2',
-                title: 'Mantén la presión',
-                description:
-                  'Si la tela se empapa, agrega otra capa encima. No retires la primera.',
-              },
-              {
-                id: 'stp-hemo-3',
-                title: 'Vigila a la persona',
-                description:
-                  'Mantenla acostada y abrigada. Observa si palidece, tiembla o se desorienta e infórmalo al personal de emergencias.',
-              },
-            ],
-          },
-          {
-            id: 'blk-hemo-warning',
-            order: 3,
-            kind: ContentBlockKind.Warning,
-            isCritical: false,
-            text: 'No apliques torniquete salvo que el sangrado sea masivo en una extremidad y la presión directa no funcione. Anota la hora si lo colocas.',
-          },
-        ],
-      },
-    ],
-  },
 ];

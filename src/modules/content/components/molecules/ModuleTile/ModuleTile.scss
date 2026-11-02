@@ -6,44 +6,63 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: v.$space-3;
+  gap: v.$space-4;
   height: 100%;
-  min-height: 150px;
-  padding: v.$space-5 v.$space-4;
+  min-height: 186px;
+  // Más aire arriba que abajo: deja respirar el halo del icono.
+  padding: v.$space-5 v.$space-4 v.$space-4;
   border-radius: v.$radius-xl;
   text-align: center;
-  // Relleno pastel plano, sin sombra ni borde: es lo que da el aire limpio.
   background: v.$color-surface-alt;
+  // Borde tintado con la gravedad: define la tarjeta sobre el lienzo claro y
+  // refuerza el código de color sin añadir una palabra más.
+  border: 1.5px solid transparent;
   transition:
     transform v.$transition-base,
-    box-shadow v.$transition-base;
+    box-shadow v.$transition-base,
+    border-color v.$transition-base;
 
   @include m.focus-ring;
 
-  @media (hover: hover) and (pointer: fine) {
-    &:hover {
-      transform: translateY(-3px);
-      box-shadow: v.$shadow-md;
-    }
+  /**
+   * Entrada en cascada. El retardo lo pone `--tile-index` desde la rejilla.
+   *
+   * `backwards` mantiene la tarjeta en el estado inicial durante su retardo;
+   * sin él aparecería de golpe y luego animaría.
+   */
+  @include m.motion-safe {
+    animation: tile-in 380ms cubic-bezier(0.22, 0.9, 0.3, 1) backwards;
+    animation-delay: calc(var(--tile-index, 0) * 55ms);
   }
 
   &:active {
     transform: scale(0.97);
   }
 
+  /**
+   * El icono es el protagonista de la tarjeta.
+   *
+   * Disco blanco SÓLIDO (no translúcido) con halo y sombra tintada: el halo lo
+   * despega del pastel y la sombra lo eleva, así que el ojo aterriza en el
+   * dibujo antes que en el texto. Es lo que justifica haber traído un set
+   * sanitario en vez de iconos genéricos.
+   */
   &__icon {
     display: grid;
     place-items: center;
-    width: 52px;
-    height: 52px;
+    width: 76px;
+    height: 76px;
     border-radius: 50%;
-    // Círculo blanco translúcido: separa el icono del pastel sin añadir borde.
-    background: rgba(255, 255, 255, 0.72);
+    background: #fff;
+    transition:
+      transform v.$transition-spring,
+      box-shadow v.$transition-base;
 
+    // Los iconos de Health Icons son detallados (el de RCP dibuja la maniobra
+    // completa). A 44px el dibujo se lee; por debajo de 32px se cierra.
     svg {
-      width: 1.55rem;
-      height: 1.55rem;
-      stroke-width: 2;
+      width: 2.75rem;
+      height: 2.75rem;
     }
   }
 
@@ -63,42 +82,218 @@
     text-transform: uppercase;
     letter-spacing: v.$tracking-wide;
     opacity: 0.75;
+    transition:
+      opacity v.$transition-base,
+      transform v.$transition-base;
   }
 
-  // --- Relleno y acento por gravedad ---
+  /**
+   * Etiqueta de «Próximamente». Pastilla y no micro-texto: tiene que leerse
+   * como un estado de la tarjeta, no como la gravedad que sustituye.
+   */
+  &__tag {
+    padding: 0.1875rem v.$space-3;
+    border-radius: v.$radius-pill;
+    background: v.$color-surface;
+    border: 1px solid v.$color-line;
+    font-size: 0.625rem;
+    font-weight: v.$font-weight-extrabold;
+    text-transform: uppercase;
+    letter-spacing: v.$tracking-wide;
+    color: v.$color-ink-soft;
+  }
+
+  // --- Reacción al cursor ---
+  // Todo junto en un solo bloque `hover` para que se lea como una sola
+  // animación y no como cuatro reglas sueltas: la tarjeta se levanta, el icono
+  // rebota y crece su halo, y la etiqueta sale de su penumbra.
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      transform: translateY(-6px);
+    }
+
+    &:hover .module-tile__icon {
+      // La animación termina exactamente en 1.07, que es el destino de la
+      // transición de abajo. Así, cuando acaba el rebote, no hay salto; y al
+      // quitar el cursor la transición devuelve el icono a 1 con suavidad.
+      transform: scale(1.07);
+
+      @include m.motion-safe {
+        animation: icon-pop 520ms cubic-bezier(0.34, 1.4, 0.64, 1);
+      }
+    }
+
+    &:hover .module-tile__severity {
+      opacity: 1;
+      transform: translateY(-1px);
+    }
+  }
+
+  // --- Relleno, borde y acento por gravedad ---
+  // El borde, el halo y la sombra se tiñen con el color de la gravedad: el
+  // disco deja de ser un círculo blanco cualquiera y pertenece a la tarjeta.
   &--critical {
     background: v.$color-emergency-light;
+    border-color: rgba(215, 38, 61, 0.22);
 
     .module-tile__icon {
       color: v.$color-emergency;
+      box-shadow:
+        0 0 0 7px rgba(255, 255, 255, 0.55),
+        0 8px 20px rgba(215, 38, 61, 0.22);
     }
 
     .module-tile__severity {
       color: v.$color-emergency-dark;
     }
+
+    @media (hover: hover) and (pointer: fine) {
+      &:hover {
+        border-color: v.$color-emergency;
+        box-shadow: 0 14px 30px rgba(215, 38, 61, 0.2);
+      }
+
+      &:hover .module-tile__icon {
+        box-shadow:
+          0 0 0 11px rgba(255, 255, 255, 0.75),
+          0 10px 24px rgba(215, 38, 61, 0.28);
+      }
+    }
   }
 
   &--urgent {
     background: v.$color-warning-light;
+    border-color: rgba(224, 138, 30, 0.24);
 
     .module-tile__icon {
       color: v.$color-warning;
+      box-shadow:
+        0 0 0 7px rgba(255, 255, 255, 0.55),
+        0 8px 20px rgba(224, 138, 30, 0.24);
     }
 
     .module-tile__severity {
       color: #8a5a0b;
     }
+
+    @media (hover: hover) and (pointer: fine) {
+      &:hover {
+        border-color: v.$color-warning;
+        box-shadow: 0 14px 30px rgba(224, 138, 30, 0.22);
+      }
+
+      &:hover .module-tile__icon {
+        box-shadow:
+          0 0 0 11px rgba(255, 255, 255, 0.75),
+          0 10px 24px rgba(224, 138, 30, 0.3);
+      }
+    }
   }
 
   &--basic {
     background: v.$color-safe-light;
+    border-color: rgba(15, 157, 88, 0.2);
 
     .module-tile__icon {
       color: v.$color-safe;
+      box-shadow:
+        0 0 0 7px rgba(255, 255, 255, 0.55),
+        0 8px 20px rgba(15, 157, 88, 0.2);
     }
 
     .module-tile__severity {
       color: #0a6f3f;
     }
+
+    @media (hover: hover) and (pointer: fine) {
+      &:hover {
+        border-color: v.$color-safe;
+        box-shadow: 0 14px 30px rgba(15, 157, 88, 0.18);
+      }
+
+      &:hover .module-tile__icon {
+        box-shadow:
+          0 0 0 11px rgba(255, 255, 255, 0.75),
+          0 10px 24px rgba(15, 157, 88, 0.26);
+      }
+    }
+  }
+
+  /**
+   * Apagada: módulo anunciado pero todavía cerrado.
+   *
+   * Va DESPUÉS de las variantes de gravedad porque las pisa: el gris tiene que
+   * ganar al pastel. Y no reacciona al cursor —ni se levanta, ni rebota el
+   * icono— porque no hay nada que abrir: prometer interacción con la animación
+   * y luego no hacer nada al clic es peor que no animar.
+   *
+   * El título se queda en `ink-soft` y no en `ink-muted`: atenuarlo más bajaría
+   * del 4.5:1 de contraste y el nombre del módulo todavía hay que poder leerlo
+   * para saber qué es lo que viene.
+   */
+  &--locked {
+    background: v.$color-line-soft;
+    border-color: v.$color-line;
+    cursor: not-allowed;
+
+    .module-tile__icon {
+      color: v.$color-ink-muted;
+      box-shadow: 0 0 0 7px rgba(255, 255, 255, 0.6);
+    }
+
+    .module-tile__title {
+      color: v.$color-ink-soft;
+    }
+
+    &:active {
+      transform: none;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      &:hover {
+        transform: none;
+        border-color: v.$color-line;
+        box-shadow: none;
+      }
+
+      &:hover .module-tile__icon {
+        transform: none;
+        animation: none;
+        box-shadow: 0 0 0 7px rgba(255, 255, 255, 0.6);
+      }
+    }
+  }
+}
+
+/**
+ * Entrada de cada tarjeta: sube y aparece.
+ *
+ * Solo `opacity` y `transform` para que el navegador lo resuelva en el
+ * compositor y no vuelva a calcular el layout de la rejilla en cada fotograma.
+ */
+@keyframes tile-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/** Rebote del icono al pasar el cursor. Acaba en 1.07, el valor en reposo del hover. */
+@keyframes icon-pop {
+  0% {
+    transform: scale(1) rotate(0deg);
+  }
+
+  45% {
+    transform: scale(1.16) rotate(-3deg);
+  }
+
+  100% {
+    transform: scale(1.07) rotate(0deg);
   }
 }

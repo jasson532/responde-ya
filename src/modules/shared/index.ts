@@ -8,6 +8,7 @@ export {
   BrandLogo,
   Button,
   Chip,
+  HealthIcon,
   IconBubble,
   Input,
   LinkButton,

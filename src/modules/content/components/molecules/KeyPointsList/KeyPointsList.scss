@@ -1,0 +1,93 @@
+@use 'styles/variables' as v;
+
+.key-points {
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-3;
+
+  &__title {
+    font-size: v.$font-size-md;
+    font-weight: v.$font-weight-extrabold;
+    line-height: v.$line-height-snug;
+    letter-spacing: v.$tracking-tight;
+    color: v.$color-brand-navy;
+    text-align: center;
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-3;
+  }
+
+  &__item {
+    display: flex;
+    align-items: flex-start;
+    gap: v.$space-3;
+    padding: v.$space-4;
+    border-radius: v.$radius-lg;
+  }
+
+  // Disco sólido con el icono. Tamaño fijo para que el texto de al lado arranque
+  // siempre en la misma columna, aunque una ficha tenga dos líneas y otra tres.
+  &__icon {
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    color: #fff;
+
+    svg {
+      width: 1.25rem;
+      height: 1.25rem;
+    }
+  }
+
+  &__body {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  &__point-title {
+    font-size: v.$font-size-base;
+    font-weight: v.$font-weight-bold;
+    line-height: v.$line-height-snug;
+    color: v.$color-brand-navy;
+  }
+
+  &__detail {
+    font-size: v.$font-size-sm;
+    line-height: v.$line-height-base;
+    color: v.$color-ink-soft;
+  }
+
+  // --- Tonos ---
+  // Relleno pastel en la ficha y color pleno en el disco, como el prototipo.
+  &__item--alert {
+    background: v.$color-emergency-light;
+
+    .key-points__icon {
+      background: v.$color-emergency;
+    }
+  }
+
+  &__item--question {
+    background: v.$color-info-light;
+
+    .key-points__icon {
+      background: v.$color-info;
+    }
+  }
+
+  &__item--check {
+    background: v.$color-safe-light;
+
+    .key-points__icon {
+      background: v.$color-safe;
+    }
+  }
+}

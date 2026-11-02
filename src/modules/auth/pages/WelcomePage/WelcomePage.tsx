@@ -1,20 +1,19 @@
-import { useEffect, useId, useState } from 'react';
+import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ArrowRight, ShieldUser, X } from 'lucide-react';
+import { BookOpen } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from 'modules/shared/store/hooks';
 import { LoadingStatus } from 'modules/shared/types/common.types';
 import { ROUTES } from 'modules/shared/constants/routes';
 import appConfig from 'modules/shared/services/config/appConfig';
-import Button from 'modules/shared/components/atoms/Button/Button';
+import BrandLogo from 'modules/shared/components/atoms/BrandLogo/BrandLogo';
 import LinkButton from 'modules/shared/components/atoms/LinkButton/LinkButton';
+import welcomeArtSrc from 'modules/shared/assets/images/img-welcome.jpg';
 import AlertMessage from 'modules/shared/components/molecules/AlertMessage/AlertMessage';
 import {
   clearAuthError,
   loginAdmin,
-  selectAdminUser,
   selectAuthError,
   selectAuthStatus,
-  selectIsAdmin,
 } from 'modules/auth/store/authSlice';
 import AdminLoginForm from 'modules/auth/components/molecules/AdminLoginForm/AdminLoginForm';
 import { DEMO_CREDENTIALS } from 'modules/auth/services/auth.local.repository';
@@ -26,31 +25,28 @@ interface LocationState {
 }
 
 /**
- * Pantalla de entrada. Dos caminos:
+ * Portada. Marca, una ilustración y una sola acción.
  *
- * 1. "Ingresar" — acceso inmediato al contenido, sin credenciales. Es el camino
- *    del 99% de las visitas, así que es la acción primaria y la mas grande.
- * 2. "Soy administrador" — despliega el formulario bajo demanda. Se oculta por
- *    defecto para no sugerirle a nadie que necesita una cuenta.
+ * Nada más, a propósito: lo que antes había aquí —tres tarjetas de lo que
+ * ofrece la app, un separador y un botón de administración— obligaba a elegir
+ * en la primera pantalla. Quien abre esto quiere entrar.
+ *
+ * El acceso de administración ya NO se anuncia en la portada, pero sigue
+ * existiendo: el formulario aparece solo cuando `AdminRoute` ha redirigido
+ * aquí, y eso se detecta por `location.state.from`. Quitar también el
+ * formulario habría dejado al admin sin manera de identificarse, porque el
+ * guard manda a esta ruta.
  */
 const WelcomePage = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const location = useLocation();
 
-  const isAdmin = useAppSelector(selectIsAdmin);
-  const admin = useAppSelector(selectAdminUser);
   const status = useAppSelector(selectAuthStatus);
   const error = useAppSelector(selectAuthError);
 
-  const formRegionId = useId();
-
-  /** Ruta de admin desde la que el guard redirigio, si aplica. */
+  /** Ruta de admin desde la que el guard redirigió, si aplica. */
   const intendedAdminPath = (location.state as LocationState | null)?.from?.pathname;
-
-  // Si el guard nos trajo aquí, el formulario arranca abierto: el visitante ya
-  // manifesto su intencion de entrar a administración.
-  const [isFormOpen, setIsFormOpen] = useState(Boolean(intendedAdminPath));
 
   useEffect(() => () => void dispatch(clearAuthError()), [dispatch]);
 
@@ -62,92 +58,99 @@ const WelcomePage = () => {
     }
   };
 
-  const handleToggleForm = () => {
-    // El dispatch va fuera del updater: una funcion de actualizacion de estado
-    // debe ser pura. React la invoca dos veces en StrictMode y el efecto se
-    // duplicaria.
-    if (isFormOpen) dispatch(clearAuthError());
-    setIsFormOpen((open) => !open);
-  };
-
   return (
-    <section className="welcome-page" data-testid="WelcomePage">
-      <header className="welcome-page__header">
-        <h2 className="welcome-page__title">Ingresa y consulta</h2>
-        <p className="welcome-page__subtitle">
-          No necesitas cuenta ni contraseña. Entra y busca lo que esta pasando.
-        </p>
-      </header>
+    <section className="welcome" data-testid="WelcomePage">
+      {/* El logo es el encabezado de la pantalla; su `alt` aporta el nombre. */}
+      <h1 className="welcome__logo">
+        <BrandLogo size="lg" priority />
+      </h1>
 
-      <LinkButton
-        to={ROUTES.MODULES}
-        variant="emergency"
-        size="lg"
-        fullWidth
-        iconEnd={<ArrowRight />}
-      >
-        Ingresar
-      </LinkButton>
+      {/* En minúsculas en el código y en mayúsculas por CSS: algunos lectores
+          de pantalla leen las mayúsculas reales letra a letra. */}
+      <p className="welcome__tagline">
+        Educación digital en primer respondiente para la comunidad
+      </p>
 
-      <div className="welcome-page__divider" role="separator">
-        <span>o</span>
+      {/**
+       * La ilustración del diseño, en lugar del icono monocromo que había
+       * aquí. Trae su propio fondo azul con la onda, así que NO va dentro de un
+       * panel de color: se apoya directamente sobre el lienzo.
+       *
+       * `width`/`height` son las dimensiones reales del archivo; fijarlas
+       * reserva el hueco y evita que el texto de abajo salte al cargar (CLS).
+       */}
+      <img
+        className="welcome__art"
+        src={welcomeArtSrc}
+        width={1130}
+        height={598}
+        alt="Una persona realizando compresiones torácicas sobre alguien tendido en el suelo"
+        fetchPriority="high"
+        decoding="async"
+      />
+
+      {/* El signo de cierre en rojo, como en el diseño: recoge el reparto de
+          color del logo (navy + rojo) sin repetir el truco de «RespondeYa». */}
+      <p className="welcome__greeting">
+        ¡Bienvenido a RespondeYa
+        <span className="welcome__greeting-mark">!</span>
+      </p>
+
+      <div className="welcome__actions">
+        <LinkButton to={ROUTES.MODULES} variant="emergency" size="lg" fullWidth>
+          <span className="welcome__cta-label">Comenzar</span>
+        </LinkButton>
+
+        <LinkButton
+          to={ROUTES.ABOUT}
+          variant="secondary"
+          size="md"
+          fullWidth
+          iconStart={<BookOpen />}
+        >
+          Conoce la aplicación
+        </LinkButton>
       </div>
 
-      {isAdmin ? (
-        <div className="welcome-page__admin-active">
-          <p className="welcome-page__admin-active-text">
-            Ya tienes sesión como <strong>{admin?.displayName}</strong>.
-          </p>
-          <LinkButton to={ROUTES.ADMIN_MODULES} variant="secondary" size="md" fullWidth>
-            Ir a administrar contenido
-          </LinkButton>
+      {/* El punto separador va `aria-hidden`: es puntuación decorativa y algunos
+          lectores de pantalla lo anuncian como «punto medio» entre las dos
+          palabras. */}
+      <p className="welcome__terms">
+        Gratis
+        <span className="welcome__terms-dot" aria-hidden="true">
+          ·
+        </span>
+        Sin registro
+      </p>
+
+      {intendedAdminPath && (
+        <div className="welcome__admin-panel">
+          {error ? (
+            <AlertMessage tone="error">{error}</AlertMessage>
+          ) : (
+            <AlertMessage tone="info">
+              Identifícate como administrador para entrar a esa sección.
+            </AlertMessage>
+          )}
+
+          <AdminLoginForm
+            onSubmit={handleAdminLogin}
+            isSubmitting={status === LoadingStatus.Pending}
+          />
+
+          {appConfig.persistenceDriver === 'local' && (
+            <aside className="welcome__demo">
+              <p className="welcome__demo-title">Cuenta de demostración</p>
+              <ul className="welcome__demo-list">
+                {DEMO_CREDENTIALS.map((account) => (
+                  <li key={account.email}>
+                    {account.email} / {account.password}
+                  </li>
+                ))}
+              </ul>
+            </aside>
+          )}
         </div>
-      ) : (
-        <>
-          <Button
-            variant="secondary"
-            size="md"
-            fullWidth
-            onClick={handleToggleForm}
-            iconStart={isFormOpen ? <X /> : <ShieldUser />}
-            aria-expanded={isFormOpen}
-            aria-controls={formRegionId}
-          >
-            {isFormOpen ? 'Cancelar' : 'Soy administrador'}
-          </Button>
-
-          <div id={formRegionId} hidden={!isFormOpen} className="welcome-page__admin-panel">
-            {isFormOpen && (
-              <>
-                {intendedAdminPath && !error && (
-                  <AlertMessage tone="info">
-                    Identifícate como administrador para entrar a esa sección.
-                  </AlertMessage>
-                )}
-
-                {error && <AlertMessage tone="error">{error}</AlertMessage>}
-
-                <AdminLoginForm
-                  onSubmit={handleAdminLogin}
-                  isSubmitting={status === LoadingStatus.Pending}
-                />
-
-                {appConfig.persistenceDriver === 'local' && (
-                  <aside className="welcome-page__demo">
-                    <p className="welcome-page__demo-title">Cuenta de demostracion</p>
-                    <ul className="welcome-page__demo-list">
-                      {DEMO_CREDENTIALS.map((account) => (
-                        <li key={account.email}>
-                          {account.email} / {account.password}
-                        </li>
-                      ))}
-                    </ul>
-                  </aside>
-                )}
-              </>
-            )}
-          </div>
-        </>
       )}
     </section>
   );

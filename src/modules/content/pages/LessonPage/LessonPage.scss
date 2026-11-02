@@ -1,0 +1,51 @@
+@use 'styles/variables' as v;
+
+.lesson-page {
+  padding-bottom: v.$space-6;
+
+  &__inner {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-5;
+    padding-top: v.$space-5;
+  }
+
+  &__head {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-1;
+  }
+
+  &__step {
+    font-size: v.$font-size-xs;
+    font-weight: v.$font-weight-extrabold;
+    text-transform: uppercase;
+    letter-spacing: v.$tracking-wide;
+    color: v.$color-emergency-dark;
+  }
+
+  &__title {
+    font-size: v.$font-size-xl;
+    font-weight: v.$font-weight-extrabold;
+    line-height: v.$line-height-snug;
+    letter-spacing: v.$tracking-tight;
+    color: v.$color-brand-navy;
+  }
+
+  &__summary {
+    font-size: v.$font-size-base;
+    line-height: v.$line-height-base;
+    color: v.$color-ink-soft;
+  }
+
+  // Separado del contenido por una línea: cierra el paso y deja claro que lo
+  // de abajo lleva a otra pantalla, no es parte de la explicación.
+  &__nav {
+    padding-top: v.$space-4;
+    border-top: 1px solid v.$color-line;
+  }
+
+  &__error {
+    padding-top: v.$space-5;
+  }
+}

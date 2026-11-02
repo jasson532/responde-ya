@@ -1,0 +1,95 @@
+@use 'styles/variables' as v;
+@use 'styles/mixins' as m;
+
+.do-dont {
+  display: grid;
+  gap: v.$space-3;
+
+  @include m.from(v.$bp-sm) {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  &__col {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-3;
+    padding: v.$space-4;
+    border-radius: v.$radius-lg;
+
+    &--do {
+      background: v.$color-safe-light;
+    }
+
+    &--dont {
+      background: v.$color-emergency-light;
+    }
+  }
+
+  &__head {
+    display: flex;
+    align-items: center;
+    gap: v.$space-2;
+    font-size: v.$font-size-sm;
+    text-transform: uppercase;
+    letter-spacing: v.$tracking-wide;
+  }
+
+  &__badge {
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    color: #fff;
+
+    svg {
+      width: 0.9rem;
+      height: 0.9rem;
+      stroke-width: 3.2;
+    }
+  }
+
+  &__col--do &__head {
+    color: #0a6f3f;
+  }
+
+  &__col--do &__badge {
+    background: v.$color-safe;
+  }
+
+  &__col--dont &__head {
+    color: v.$color-emergency-dark;
+  }
+
+  &__col--dont &__badge {
+    background: v.$color-emergency;
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-2;
+
+    li {
+      position: relative;
+      padding-left: v.$space-4;
+      font-size: v.$font-size-base;
+      font-weight: v.$font-weight-medium;
+      line-height: v.$line-height-snug;
+      color: v.$color-ink;
+
+      &::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0.55em;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: currentcolor;
+        opacity: 0.4;
+      }
+    }
+  }
+}

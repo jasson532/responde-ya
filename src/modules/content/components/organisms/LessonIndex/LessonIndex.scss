@@ -1,0 +1,87 @@
+@use 'styles/variables' as v;
+@use 'styles/mixins' as m;
+
+.lesson-index {
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-3;
+
+  &__link {
+    display: flex;
+    align-items: center;
+    gap: v.$space-4;
+    padding: v.$space-4;
+    border-radius: v.$radius-lg;
+    background: v.$color-surface-alt;
+    border: 1.5px solid transparent;
+    transition:
+      transform v.$transition-base,
+      border-color v.$transition-base,
+      box-shadow v.$transition-base;
+
+    @include m.focus-ring;
+
+    @media (hover: hover) and (pointer: fine) {
+      &:hover {
+        transform: translateY(-2px);
+        border-color: v.$color-emergency;
+        box-shadow: 0 10px 24px rgba(215, 38, 61, 0.14);
+      }
+    }
+
+    &:active {
+      transform: scale(0.99);
+    }
+  }
+
+  // Disco numerado. `flex` fijo y tamaño en píxeles para que todos los títulos
+  // arranquen en la misma columna, tengan una línea de subtítulo o dos.
+  &__number {
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: v.$color-brand-navy;
+    color: #fff;
+    font-size: v.$font-size-sm;
+    font-weight: v.$font-weight-extrabold;
+    font-variant-numeric: tabular-nums;
+  }
+
+  &__body {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    // `min-width: 0` permite que el texto se recorte dentro del flex en vez de
+    // empujar el chevron fuera de la tarjeta.
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  &__title {
+    font-size: v.$font-size-base;
+    font-weight: v.$font-weight-bold;
+    line-height: v.$line-height-snug;
+    color: v.$color-brand-navy;
+  }
+
+  &__summary {
+    font-size: v.$font-size-sm;
+    line-height: v.$line-height-snug;
+    color: v.$color-ink-muted;
+  }
+
+  &__chevron {
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    color: v.$color-ink-muted;
+
+    svg {
+      width: 1.25rem;
+      height: 1.25rem;
+    }
+  }
+}

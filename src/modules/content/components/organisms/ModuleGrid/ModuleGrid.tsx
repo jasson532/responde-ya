@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import { PackageOpen } from 'lucide-react';
 import Spinner from 'modules/shared/components/atoms/Spinner/Spinner';
 import AlertMessage from 'modules/shared/components/molecules/AlertMessage/AlertMessage';
@@ -48,8 +49,17 @@ const ModuleGrid = ({
 
   return (
     <ul className="module-grid" data-testid="ModuleGrid">
-      {modules.map((module) => (
-        <li key={module.id} className="module-grid__item">
+      {modules.map((module, index) => (
+        <li
+          key={module.id}
+          className="module-grid__item"
+          /**
+           * Retardo de la entrada en cascada. Se topa en 8 para que un
+           * catálogo largo no deje la última tarjeta invisible medio segundo:
+           * de la novena en adelante entran todas juntas.
+           */
+          style={{ '--tile-index': Math.min(index, 8) } as CSSProperties}
+        >
           <ModuleTile module={module} />
         </li>
       ))}

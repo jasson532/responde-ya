@@ -1,11 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Clock, Layers } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from 'modules/shared/store/hooks';
 import { LoadingStatus } from 'modules/shared/types/common.types';
 import { ROUTES } from 'modules/shared/constants/routes';
 import Spinner from 'modules/shared/components/atoms/Spinner/Spinner';
-import Chip from 'modules/shared/components/atoms/Chip/Chip';
 import IconBubble from 'modules/shared/components/atoms/IconBubble/IconBubble';
 import AlertMessage from 'modules/shared/components/molecules/AlertMessage/AlertMessage';
 import TopBar from 'modules/shared/components/organisms/TopBar/TopBar';
@@ -17,9 +16,9 @@ import {
   selectSelectedModule,
 } from 'modules/content/store/contentSlice';
 import { getModuleIcon } from 'modules/content/constants/moduleIcons';
-import { ModuleSeverity } from 'modules/content/types/content.types';
+import { ModuleSeverity, ModuleStatus } from 'modules/content/types/content.types';
 import SeverityBadge from 'modules/content/components/molecules/SeverityBadge/SeverityBadge';
-import ContentBlockRenderer from 'modules/content/components/organisms/ContentBlockRenderer/ContentBlockRenderer';
+import LessonIndex from 'modules/content/components/organisms/LessonIndex/LessonIndex';
 import './ModuleDetailPage.scss';
 
 const TONE_BY_SEVERITY = {
@@ -28,6 +27,15 @@ const TONE_BY_SEVERITY = {
   [ModuleSeverity.Basic]: 'safe',
 } as const;
 
+const INDEX_TITLE_ID = 'module-index';
+
+/**
+ * Índice del módulo: la portada con sus datos y la lista de pasos.
+ *
+ * Ya NO renderiza el contenido de un paso. Cada paso es su propia pantalla
+ * (`LessonPage`), como en el prototipo: así el enlace a un paso se puede
+ * compartir y el botón «atrás» del navegador vuelve al índice.
+ */
 const ModuleDetailPage = () => {
   const { moduleId } = useParams<{ moduleId: string }>();
   const dispatch = useAppDispatch();
@@ -35,13 +43,6 @@ const ModuleDetailPage = () => {
   const module = useAppSelector(selectSelectedModule);
   const status = useAppSelector(selectDetailStatus);
   const error = useAppSelector(selectContentError);
-
-  /**
-   * Sección visible. Se guarda el id, no el índice: al cambiar de módulo el id
-   * guardado deja de existir y la sección activa cae sola en la primera, que es
-   * la de actuar. Derivarlo así evita sincronizar estado con un efecto.
-   */
-  const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
 
   useEffect(() => {
     if (moduleId) void dispatch(fetchModuleById(moduleId));
@@ -70,9 +71,25 @@ const ModuleDetailPage = () => {
     );
   }
 
-  const activeLesson =
-    module.lessons.find((lesson) => lesson.id === activeLessonId) ?? module.lessons[0];
-  const hasSeveralLessons = module.lessons.length > 1;
+  /**
+   * La tarjeta de un módulo «próximamente» no es un enlace, pero la URL sigue
+   * existiendo y se puede pegar o venir de un marcador. Si no se cierra aquí,
+   * el contenido sin revisar queda accesible y la tarjeta apagada era un
+   * adorno. Cerrarlo en el repositorio no sirve: el admin necesita abrirlo.
+   */
+  if (module.status === ModuleStatus.ComingSoon) {
+    return (
+      <>
+        <TopBar title={module.title} showBack backTo={ROUTES.MODULES} />
+        <div className="app-container module-detail__error">
+          <AlertMessage tone="info" title="Este módulo todavía no está disponible">
+            Estamos revisando el contenido de «{module.title}» antes de publicarlo.
+            Mientras tanto, ante una emergencia llama primero a la línea de tu país.
+          </AlertMessage>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
@@ -83,7 +100,7 @@ const ModuleDetailPage = () => {
           className={`module-detail__hero module-detail__hero--${module.severity}`}
         >
           <div className="app-container module-detail__hero-inner">
-            <IconBubble tone={TONE_BY_SEVERITY[module.severity]} size="xl">
+            <IconBubble tone={TONE_BY_SEVERITY[module.severity]} size="2xl">
               {getModuleIcon(module.iconName)}
             </IconBubble>
 
@@ -111,41 +128,13 @@ const ModuleDetailPage = () => {
               Este módulo todavía no tiene secciones publicadas.
             </AlertMessage>
           ) : (
-            <>
-              {hasSeveralLessons && (
-                <nav
-                  className="module-detail__sections"
-                  aria-label="Secciones del módulo"
-                >
-                  {module.lessons.map((lesson) => (
-                    <Chip
-                      key={lesson.id}
-                      isActive={lesson.id === activeLesson?.id}
-                      onClick={() => setActiveLessonId(lesson.id)}
-                    >
-                      {lesson.title}
-                    </Chip>
-                  ))}
-                </nav>
-              )}
+            <section className="module-detail__index" aria-labelledby={INDEX_TITLE_ID}>
+              <h2 className="module-detail__index-title" id={INDEX_TITLE_ID}>
+                Aprende paso a paso
+              </h2>
 
-              {activeLesson && (
-                // `key` fuerza el remontaje al cambiar de sección: reinicia los
-                // pasos marcados y la animación de entrada.
-                <section key={activeLesson.id} className="module-detail__lesson rise-in">
-                  <header className="module-detail__lesson-head">
-                    <h2 className="module-detail__lesson-title">{activeLesson.title}</h2>
-                    {activeLesson.summary && (
-                      <p className="module-detail__lesson-summary">
-                        {activeLesson.summary}
-                      </p>
-                    )}
-                  </header>
-
-                  <ContentBlockRenderer blocks={activeLesson.blocks} />
-                </section>
-              )}
-            </>
+              <LessonIndex moduleId={module.id} lessons={module.lessons} />
+            </section>
           )}
         </div>
       </article>

@@ -30,6 +30,42 @@
     gap: v.$space-3;
   }
 
+  /**
+   * El icono sobre disco blanco, no sobre el tinte de la burbuja.
+   *
+   * El degradado del hero arranca en el mismo color que el fondo tintado de
+   * `IconBubble`, así que la burbuja era invisible y el icono quedaba suelto.
+   * Disco blanco con halo y sombra teñida: el mismo tratamiento que en las
+   * tarjetas del inicio, para que el icono se lea igual en los dos sitios.
+   */
+  .icon-bubble {
+    background: #fff;
+    border-radius: 50%;
+
+    svg {
+      width: 60%;
+      height: 60%;
+    }
+  }
+
+  &__hero--critical .icon-bubble {
+    box-shadow:
+      0 0 0 8px rgba(255, 255, 255, 0.5),
+      0 10px 24px rgba(215, 38, 61, 0.24);
+  }
+
+  &__hero--urgent .icon-bubble {
+    box-shadow:
+      0 0 0 8px rgba(255, 255, 255, 0.5),
+      0 10px 24px rgba(224, 138, 30, 0.26);
+  }
+
+  &__hero--basic .icon-bubble {
+    box-shadow:
+      0 0 0 8px rgba(255, 255, 255, 0.5),
+      0 10px 24px rgba(15, 157, 88, 0.22);
+  }
+
   &__title {
     font-size: v.$font-size-xl;
     margin-top: v.$space-1;
@@ -75,37 +111,19 @@
     padding-top: v.$space-5;
   }
 
-  &__sections {
-    gap: v.$space-2;
-
-    @include m.bleed-scroller(v.$space-4);
-
-    @include m.from(v.$bp-md) {
-      margin-inline: 0;
-      padding-inline: 0;
-      flex-wrap: wrap;
-    }
-  }
-
-  &__lesson {
+  // --- Índice de pasos ---
+  // Lo que había aquí (las pastillas de sección y el cuerpo de la lección) se
+  // fue con el contenido a `LessonPage`. Esta pantalla solo lista los pasos.
+  &__index {
     display: flex;
     flex-direction: column;
-    gap: v.$space-5;
+    gap: v.$space-4;
   }
 
-  &__lesson-head {
-    display: flex;
-    flex-direction: column;
-    gap: v.$space-2;
-  }
-
-  &__lesson-title {
+  &__index-title {
     font-size: v.$font-size-lg;
-  }
-
-  &__lesson-summary {
-    max-width: 62ch;
-    font-size: v.$font-size-sm;
-    color: v.$color-ink-muted;
+    font-weight: v.$font-weight-extrabold;
+    letter-spacing: v.$tracking-tight;
+    color: v.$color-brand-navy;
   }
 }

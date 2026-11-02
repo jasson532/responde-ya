@@ -6,6 +6,7 @@ import { LoadingStatus } from 'modules/shared/types/common.types';
 import { ROUTES } from 'modules/shared/constants/routes';
 import Spinner from 'modules/shared/components/atoms/Spinner/Spinner';
 import AlertMessage from 'modules/shared/components/molecules/AlertMessage/AlertMessage';
+import TopBar from 'modules/shared/components/organisms/TopBar/TopBar';
 import {
   clearSelectedModule,
   createModule,
@@ -76,27 +77,40 @@ const AdminModuleFormPage = () => {
   }
 
   return (
-    <section className="admin-module-form" data-testid="AdminModuleFormPage">
-      <Link to={ROUTES.ADMIN_MODULES} className="admin-module-form__back">
-        <ArrowLeft aria-hidden="true" />
-        Volver a administrar
-      </Link>
-
-      <h1 className="admin-module-form__title">
-        {isEditing ? 'Editar módulo' : 'Nuevo módulo'}
-      </h1>
-
-      {error && <AlertMessage tone="error">{error}</AlertMessage>}
-
-      <ModuleForm
-        initialValue={initialValue}
-        isSubmitting={mutationStatus === LoadingStatus.Pending}
-        onSubmit={(draft) => void handleSubmit(draft)}
-        onCancel={() => navigate(ROUTES.ADMIN_MODULES)}
+    <>
+      <TopBar
+        title={isEditing ? 'Editar módulo' : 'Nuevo módulo'}
+        showBack
+        backTo={ROUTES.ADMIN_MODULES}
       />
 
-      {module && <LessonManager module={module} />}
-    </section>
+      <section
+        className="admin-module-form app-container rise-in"
+        data-testid="AdminModuleFormPage"
+      >
+        {/* En escritorio no hay TopBar, así que este enlace es la única forma
+            de volver. En móvil lo cubre el botón de la barra superior. */}
+        <Link to={ROUTES.ADMIN_MODULES} className="admin-module-form__back">
+          <ArrowLeft aria-hidden="true" />
+          Volver a administrar
+        </Link>
+
+        <h1 className="admin-module-form__title">
+          {isEditing ? 'Editar módulo' : 'Nuevo módulo'}
+        </h1>
+
+        {error && <AlertMessage tone="error">{error}</AlertMessage>}
+
+        <ModuleForm
+          initialValue={initialValue}
+          isSubmitting={mutationStatus === LoadingStatus.Pending}
+          onSubmit={(draft) => void handleSubmit(draft)}
+          onCancel={() => navigate(ROUTES.ADMIN_MODULES)}
+        />
+
+        {module && <LessonManager module={module} />}
+      </section>
+    </>
   );
 };
 

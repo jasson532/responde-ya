@@ -4,7 +4,7 @@ import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from 'modules/shared/store/hooks';
 import { LoadingStatus } from 'modules/shared/types/common.types';
 import { ROUTES, buildRoute } from 'modules/shared/constants/routes';
-import Badge from 'modules/shared/components/atoms/Badge/Badge';
+import Badge, { type BadgeTone } from 'modules/shared/components/atoms/Badge/Badge';
 import Button from 'modules/shared/components/atoms/Button/Button';
 import LinkButton from 'modules/shared/components/atoms/LinkButton/LinkButton';
 import Spinner from 'modules/shared/components/atoms/Spinner/Spinner';
@@ -33,6 +33,17 @@ const TONE_BY_SEVERITY = {
   [ModuleSeverity.Urgent]: 'warning',
   [ModuleSeverity.Basic]: 'safe',
 } as const;
+
+/**
+ * Mapa en vez de ternario: con tres estados un `a ? x : y` obliga a leer el
+ * código para saber qué pasa con el tercero, y el `Record` falla al compilar si
+ * mañana aparece un cuarto.
+ */
+const BADGE_BY_STATUS: Record<ModuleStatus, { tone: BadgeTone; label: string }> = {
+  [ModuleStatus.Published]: { tone: 'safe', label: 'Publicado' },
+  [ModuleStatus.ComingSoon]: { tone: 'warning', label: 'Próximamente' },
+  [ModuleStatus.Draft]: { tone: 'neutral', label: 'Borrador' },
+};
 
 const AdminModulesPage = () => {
   const dispatch = useAppDispatch();
@@ -99,12 +110,8 @@ const AdminModulesPage = () => {
                   tone={TONE_BY_SEVERITY[module.severity]}
                   meta={
                     <>
-                      <Badge
-                        tone={module.status === ModuleStatus.Published ? 'safe' : 'neutral'}
-                      >
-                        {module.status === ModuleStatus.Published
-                          ? 'Publicado'
-                          : 'Borrador'}
+                      <Badge tone={BADGE_BY_STATUS[module.status].tone}>
+                        {BADGE_BY_STATUS[module.status].label}
                       </Badge>
                       <span className="admin-modules__count">
                         {module.lessons.length}{' '}

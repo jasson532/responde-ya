@@ -1,7 +1,11 @@
 import { CircleAlert, OctagonAlert } from 'lucide-react';
+import CprMetronome from 'modules/content/components/molecules/CprMetronome/CprMetronome';
+import DoDontGrid from 'modules/content/components/molecules/DoDontGrid/DoDontGrid';
 import EmergencyCallButton from 'modules/content/components/molecules/EmergencyCallButton/EmergencyCallButton';
 import InteractiveChecklist from 'modules/content/components/molecules/InteractiveChecklist/InteractiveChecklist';
+import KeyPointsList from 'modules/content/components/molecules/KeyPointsList/KeyPointsList';
 import QuizCard from 'modules/content/components/molecules/QuizCard/QuizCard';
+import StatsRow from 'modules/content/components/molecules/StatsRow/StatsRow';
 import StepsSequence from 'modules/content/components/molecules/StepsSequence/StepsSequence';
 import { ContentBlockKind, type ContentBlock } from 'modules/content/types/content.types';
 import './ContentBlockRenderer.scss';
@@ -69,6 +73,32 @@ const renderBlock = (block: ContentBlock) => {
 
     case ContentBlockKind.EmergencyCall:
       return <EmergencyCallButton phoneNumber={block.phoneNumber} label={block.label} />;
+
+    case ContentBlockKind.Stats:
+      return <StatsRow title={block.title} stats={block.stats} />;
+
+    case ContentBlockKind.Metronome:
+      return (
+        <CprMetronome
+          beatsPerMinute={block.beatsPerMinute}
+          relaySeconds={block.relaySeconds}
+          title={block.title}
+          hint={block.hint}
+        />
+      );
+
+    case ContentBlockKind.DoDont:
+      return (
+        <DoDontGrid
+          doTitle={block.doTitle}
+          dontTitle={block.dontTitle}
+          doItems={block.doItems}
+          dontItems={block.dontItems}
+        />
+      );
+
+    case ContentBlockKind.KeyPoints:
+      return <KeyPointsList title={block.title} points={block.points} />;
 
     default:
       return assertNever(block);

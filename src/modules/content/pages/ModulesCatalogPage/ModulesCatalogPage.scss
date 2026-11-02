@@ -4,13 +4,17 @@
 .home {
   display: flex;
   flex-direction: column;
-  gap: v.$space-4;
+  gap: v.$space-5;
   padding-top: v.$space-4;
 
-  &__lead {
+  &__modules {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-3;
+  }
+
+  &__section-title {
     padding-inline: v.$space-1;
-    font-size: v.$font-size-base;
-    color: v.$color-ink-soft;
-    max-width: 52ch;
+    font-size: v.$font-size-md;
   }
 }

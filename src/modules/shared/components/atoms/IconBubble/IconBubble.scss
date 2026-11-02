@@ -6,9 +6,11 @@
   flex-shrink: 0;
   border-radius: v.$radius-lg;
 
+  // 58% en vez de 50%: los iconos sanitarios son más detallados que los de
+  // interfaz y a tamaño pequeño el dibujo se cierra.
   svg {
-    width: 50%;
-    height: 50%;
+    width: 58%;
+    height: 58%;
     stroke-width: 2.1;
   }
 
@@ -38,6 +40,12 @@
     width: 72px;
     height: 72px;
     border-radius: v.$radius-xl;
+  }
+
+  &--2xl {
+    width: 96px;
+    height: 96px;
+    border-radius: v.$radius-2xl;
   }
 
   // --- Tonos ---

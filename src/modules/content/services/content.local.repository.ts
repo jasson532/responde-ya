@@ -23,12 +23,42 @@ import { RETIRED_SEED_IDS, SEED_MODULES, SEED_VERSION } from './content.seed';
 
 interface SeedMeta {
   version: number;
+  /**
+   * Huella del contenido de la semilla. Es lo que DECIDE si hay que migrar.
+   *
+   * Antes la decisión dependía de `SEED_VERSION`, un número que se subía a
+   * mano, y eso fallaba de dos formas: olvidarse de subirlo dejaba a la gente
+   * con contenido viejo en silencio, y subirlo en una edición distinta a la del
+   * contenido persistía una combinación incoherente. Derivar la huella del
+   * contenido hace imposible que no coincidan.
+   */
+  signature: string;
   /** Ids que instaló la semilla, para distinguirlos de los creados por un admin. */
   seedIds: string[];
 }
 
+/**
+ * Huella FNV-1a del contenido de la semilla.
+ *
+ * No necesita ser criptográfica: solo tiene que cambiar cuando cambie el
+ * contenido. Se calcula una vez al arrancar sobre unos 25 kB de JSON.
+ */
+const computeSeedSignature = (): string => {
+  const payload = JSON.stringify({ modules: SEED_MODULES, retired: RETIRED_SEED_IDS });
+
+  let hash = 0x811c9dc5;
+  for (let index = 0; index < payload.length; index += 1) {
+    hash ^= payload.charCodeAt(index);
+    hash = Math.imul(hash, 0x01000193);
+  }
+
+  // >>> 0 lo fuerza a entero sin signo de 32 bits.
+  return `v${SEED_VERSION}-${(hash >>> 0).toString(36)}`;
+};
+
 const currentSeedMeta = (): SeedMeta => ({
   version: SEED_VERSION,
+  signature: computeSeedSignature(),
   seedIds: SEED_MODULES.map((module) => module.id),
 });
 
@@ -73,8 +103,8 @@ const migrateSeed = (stored: ContentModule[]): ContentModule[] => {
   localStore.write(CONTENT_SEED_META_STORAGE_KEY, currentSeedMeta());
 
   logger.info('Contenido semilla actualizado', {
-    from: previous?.version ?? 'sin versión',
-    to: SEED_VERSION,
+    de: previous?.signature ?? 'sin huella',
+    a: computeSeedSignature(),
     conservados: authored.length,
   });
 
@@ -87,7 +117,10 @@ const readAll = (): ContentModule[] => {
   if (stored === null) return installSeed();
 
   const meta = localStore.read<SeedMeta | null>(CONTENT_SEED_META_STORAGE_KEY, null);
-  if (meta?.version !== SEED_VERSION) return migrateSeed(stored);
+
+  // Basta comparar la huella: cambia con cualquier edición de la semilla,
+  // incluido retocar el texto de un módulo que ya existía.
+  if (meta?.signature !== computeSeedSignature()) return migrateSeed(stored);
 
   return stored;
 };
@@ -99,10 +132,20 @@ const writeAll = (modules: ContentModule[]): ContentModule[] => {
 
 const byOrder = (a: { order: number }, b: { order: number }) => a.order - b.order;
 
-const matchesFilters = (module: ContentModule, filters?: ModuleFilters): boolean => {
-  if (!filters) return module.status === ModuleStatus.Published;
+/**
+ * Lo que puede ver quien no es admin: todo menos los borradores.
+ *
+ * Un módulo «próximamente» SÍ sale en el catálogo —anunciarlo es su único
+ * propósito—, pero la tarjeta no se puede abrir. Quien decide eso es la UI, no
+ * este filtro.
+ */
+const isPubliclyVisible = (module: ContentModule): boolean =>
+  module.status !== ModuleStatus.Draft;
 
-  if (!filters.includeDrafts && module.status !== ModuleStatus.Published) return false;
+const matchesFilters = (module: ContentModule, filters?: ModuleFilters): boolean => {
+  if (!filters) return isPubliclyVisible(module);
+
+  if (!filters.includeDrafts && !isPubliclyVisible(module)) return false;
 
   if (filters.severity && module.severity !== filters.severity) return false;
 

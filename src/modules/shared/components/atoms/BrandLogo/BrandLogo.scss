@@ -1,5 +1,4 @@
 @use 'styles/variables' as v;
-@use 'styles/mixins' as m;
 
 .brand-logo {
   height: auto;
@@ -13,14 +12,15 @@
   }
 
   &--lg {
-    width: 240px;
-
-    @include m.from(v.$bp-md) {
-      width: 320px;
-    }
-
-    @include m.from(v.$bp-lg) {
-      width: 380px;
-    }
+    width: 350px;
+    /**
+     * Freno para pantallas estrechas.
+     *
+     * 350px fijos desbordan en un móvil de 360px (quedan 312px útiles tras el
+     * padding de la portada) y eso provoca scroll horizontal en toda la app.
+     * El `max-width` solo entra en juego por debajo de esos 350px: en el resto
+     * de los casos el ancho es exactamente el pedido.
+     */
+    max-width: 100%;
   }
 }

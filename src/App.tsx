@@ -10,6 +10,7 @@ import AdminRoute from 'modules/shared/components/organisms/AdminRoute/AdminRout
 import AuthLayout from 'modules/shared/components/templates/AuthLayout/AuthLayout';
 import AppShell from 'modules/shared/components/templates/AppShell/AppShell';
 import NotFoundPage from 'modules/shared/components/pages/NotFoundPage/NotFoundPage';
+import AboutPage from 'modules/shared/components/pages/AboutPage/AboutPage';
 import { bootstrapSession } from 'modules/auth';
 import { authRoutes } from 'modules/auth/routes';
 import { contentAdminRoutes, contentRoutes } from 'modules/content/routes';
@@ -34,8 +35,12 @@ const AppRoutes = () => (
 
     <Suspense fallback={<Spinner size="lg" label="Cargando" />}>
       <Routes>
-        {/* Bienvenida: acceso directo al contenido o identificacion como admin */}
-        <Route element={<AuthLayout />}>{authRoutes}</Route>
+        {/* Bienvenida y presentación. Comparten el lienzo de marca y NO llevan
+            la barra inferior: ambas traen sus propios botones de navegación. */}
+        <Route element={<AuthLayout />}>
+          {authRoutes}
+          <Route path={ROUTES.ABOUT} element={<AboutPage />} />
+        </Route>
 
         {/* Contenido: público, sin autenticacion */}
         <Route element={<AppShell />}>{contentRoutes}</Route>

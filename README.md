@@ -222,6 +222,26 @@ renderizarlo **rompe la compilación**, no la pantalla del usuario.
 | `video`         | Video con controles nativos                            |
 | `quiz`          | Pregunta con retroalimentación en región `aria-live`   |
 | `emergencyCall` | Enlace `tel:` que marca directo desde el móvil         |
+| `stats`         | Cifras clave en grande, para buscarlas con la vista    |
+| `metronome`     | Círculo que late al ritmo indicado, para comprimir a la vez |
+| `doDont`        | Dos columnas enfrentadas: lo que sí y lo que nunca     |
+
+### Preferir lo visual al párrafo
+
+Los tres últimos bloques existen para quitar prosa. El módulo de RCP pasó de ~900 palabras y
+4 secciones a ~190 palabras y 3 secciones sin perder ninguna indicación:
+
+| Antes | Ahora |
+| --- | --- |
+| Párrafo explicando «entre 100 y 120 por minuto» y el truco de la canción | `metronome` a 110 bpm: se comprime al ritmo del círculo |
+| Prosa con el ritmo, la profundidad y «sin pausas» | `stats` con las tres cifras en grande |
+| Tres bloques `warning` seguidos | un `doDont` de dos columnas |
+| Checklist de 6 puntos de técnica | la columna «Hazlo así» del `doDont` |
+
+El `metronome` es el caso extremo: ninguna descripción escrita del ritmo sirve para comprimir
+al ritmo correcto. Es el único componente cuyo movimiento **no** se desactiva con
+`prefers-reduced-motion`, porque ahí el movimiento es la función, no el adorno; lo que se hace
+es suavizarlo.
 
 ## Decisiones de accesibilidad
 
@@ -251,13 +271,27 @@ fuente en cada módulo.
 ### Versionado de la semilla
 
 El contenido semilla solo se escribía si `localStorage` estaba vacío, así que quien ya había
-abierto la app nunca veía los módulos nuevos. Ahora hay `SEED_VERSION`:
+abierto la app nunca veía los módulos nuevos. Ahora la migración se dispara por una **huella
+del contenido**, no por un número que haya que acordarse de subir:
 
-1. Al cambiar la semilla, **subir `SEED_VERSION`** en `content.seed.ts`.
-2. Si se retira un módulo, añadir su id a `RETIRED_SEED_IDS`. Sin eso la migración no puede
+```
+signature = FNV-1a( JSON(SEED_MODULES) + RETIRED_SEED_IDS )
+```
+
+1. Edita la semilla. **No hay que subir nada**: cualquier cambio altera la huella, incluido
+   retocar una frase de un módulo que ya existía.
+2. Si retiras un módulo, añade su id a `RETIRED_SEED_IDS`. Sin eso la migración no puede
    distinguir un módulo retirado de uno que creó un administrador, y lo conservaría.
-3. En el siguiente arranque, los módulos de la semilla se reinstalan y **los creados por un
+3. En el siguiente arranque los módulos de la semilla se reinstalan y **los creados por un
    administrador se conservan** intactos.
+
+`SEED_VERSION` sigue existiendo, pero solo como prefijo legible de la huella y para los logs.
+Ya no decide nada.
+
+Antes la decisión dependía de ese número y fallaba de dos formas, las dos silenciosas:
+olvidarse de subirlo dejaba a la gente con contenido viejo indefinidamente, y subirlo en una
+edición distinta a la del contenido persistía una combinación incoherente que ya no se
+corregía nunca.
 
 ## Seguridad: qué falta para producción
 

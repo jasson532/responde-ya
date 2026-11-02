@@ -2,77 +2,27 @@
 @use 'styles/mixins' as m;
 
 .auth-layout {
-  display: grid;
+  display: flex;
   min-height: 100%;
-  grid-template-columns: 1fr;
-
-  @include m.from(v.$bp-lg) {
-    grid-template-columns: 1.1fr 1fr;
-  }
-
-  &__brand {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: v.$space-5;
-    padding: v.$space-6 v.$space-5;
-    text-align: center;
-
-    // Mismo color que el lienzo del JPEG: el logo no deja borde visible.
-    background: v.$color-brand-canvas;
-    border-bottom: 1px solid v.$color-line;
-
-    @include m.from(v.$bp-lg) {
-      padding: v.$space-8 v.$space-7;
-      border-bottom: none;
-      border-right: 1px solid v.$color-line;
-    }
-  }
-
-  &__logo-wrap {
-    margin: 0;
-    line-height: 0;
-  }
-
-  &__tagline {
-    max-width: 34ch;
-    font-size: v.$font-size-md;
-    font-weight: v.$font-weight-medium;
-    color: v.$color-brand-navy;
-  }
-
-  &__highlights {
-    display: flex;
-    flex-direction: column;
-    gap: v.$space-3;
-    text-align: left;
-
-    li {
-      position: relative;
-      padding-left: v.$space-5;
-      font-size: v.$font-size-sm;
-      color: v.$color-ink-soft;
-
-      // Latido del ECG del logo, reducido a una vineta.
-      &::before {
-        content: '';
-        position: absolute;
-        left: 0;
-        top: 0.55em;
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        background: v.$color-brand-red;
-      }
-    }
-  }
+  // Mismo color que el lienzo del JPEG del logo: el logo no deja un rectángulo
+  // visible al apoyarse sobre el fondo.
+  background: v.$color-brand-canvas;
 
   &__content {
-    display: grid;
-    place-items: center;
-    padding: v.$space-6 v.$space-4;
-    background: v.$color-surface;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    /**
+     * `margin: auto` centra, `place-items: center` recorta.
+     *
+     * Con el centrado del contenedor, un contenido más alto que la ventana
+     * —la página «Conoce la aplicación», o la portada cuando aparece el
+     * formulario de administración— desborda por ARRIBA y esa parte queda
+     * inalcanzable: el scroll no llega a contenido en negativo. Con `auto` el
+     * margen se colapsa a cero cuando no hay sitio y todo queda accesible.
+     */
+    margin: auto;
+    padding: v.$space-6 v.$space-5;
 
     @include m.from(v.$bp-md) {
       padding: v.$space-7 v.$space-6;

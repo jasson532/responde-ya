@@ -12,6 +12,7 @@ import {
 } from 'modules/content/types/content.types';
 import {
   DEFAULT_MODULE_ICON,
+  MODULE_ICON_LABELS,
   MODULE_ICON_NAMES,
   getModuleIcon,
 } from 'modules/content/constants/moduleIcons';
@@ -101,7 +102,7 @@ const ModuleForm = ({
 
       <FormField
         label="Resumen"
-        hint="Una frase que le diga al usuario cuando usar este módulo."
+        hint="Una frase que le diga a la persona cuándo usar este módulo."
         error={errors.summary}
         required
       >
@@ -134,7 +135,7 @@ const ModuleForm = ({
 
       <FormField
         label="Etiquetas de búsqueda"
-        hint="Separadas por comas. Son las palabras que el usuario escribiria en una emergencia."
+        hint="Separadas por comas. Son las palabras que escribiría alguien en una emergencia."
       >
         <Input
           value={tagsText}
@@ -152,7 +153,8 @@ const ModuleForm = ({
               type="button"
               className={`module-form__icon ${draft.iconName === iconName ? 'is-active' : ''}`.trim()}
               aria-pressed={draft.iconName === iconName}
-              aria-label={`Usar icono ${iconName}`}
+              title={MODULE_ICON_LABELS[iconName]}
+              aria-label={`Usar icono de ${MODULE_ICON_LABELS[iconName]}`}
               onClick={() => patch('iconName', iconName)}
             >
               {getModuleIcon(iconName)}
@@ -171,7 +173,19 @@ const ModuleForm = ({
             onChange={() => patch('status', ModuleStatus.Draft)}
           />
           <span>
-            <strong>Borrador</strong> — solo tu lo ves
+            <strong>Borrador</strong> — solo tú lo ves
+          </span>
+        </label>
+        <label className="module-form__radio">
+          <input
+            type="radio"
+            name="status"
+            checked={draft.status === ModuleStatus.ComingSoon}
+            onChange={() => patch('status', ModuleStatus.ComingSoon)}
+          />
+          <span>
+            <strong>Próximamente</strong> — aparece en el catálogo en gris, sin poder
+            abrirse
           </span>
         </label>
         <label className="module-form__radio">

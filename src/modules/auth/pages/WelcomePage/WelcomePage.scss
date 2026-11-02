@@ -1,68 +1,156 @@
 @use 'styles/variables' as v;
 
-.welcome-page {
+/**
+ * Portada, siguiendo la pantalla 1 del prototipo: columna centrada con logo,
+ * lema, panel ilustrado y una sola acción.
+ *
+ * El ancho se topa en 360px incluso en escritorio. La portada del prototipo es
+ * una pantalla de móvil, y estirar cuatro elementos centrados a 1280px los
+ * separa tanto que dejan de leerse como un bloque.
+ */
+.welcome {
   display: flex;
   flex-direction: column;
-  gap: v.$space-4;
+  align-items: center;
+  gap: v.$space-5;
   width: 100%;
-  max-width: 420px;
+  max-width: 360px;
+  text-align: center;
 
-  &__header {
-    margin-bottom: v.$space-2;
+  &__logo {
+    margin: 0;
+    line-height: 0;
   }
 
-  &__title {
-    font-size: v.$font-size-xl;
+  &__tagline {
+    // Mismo azul del lockup de la marca. El prototipo lo pone en un azul medio;
+    // usar el de marca evita meter un tercer color en la primera pantalla.
+    color: v.$color-brand-navy;
+    /**
+     * Dos líneas, como en el diseño. Lo que lo forzaba a tres no era el tamaño
+     * sino el tracking: a 0.1em cada uno de los 57 caracteres sumaba ~1,2px y
+     * la línea se iba un 17% más ancha de lo necesario. Con el tracking casi a
+     * cero entra a 13px y ocupa el ancho del logo, que es lo que se ve en la
+     * referencia.
+     */
+    text-wrap: balance;
+    // 1rem pedidos. Fuera de la escala de tokens (base es 15px y md 17px), así
+    // que va literal, igual que los 30px del botón principal.
+    font-size: 1rem;
+    font-weight: v.$font-weight-extrabold;
+    line-height: v.$line-height-snug;
+    text-transform: uppercase;
+    letter-spacing: 0.01em;
+    /**
+     * El lema pertenece al logo: va pegado a él, no repartido en la columna.
+     *
+     * El margen negativo cancela el `gap` entero porque el JPEG del logo ya
+     * trae unos 45px de blanco bajo el wordmark. Sumar el `gap` a ese blanco
+     * dejaba el lema flotando lejos de la marca.
+     */
+    margin-top: calc(-1 * v.$space-5);
+  }
+
+  /**
+   * La ilustración. Es el elemento más grande de la pantalla y lo que la
+   * sostiene visualmente: sin ella quedarían un logo y un botón flotando.
+   *
+   * Sin panel de color detrás: el JPEG ya trae su fondo azul con la onda, y
+   * meterlo en una tarjeta teal dejaba dos azules distintos uno dentro del
+   * otro.
+   */
+  &__art {
+    width: 100%;
+    height: auto;
+    border-radius: v.$radius-lg;
+  }
+
+  /**
+   * Saludo bajo la ilustración. Es lo segundo más grande de la pantalla, por
+   * detrás del logo.
+   *
+   * 34px y no 26: a 26 entraba justo en una línea y quedaba discreto, mientras
+   * que en el diseño ocupa dos renglones enteros y es lo que da la bienvenida.
+   * `balance` lo parte en «¡Bienvenido a / RespondeYa!» en vez de dejar el
+   * nombre solo abajo, y el interlineado ceñido evita que las dos líneas se
+   * separen a este tamaño.
+   */
+  &__greeting {
+    text-wrap: balance;
+    font-size: v.$font-size-2xl;
+    font-weight: v.$font-weight-extrabold;
+    line-height: v.$line-height-tight;
+    letter-spacing: v.$tracking-tight;
     color: v.$color-brand-navy;
   }
 
-  &__subtitle {
-    margin-top: v.$space-2;
-    color: v.$color-ink-soft;
-    font-size: v.$font-size-md;
+  &__greeting-mark {
+    color: v.$color-brand-red;
   }
 
-  &__divider {
+  /**
+   * Las dos acciones, apiladas y a ancho completo.
+   *
+   * En fila no caben: «COMENZAR» a 30px mide unos 250px con su relleno y
+   * «Conoce la aplicación» otros 170px, así que la fila pide ~435px y la
+   * columna del prototipo mide 360px. Estrecharlos obligaría a bajar los 30px
+   * del botón principal.
+   */
+  &__actions {
     display: flex;
-    align-items: center;
+    flex-direction: column;
     gap: v.$space-3;
-    color: v.$color-ink-muted;
-    font-size: v.$font-size-xs;
+    width: 100%;
+  }
+
+  /**
+   * «COMENZAR» en mayúsculas, como el prototipo. Va en un `span` y no en el
+   * texto del botón porque el CSS es quien las pone: en el marcado la palabra
+   * sigue escrita en minúsculas para el lector de pantalla.
+   */
+  &__cta-label {
     text-transform: uppercase;
     letter-spacing: 0.08em;
-
-    &::before,
-    &::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: v.$color-line;
-    }
+    // 30px pedidos. El botón `lg` se dimensiona con padding y `line-height: 1`,
+    // así que crece con el texto en vez de recortarlo.
+    font-size: 30px;
   }
 
+  /**
+   * Pie del prototipo: lo que cuesta y lo que no hace falta.
+   *
+   * Pegado al botón con un margen negativo que cancela el `gap`: responde a la
+   * pregunta que deja el botón («¿y esto qué me va a pedir?»), así que se lee
+   * como su pie y no como un elemento más de la columna.
+   *
+   * En `ink-soft` y no en `ink-muted`, que es el gris del prototipo: sobre el
+   * lienzo crema el muted se queda en ~3,7:1 y a 13px hace falta 4,5:1.
+   */
+  &__terms {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: v.$space-2;
+    margin-top: calc(-1 * v.$space-3);
+    font-size: v.$font-size-sm;
+    color: v.$color-ink-soft;
+  }
+
+  &__terms-dot {
+    color: v.$color-ink-muted;
+  }
+
+  // --- Identificación de administración ---
+  // Solo se renderiza cuando el guard ha redirigido aquí, así que no necesita
+  // ocultarse: si existe en el DOM, es porque hace falta.
   &__admin-panel {
     display: flex;
     flex-direction: column;
     gap: v.$space-4;
-    padding-top: v.$space-2;
-
-    &[hidden] {
-      display: none;
-    }
-  }
-
-  &__admin-active {
-    display: flex;
-    flex-direction: column;
-    gap: v.$space-3;
-    padding: v.$space-4;
-    background: v.$color-safe-light;
-    border-radius: v.$radius-md;
-  }
-
-  &__admin-active-text {
-    font-size: v.$font-size-sm;
-    color: #0a6f3f;
+    width: 100%;
+    padding-top: v.$space-4;
+    border-top: 1px solid v.$color-line;
+    text-align: left;
   }
 
   &__demo {
