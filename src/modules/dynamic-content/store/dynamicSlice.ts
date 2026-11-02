@@ -298,15 +298,18 @@ export const uploadMedia = createAsyncThunk<
   }
 });
 
-export const deleteMedia = createAsyncThunk<string, string, { rejectValue: string }>(
-  'dynamic/deleteMedia',
-  async (mediaId, { rejectWithValue }) => {
-    try {
-      await (await getRepository()).deleteMedia(mediaId);
-      return mediaId;
-    } catch (error) {
-      return rejectWithValue(toErrorMessage(error, 'No pudimos eliminar la imagen.'));
-    }
+/**
+ * Descarta subidas que no acabaron en ningún bloque.
+ *
+ * NO está en `OTHER_MUTATIONS` a propósito, así que no toca `mutationStatus`
+ * ni `error`. Es una limpieza de fondo: que un archivo huérfano no se pudiera
+ * borrar no es algo que el administrador tenga que ver ni pueda arreglar, y un
+ * aviso rojo al cancelar un formulario haría pensar que algo se perdió.
+ */
+export const discardMedia = createAsyncThunk<void, string[]>(
+  'dynamic/discardMedia',
+  async (mediaIds) => {
+    await (await getRepository()).discardMedia(mediaIds);
   },
 );
 
@@ -344,7 +347,6 @@ const OTHER_MUTATIONS = [
   deleteDynamicModule,
   reorderDynamicModules,
   uploadMedia,
-  deleteMedia,
 ] as const;
 
 const dynamicSlice = createSlice({
@@ -408,9 +410,6 @@ const dynamicSlice = createSlice({
       .addCase(uploadMedia.fulfilled, (state, action) => {
         state.mutationStatus = LoadingStatus.Succeeded;
         state.lastUpload = action.payload;
-      })
-      .addCase(deleteMedia.fulfilled, (state) => {
-        state.mutationStatus = LoadingStatus.Succeeded;
       })
 
       // --- lectura del detalle: dos thunks, un solo resultado ---

@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, ReactNode } from 'react';
+import type { ButtonHTMLAttributes, ReactNode, Ref } from 'react';
 import Spinner from 'modules/shared/components/atoms/Spinner/Spinner';
 import './Button.scss';
 
@@ -12,6 +12,18 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   fullWidth?: boolean;
   iconStart?: ReactNode;
   iconEnd?: ReactNode;
+  /**
+   * Acceso al `<button>` real.
+   *
+   * `ButtonHTMLAttributes` no lo incluye, así que sin declararlo aquí no se
+   * puede pasar. Hace falta para devolver el foco: cuando un botón abre algo y
+   * eso se cierra, el foco se queda en el `<body>` y quien navega con teclado
+   * vuelve a empezar desde el principio de la página.
+   *
+   * En React 19 `ref` viaja como una prop más y llega al `<button>` con el
+   * resto; no hace falta `forwardRef`.
+   */
+  ref?: Ref<HTMLButtonElement>;
 }
 
 const Button = ({

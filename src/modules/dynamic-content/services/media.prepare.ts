@@ -96,6 +96,76 @@ const canvasToBlob = (canvas: HTMLCanvasElement, type: string, quality: number) 
     );
   });
 
+/** Formatos de vídeo que los navegadores reproducen de forma fiable. */
+const ACCEPTED_VIDEO = ['video/mp4', 'video/webm', 'video/ogg', 'video/quicktime'];
+
+/**
+ * Tope de los vídeos. Son 50 MB porque es el límite por archivo que Supabase
+ * Storage aplica por defecto, y porque a partir de ahí la descarga en una
+ * conexión móvil deja de ser razonable: no hay versiones de distinta calidad
+ * como en YouTube, cada visitante se trae el archivo entero.
+ */
+const MAX_VIDEO_BYTES = 50 * 1024 * 1024;
+
+export const isVideoFile = (file: File): boolean => file.type.startsWith('video/');
+
+/**
+ * Comprueba un vídeo y lee su proporción. NO lo recomprime.
+ *
+ * Reconvertir vídeo en el navegador exigiría WebCodecs o un WASM de ffmpeg:
+ * varios megabytes de código y minutos de proceso para un archivo mediano.
+ * Queda fuera de alcance, así que el archivo se sube tal cual y el formulario
+ * avisa del peso.
+ */
+export const prepareVideo = async (
+  file: File,
+): Promise<{ file: File; width: number | null; height: number | null }> => {
+  if (!ACCEPTED_VIDEO.includes(file.type)) {
+    throw validationError('Formato de vídeo no admitido. Usa MP4, WebM u OGG.');
+  }
+
+  if (file.size > MAX_VIDEO_BYTES) {
+    const mb = Math.round(file.size / (1024 * 1024));
+    throw validationError(
+      `El vídeo pesa ${mb} MB y el máximo es 50. Súbelo a YouTube y pega el enlace, o recórtalo antes.`,
+    );
+  }
+
+  const size = await readVideoSize(file);
+  return { file, width: size?.width ?? null, height: size?.height ?? null };
+};
+
+/**
+ * Lee el tamaño del vídeo cargando solo sus metadatos.
+ *
+ * `preload="metadata"` descarga los primeros bytes, no el archivo entero: con
+ * un vídeo de 40 MB, esperar a `loadeddata` bloquearía la subida durante toda
+ * la descarga.
+ */
+const readVideoSize = (file: File) =>
+  new Promise<{ width: number; height: number } | null>((resolve) => {
+    const url = URL.createObjectURL(file);
+    const video = document.createElement('video');
+    const done = (value: { width: number; height: number } | null) => {
+      URL.revokeObjectURL(url);
+      resolve(value);
+    };
+
+    const timer = setTimeout(() => done(null), 10000);
+
+    video.preload = 'metadata';
+    video.onloadedmetadata = () => {
+      clearTimeout(timer);
+      done({ width: video.videoWidth, height: video.videoHeight });
+    };
+    video.onerror = () => {
+      clearTimeout(timer);
+      done(null);
+    };
+
+    video.src = url;
+  });
+
 /**
  * Reduce, recomprime y genera el placeholder.
  *

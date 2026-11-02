@@ -8,6 +8,10 @@
   &__img {
     width: 100%;
     height: auto;
+    // Freno para los tamaños fijos: por estrecha que sea la pantalla, la
+    // imagen nunca sale de ella. Es lo que hace seguro dejar que el
+    // administrador escriba un ancho en píxeles.
+    max-width: 100%;
     border-radius: v.$radius-lg;
     // La miniatura en base64 se pinta de fondo, ampliada: ocupa el hueco con
     // los colores de la imagen final mientras esta llega.
@@ -16,15 +20,38 @@
     background-repeat: no-repeat;
 
     &--cover {
-      // Proporción fija para que varias imágenes recortadas se alineen entre
-      // sí aunque las originales tengan formatos distintos.
-      aspect-ratio: 16 / 9;
       object-fit: cover;
     }
 
     &--contain {
       object-fit: contain;
     }
+  }
+
+  /**
+   * Con tamaño fijo la imagen se centra.
+   *
+   * Una imagen de 300px pegada al margen izquierdo de una columna de 600
+   * parece un fallo de maquetación, no una decisión. Centrarla es lo que se
+   * espera al reducir el tamaño a propósito.
+   */
+  &--sized {
+    align-items: center;
+
+    .media-figure__img {
+      // Anula la proporción fija que `--cover` impone en la galería: aquí la
+      // marca el tamaño pedido.
+      aspect-ratio: auto;
+    }
+  }
+
+  /**
+   * En la galería, `cover` necesita proporción fija para que varias imágenes
+   * recortadas se alineen entre sí aunque las originales tengan formatos
+   * distintos. Solo aplica cuando NO hay tamaño propio.
+   */
+  &:not(&--sized) &__img--cover {
+    aspect-ratio: 16 / 9;
   }
 
   &__caption {

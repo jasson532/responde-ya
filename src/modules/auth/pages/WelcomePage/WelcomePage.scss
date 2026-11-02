@@ -140,9 +140,23 @@
     color: v.$color-ink-muted;
   }
 
+  /**
+   * Acceso de administración. Deliberadamente apagado: no es para quien abre
+   * la aplicación, y en la primera pantalla compite con «COMENZAR».
+   *
+   * El margen negativo lo acerca al pie que tiene encima para que los dos se
+   * lean como la letra pequeña de la pantalla, en lugar de quedar repartido en
+   * la columna como una tercera acción.
+   */
+  &__admin-access {
+    margin-top: calc(-1 * v.$space-3);
+    font-size: v.$font-size-sm;
+    color: v.$color-ink-soft;
+  }
+
   // --- Identificación de administración ---
-  // Solo se renderiza cuando el guard ha redirigido aquí, así que no necesita
-  // ocultarse: si existe en el DOM, es porque hace falta.
+  // Solo existe en el DOM mientras está abierto, así que no necesita reglas
+  // para ocultarse.
   &__admin-panel {
     display: flex;
     flex-direction: column;

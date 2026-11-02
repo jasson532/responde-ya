@@ -121,6 +121,8 @@ const renderBlock = (block: ContentBlock, context: BlockContext) => {
           media={block.data.media}
           caption={block.data.caption}
           fit={block.data.fit}
+          displayWidth={block.data.displayWidth}
+          displayHeight={block.data.displayHeight}
         />
       );
 
@@ -128,7 +130,16 @@ const renderBlock = (block: ContentBlock, context: BlockContext) => {
       return <GalleryBlock items={block.data.items} columns={block.data.columns} />;
 
     case BlockKind.Embed:
-      return <EmbedBlock url={block.data.url} title={block.data.title} />;
+      return (
+        <EmbedBlock
+          source={block.data.source}
+          url={block.data.url}
+          title={block.data.title}
+          width={block.data.width}
+          height={block.data.height}
+          posterUrl={block.data.posterUrl}
+        />
+      );
 
     // --- Destacados ---
     case BlockKind.Callout:

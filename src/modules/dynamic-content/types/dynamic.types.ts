@@ -263,5 +263,17 @@ export interface DynamicContentRepository {
 
   // --- Archivos ---
   uploadMedia(file: File, moduleId: string | null, alt: string): Promise<MediaAsset>;
-  deleteMedia(mediaId: string): Promise<void>;
+
+  /**
+   * Borra archivos del almacenamiento y sus registros.
+   *
+   * Es una limpieza, no una acción del administrador: no falla hacia fuera.
+   * Si el almacenamiento no responde, el archivo se queda y se registra el
+   * aviso; abortar por eso dejaría el contenido a medio borrar, que es peor.
+   *
+   * Los borrados de contenido (módulo, página, sección, bloque) ya arrastran
+   * sus archivos por su cuenta. Esto es para los que nunca llegaron a usarse:
+   * se sube una imagen y se cancela el formulario.
+   */
+  discardMedia(mediaIds: string[]): Promise<void>;
 }

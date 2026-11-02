@@ -41,7 +41,11 @@ const AppHeader = () => {
             Buscar
           </NavLink>
           {isAdmin && (
-            <NavLink to={ROUTES.ADMIN_MODULES} className="app-header__link">
+            // Lleva al editor de contenido dinámico, igual que la pestaña
+            // «Gestionar» de la barra inferior. Apuntaba a `/admin/modulos`,
+            // el editor ANTIGUO sobre localStorage, que ya no es donde se
+            // trabaja; sigue alcanzable por enlace directo hasta que se jubile.
+            <NavLink to={ROUTES.ADMIN_DYN} className="app-header__link">
               <Settings aria-hidden="true" />
               Gestionar contenido
             </NavLink>

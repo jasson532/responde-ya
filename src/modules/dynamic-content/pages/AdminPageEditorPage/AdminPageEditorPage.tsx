@@ -371,6 +371,7 @@ const AdminPageEditorPage = () => {
               : (dialog.block.data as unknown as Record<string, unknown>)
           }
           pages={module.pages}
+          moduleId={module.id}
         />
       )}
     </>

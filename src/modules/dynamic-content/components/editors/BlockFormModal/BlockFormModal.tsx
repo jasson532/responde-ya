@@ -1,22 +1,29 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Save } from 'lucide-react';
+import { useAppDispatch } from 'modules/shared/store/hooks';
 import Button from 'modules/shared/components/atoms/Button/Button';
 import Textarea from 'modules/shared/components/atoms/Textarea/Textarea';
 import FormField from 'modules/shared/components/molecules/FormField/FormField';
 import Modal from 'modules/shared/components/molecules/Modal/Modal';
 import AlertMessage from 'modules/shared/components/molecules/AlertMessage/AlertMessage';
 import { sanitizeBlockData } from 'modules/dynamic-content/services/blocks.schema';
+import { collectMediaIds } from 'modules/dynamic-content/services/media.refs';
+import { discardMedia } from 'modules/dynamic-content/store/dynamicSlice';
 import { BlockKind } from 'modules/dynamic-content/types/blocks.types';
 import type { Page } from 'modules/dynamic-content/types/dynamic.types';
 import { blockLabel } from 'modules/dynamic-content/constants/blockLibrary';
 import {
   CalloutForm,
+  ChecklistForm,
   DividerForm,
+  EmbedForm,
   HeadingForm,
+  ImageForm,
   KeyPointsForm,
   MetronomeForm,
   PageLinksForm,
   StatsForm,
+  StepsForm,
   TextForm,
 } from '../blockForms/blockForms';
 import './BlockFormModal.scss';
@@ -29,6 +36,8 @@ export interface BlockFormModalProps {
   kind: string;
   initialData: Record<string, unknown>;
   pages: Page[];
+  /** Hace falta para subir archivos: agrupa las imágenes por módulo. */
+  moduleId: string;
 }
 
 /**
@@ -48,10 +57,58 @@ const BlockFormModal = ({
   kind,
   initialData,
   pages,
+  moduleId,
 }: BlockFormModalProps) => {
+  const dispatch = useAppDispatch();
   const [data, setData] = useState<Record<string, unknown>>(initialData);
   const [rawJson, setRawJson] = useState(() => JSON.stringify(initialData, null, 2));
   const [error, setError] = useState<string | null>(null);
+
+  /**
+   * ===========================================================================
+   * ARCHIVOS SUBIDOS EN ESTE FORMULARIO
+   * ===========================================================================
+   * Elegir un archivo lo sube al instante, antes de guardar. Eso hace que
+   * cancelar, o cambiar de imagen dos veces, deje archivos que ningún bloque
+   * referencia: invisibles y ocupando sitio.
+   *
+   * Aquí se anota lo subido DURANTE esta sesión del formulario, que es la única
+   * lista que se puede borrar sin riesgo. La imagen que ya estaba guardada no
+   * entra: si se cancela, el bloque en la base de datos sigue usándola, y
+   * borrarla dejaría la página pública con un hueco.
+   *
+   * Va en un `ref` y no en estado porque nada de la interfaz depende de ello y
+   * tiene que sobrevivir a los redibujados sin provocar ninguno.
+   * ===========================================================================
+   */
+  const uploadedHere = useRef<string[]>([]);
+
+  const registerUpload = (mediaId: string) => {
+    uploadedHere.current.push(mediaId);
+  };
+
+  const discard = (mediaIds: string[]) => {
+    if (mediaIds.length > 0) void dispatch(discardMedia(mediaIds));
+  };
+
+  /**
+   * Al desmontarse se limpia lo que quede anotado.
+   *
+   * Es el desmontaje y no el botón de cancelar porque hay más formas de salir
+   * del formulario: la tecla Escape, pulsar fuera del diálogo, o navegar atrás
+   * con el móvil. Todas acaban aquí.
+   *
+   * Guardar vacía la lista antes, así que un guardado correcto no llega a este
+   * borrado con nada dentro.
+   */
+  useEffect(
+    () => () => {
+      const pending = uploadedHere.current;
+      uploadedHere.current = [];
+      if (pending.length > 0) void dispatch(discardMedia(pending));
+    },
+    [dispatch],
+  );
 
   const handleSave = () => {
     /**
@@ -68,6 +125,17 @@ const BlockFormModal = ({
       );
       return;
     }
+
+    /**
+     * De lo subido aquí se descarta lo que no haya acabado en el contenido: la
+     * imagen que se eligió y luego se sustituyó por otra. Lo que sí está se
+     * saca de la lista, porque a partir de ahora lo gobierna el bloque y su
+     * borrado lo limpiará el repositorio.
+     */
+    const kept = new Set(collectMediaIds(clean));
+    const abandoned = uploadedHere.current.filter((id) => !kept.has(id));
+    uploadedHere.current = [];
+    discard(abandoned);
 
     setError(null);
     onSubmit(clean);
@@ -105,6 +173,28 @@ const BlockFormModal = ({
         return <KeyPointsForm data={data as never} onChange={setData as never} />;
       case BlockKind.Metronome:
         return <MetronomeForm data={data as never} onChange={setData as never} />;
+      case BlockKind.Steps:
+        return <StepsForm data={data as never} onChange={setData as never} />;
+      case BlockKind.Checklist:
+        return <ChecklistForm data={data as never} onChange={setData as never} />;
+      case BlockKind.Embed:
+        return (
+          <EmbedForm
+            data={data as never}
+            onChange={setData as never}
+            moduleId={moduleId}
+            onUploaded={registerUpload}
+          />
+        );
+      case BlockKind.Image:
+        return (
+          <ImageForm
+            data={data as never}
+            onChange={setData as never}
+            moduleId={moduleId}
+            onUploaded={registerUpload}
+          />
+        );
       case BlockKind.PageLinks:
         return (
           <PageLinksForm data={data as never} onChange={setData as never} pages={pages} />

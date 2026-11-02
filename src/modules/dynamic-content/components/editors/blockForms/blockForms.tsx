@@ -5,15 +5,22 @@ import FormField from 'modules/shared/components/molecules/FormField/FormField';
 import {
   BlockTone,
   type CalloutData,
+  type ChecklistData,
+  type EmbedData,
   type HeadingData,
+  type ImageData,
   type KeyPointsData,
   type MetronomeData,
   type PageLinksData,
   type StatsData,
+  type StepsData,
   type TextData,
 } from 'modules/dynamic-content/types/blocks.types';
 import type { Page } from 'modules/dynamic-content/types/dynamic.types';
+import { embedProvider } from 'modules/dynamic-content/services/embed';
 import ItemListEditor from '../ItemListEditor/ItemListEditor';
+import ImageUploadField from '../ImageUploadField/ImageUploadField';
+import VideoUploadField from '../VideoUploadField/VideoUploadField';
 
 /**
  * ===========================================================================
@@ -33,6 +40,17 @@ export interface BlockFormProps<T> {
   onChange: (data: T) => void;
   /** Páginas del módulo. Solo las necesita el índice. */
   pages?: Page[];
+  /** Módulo al que pertenece. Lo necesitan los que suben archivos. */
+  moduleId?: string;
+  /**
+   * Avisa de cada archivo subido desde este formulario.
+   *
+   * El aviso sube hasta el diálogo porque solo él sabe cuándo termina la
+   * edición, que es el momento en que se puede decidir qué subidas sobran.
+   * Sin esto, elegir una imagen y cancelar dejaría el archivo en el bucket
+   * para siempre.
+   */
+  onUploaded?: (mediaId: string) => void;
 }
 
 const TONE_OPTIONS = [
@@ -436,3 +454,325 @@ export const PageLinksForm = ({
     </>
   );
 };
+
+// ---------------------------------------------------------------------------
+// Imagen
+// ---------------------------------------------------------------------------
+
+export const ImageForm = ({
+  data,
+  onChange,
+  moduleId = '',
+  onUploaded,
+}: BlockFormProps<ImageData>) => (
+  <>
+    <ImageUploadField
+      media={data.media.url === '' ? null : data.media}
+      moduleId={moduleId}
+      onChange={(media) => onChange({ ...data, media })}
+      onUploaded={onUploaded}
+      /**
+       * Quitar solo vacía la referencia aquí; el archivo lo borra quien sabe
+       * si de verdad ha dejado de usarse. Si se había subido en este mismo
+       * formulario, lo descarta el diálogo al cerrarse; si ya estaba guardado,
+       * lo borra el repositorio al guardar el bloque sin ella. Hacerlo en este
+       * `onRemove` borraría el archivo de un bloque que todavía lo usa en
+       * cuanto alguien cancelara.
+       */
+      onRemove={() =>
+        onChange({ ...data, media: { mediaId: null, url: '', alt: '' } })
+      }
+    />
+
+    <FormField label="Pie de foto" hint="Opcional. Se lee bajo la imagen.">
+      <Input
+        value={data.caption ?? ''}
+        onChange={(event) => onChange({ ...data, caption: event.target.value })}
+      />
+    </FormField>
+
+    <FormField
+      label="Encaje"
+      hint="«Completa» respeta la proporción; «Recortada» la ajusta al marco."
+    >
+      <Select
+        options={[
+          { value: 'contain', label: 'Completa — se ve toda' },
+          { value: 'cover', label: 'Recortada — llena el marco' },
+        ]}
+        value={data.fit ?? 'contain'}
+        onChange={(event) =>
+          onChange({ ...data, fit: event.target.value as 'contain' | 'cover' })
+        }
+      />
+    </FormField>
+
+    {/* Tamaño de visualización. Los dos campos vacíos dejan el comportamiento
+        por defecto: la imagen ocupa el ancho disponible. */}
+    <FormField
+      label="Ancho en pantalla (px)"
+      hint="Déjalo vacío para que ocupe todo el ancho. En pantallas estrechas se reduce solo, nunca desborda."
+    >
+      <Input
+        type="number"
+        min={16}
+        max={4000}
+        value={data.displayWidth === undefined ? '' : String(data.displayWidth)}
+        onChange={(event) =>
+          onChange({
+            ...data,
+            displayWidth:
+              event.target.value === '' ? undefined : Number(event.target.value),
+          })
+        }
+        placeholder={data.media.width ? `original: ${data.media.width}` : 'auto'}
+      />
+    </FormField>
+
+    <FormField
+      label="Alto en pantalla (px)"
+      hint="Déjalo vacío para que lo calcule según el ancho y no se deforme."
+    >
+      <Input
+        type="number"
+        min={16}
+        max={4000}
+        value={data.displayHeight === undefined ? '' : String(data.displayHeight)}
+        onChange={(event) =>
+          onChange({
+            ...data,
+            displayHeight:
+              event.target.value === '' ? undefined : Number(event.target.value),
+          })
+        }
+        placeholder={data.media.height ? `original: ${data.media.height}` : 'auto'}
+      />
+    </FormField>
+
+    {data.displayWidth !== undefined && data.displayHeight !== undefined && (
+      <p className="block-form__note">
+        Con ancho y alto fijos la imagen puede deformarse. Si no quieres que pase, deja
+        uno de los dos vacío, o usa el encaje «Recortada» para que recorte en vez de
+        estirar.
+      </p>
+    )}
+  </>
+);
+
+// ---------------------------------------------------------------------------
+// Vídeo
+// ---------------------------------------------------------------------------
+
+export const EmbedForm = ({
+  data,
+  onChange,
+  moduleId = '',
+  onUploaded,
+}: BlockFormProps<EmbedData>) => {
+  const source = data.source ?? 'provider';
+
+  /**
+   * Se comprueba el proveedor MIENTRAS se escribe, no al guardar.
+   *
+   * El bloque solo sabe incrustar YouTube y Vimeo; con cualquier otro enlace
+   * pinta un enlace de texto. Avisarlo aquí evita que alguien pegue una URL de
+   * Drive, guarde, y descubra en la pantalla pública que no se ve el vídeo.
+   */
+  const provider = data.url.trim() === '' ? null : embedProvider(data.url);
+  const isUnknown = source === 'provider' && data.url.trim() !== '' && provider === null;
+
+  return (
+    <>
+      <FormField label="Origen del vídeo">
+        <Select
+          options={[
+            { value: 'provider', label: 'Enlace de YouTube o Vimeo' },
+            { value: 'file', label: 'Subir un archivo desde mi equipo' },
+          ]}
+          value={source}
+          onChange={(event) =>
+            onChange({
+              ...data,
+              source: event.target.value as 'provider' | 'file',
+              // Al cambiar de origen se limpia la referencia: dejar la
+              // anterior mientras el selector dice otra cosa haría dudar de
+              // qué se va a guardar.
+              url: '',
+              mediaId: null,
+              width: undefined,
+              height: undefined,
+            })
+          }
+        />
+      </FormField>
+
+      {source === 'provider' ? (
+        <>
+          <FormField
+            label="Enlace del vídeo"
+            hint="Pega la dirección de YouTube o Vimeo tal como aparece en el navegador."
+            error={isUnknown ? 'No reconocemos ese enlace.' : null}
+            required
+          >
+            <Input
+              value={data.url}
+              onChange={(event) => onChange({ ...data, url: event.target.value })}
+              placeholder="https://www.youtube.com/watch?v=..."
+              autoFocus
+            />
+          </FormField>
+
+          {provider !== null && (
+            <p className="block-form__note">Reconocido: vídeo de {provider}.</p>
+          )}
+
+          {isUnknown && (
+            <p className="block-form__note">
+              Solo se pueden incrustar vídeos de YouTube y Vimeo. Con otro enlace, en la
+              página se mostrará un enlace de texto en lugar del reproductor.
+            </p>
+          )}
+        </>
+      ) : (
+        <>
+          <VideoUploadField
+            url={data.url}
+            moduleId={moduleId}
+            onUploaded={onUploaded}
+            onChange={({ url, mediaId, width, height }) =>
+              onChange({ ...data, url, mediaId, width, height })
+            }
+            onRemove={() =>
+              onChange({
+                ...data,
+                url: '',
+                mediaId: null,
+                width: undefined,
+                height: undefined,
+              })
+            }
+          />
+
+          <p className="block-form__note">
+            Un archivo propio lo descarga cada visitante entero, sin versiones de
+            distinta calidad como en YouTube. Para vídeos de más de unos segundos
+            conviene subirlos a YouTube y pegar el enlace.
+          </p>
+        </>
+      )}
+
+      <FormField
+        label="Título"
+        hint="Describe el vídeo. Se lee debajo y lo usan los lectores de pantalla."
+        required
+      >
+        <Input
+          value={data.title}
+          onChange={(event) => onChange({ ...data, title: event.target.value })}
+          placeholder="Cómo hacer compresiones torácicas"
+        />
+      </FormField>
+    </>
+  );
+};
+
+// ---------------------------------------------------------------------------
+// Pasos numerados
+// ---------------------------------------------------------------------------
+
+export const StepsForm = ({ data, onChange }: BlockFormProps<StepsData>) => (
+  <>
+    <FormField label="Título" hint="Opcional. Se lee sobre la secuencia.">
+      <Input
+        value={data.title ?? ''}
+        onChange={(event) => onChange({ ...data, title: event.target.value })}
+      />
+    </FormField>
+
+    <ItemListEditor
+      label="Pasos"
+      hint="Se numeran solos en el orden de esta lista."
+      items={data.steps}
+      onChange={(steps) => onChange({ ...data, steps })}
+      createItem={(index) => ({
+        id: `stp-${index + 1}-${Date.now()}`,
+        title: '',
+        description: '',
+      })}
+      addLabel="Añadir paso"
+      maxItems={30}
+      renderItem={(step, update) => (
+        <>
+          <FormField label="Qué hacer" required>
+            <Input
+              value={step.title}
+              onChange={(event) => update({ title: event.target.value })}
+              placeholder="Comprueba si responde"
+            />
+          </FormField>
+
+          <FormField label="Detalle">
+            <Textarea
+              rows={2}
+              value={step.description}
+              onChange={(event) => update({ description: event.target.value })}
+              placeholder="Sacude sus hombros y llámala en voz alta."
+            />
+          </FormField>
+
+          <FormField
+            label="Duración en segundos"
+            hint="Opcional. Para pasos que hay que mantener un tiempo."
+          >
+            <Input
+              type="number"
+              min={1}
+              max={3600}
+              value={step.durationSeconds === undefined ? '' : String(step.durationSeconds)}
+              onChange={(event) =>
+                update({
+                  durationSeconds:
+                    event.target.value === '' ? undefined : Number(event.target.value),
+                })
+              }
+            />
+          </FormField>
+        </>
+      )}
+    />
+  </>
+);
+
+// ---------------------------------------------------------------------------
+// Lista para marcar
+// ---------------------------------------------------------------------------
+
+export const ChecklistForm = ({ data, onChange }: BlockFormProps<ChecklistData>) => (
+  <>
+    <FormField label="Título" hint="Opcional. Ej. «Antes de empezar».">
+      <Input
+        value={data.title ?? ''}
+        onChange={(event) => onChange({ ...data, title: event.target.value })}
+      />
+    </FormField>
+
+    <ItemListEditor
+      label="Puntos"
+      hint="Quien lee los va marcando mientras actúa, así que conviene que sean acciones."
+      items={data.items}
+      onChange={(items) => onChange({ ...data, items })}
+      createItem={(index) => ({ id: `chk-${index + 1}-${Date.now()}`, text: '' })}
+      addLabel="Añadir punto"
+      maxItems={30}
+      renderItem={(item, update) => (
+        <FormField label="Texto" required>
+          <Input
+            value={item.text}
+            onChange={(event) => update({ text: event.target.value })}
+            placeholder="Comprueba que la zona es segura"
+          />
+        </FormField>
+      )}
+    />
+  </>
+);

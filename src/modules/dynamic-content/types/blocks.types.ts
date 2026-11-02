@@ -138,6 +138,21 @@ export interface ImageData {
   caption?: string;
   /** `contain` respeta la proporción; `cover` recorta al encuadre. */
   fit?: 'contain' | 'cover';
+  /**
+   * Tamaño con el que SE MUESTRA, en píxeles. No tiene nada que ver con el
+   * tamaño del archivo, que vive en `media.width` y `media.height`.
+   *
+   * Sin valores, la imagen ocupa el ancho disponible, que es lo que conviene
+   * en un móvil. Con ellos se respeta el tamaño pedido, pero nunca por encima
+   * del ancho del contenedor: un ancho fijo de 800px en una pantalla de 360
+   * sacaría la imagen de la pantalla y rompería el desplazamiento horizontal
+   * de toda la página.
+   *
+   * Indicar solo uno de los dos mantiene la proporción; indicar los dos la
+   * fuerza, y entonces `fit` decide si se recorta o se deja aire.
+   */
+  displayWidth?: number;
+  displayHeight?: number;
 }
 
 export interface GalleryData {
@@ -146,9 +161,26 @@ export interface GalleryData {
 }
 
 export interface EmbedData {
-  /** URL de YouTube o Vimeo. El proveedor se deduce al pintar. */
+  /**
+   * De dónde sale el vídeo.
+   *
+   * - `provider`: incrustado de YouTube o Vimeo. No pesa nada en nuestro
+   *   almacenamiento y la reproducción la resuelve su reproductor.
+   * - `file`: un archivo subido al bucket. Útil cuando el vídeo no está
+   *   publicado en ninguna plataforma, pero lo descarga cada visitante
+   *   íntegro: no hay versiones de distinta calidad como en YouTube.
+   */
+  source?: 'provider' | 'file';
+  /** URL del proveedor, o la pública del archivo subido. */
   url: string;
   title: string;
+  /** Referencia al archivo en Storage. Solo cuando `source` es `file`. */
+  mediaId?: string | null;
+  /** Proporción del vídeo, para reservar el hueco antes de cargarlo. */
+  width?: number;
+  height?: number;
+  /** Imagen de portada. Solo tiene sentido con un archivo propio. */
+  posterUrl?: string;
 }
 
 // ---------------------------------------------------------------------------

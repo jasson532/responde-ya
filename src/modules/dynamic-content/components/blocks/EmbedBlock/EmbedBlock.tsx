@@ -1,54 +1,55 @@
+import { toEmbedUrl } from 'modules/dynamic-content/services/embed';
 import type { EmbedData } from 'modules/dynamic-content/types/blocks.types';
 import './EmbedBlock.scss';
 
 /**
- * Traduce una URL de YouTube o Vimeo a su dirección de incrustación.
+ * Vídeo: incrustado de un proveedor o archivo propio.
  *
- * Se hace con una lista cerrada de proveedores en lugar de meter la URL tal
- * cual en el `src` de un `<iframe>`. Un iframe de origen arbitrario puede
- * intentar navegar la página que lo contiene, y la URL viene de un campo de
- * texto que rellena una persona.
+ * Con proveedor usa `youtube-nocookie.com`, que no deja rastreadores antes de
+ * que alguien pulse reproducir. En una aplicación de salud, la lista de lo que
+ * consultas no debería salir de tu navegador por mirar una pantalla.
  *
- * Devuelve `null` si el proveedor no está reconocido, y entonces el bloque
- * pinta un enlace normal.
+ * Con archivo propio usa el `<video>` nativo, sin librería: los controles, el
+ * teclado y la pantalla completa ya los trae el navegador.
  */
-const toEmbedUrl = (raw: string): string | null => {
-  let url: URL;
-  try {
-    url = new URL(raw);
-  } catch {
-    return null;
+const EmbedBlock = ({
+  source = 'provider',
+  url,
+  title,
+  width,
+  height,
+  posterUrl,
+}: EmbedData) => {
+  /**
+   * La proporción se toma del vídeo si se conoce, y si no, 16:9. Reservar el
+   * hueco antes de cargar evita que el contenido de debajo salte.
+   */
+  const ratio = width && height ? `${width} / ${height}` : '16 / 9';
+
+  if (source === 'file') {
+    return (
+      <figure className="embed-block" data-testid="EmbedBlock">
+        <div className="embed-block__frame" style={{ aspectRatio: ratio }}>
+          <video
+            src={url}
+            poster={posterUrl}
+            controls
+            // `metadata` descarga solo la cabecera: el archivo completo se
+            // baja al pulsar reproducir. Sin esto, cada visita a la página se
+            // traería el vídeo entero aunque nadie lo viera.
+            preload="metadata"
+            playsInline
+          >
+            {/* Mensaje para navegadores sin soporte del formato: al menos
+                queda un enlace para descargarlo. */}
+            <a href={url}>{title}</a>
+          </video>
+        </div>
+        <figcaption className="embed-block__caption">{title}</figcaption>
+      </figure>
+    );
   }
 
-  const host = url.hostname.replace(/^www\./, '');
-
-  if (host === 'youtu.be') {
-    const id = url.pathname.slice(1);
-    return id ? `https://www.youtube-nocookie.com/embed/${id}` : null;
-  }
-
-  if (host === 'youtube.com' || host === 'm.youtube.com') {
-    // `/watch?v=ID` es la forma larga; `/embed/ID` ya viene lista.
-    const id = url.searchParams.get('v') ?? url.pathname.replace('/embed/', '');
-    return id ? `https://www.youtube-nocookie.com/embed/${id}` : null;
-  }
-
-  if (host === 'vimeo.com') {
-    const id = url.pathname.split('/').filter(Boolean)[0];
-    return id && /^\d+$/.test(id) ? `https://player.vimeo.com/video/${id}` : null;
-  }
-
-  return null;
-};
-
-/**
- * Vídeo incrustado.
- *
- * Usa `youtube-nocookie.com`, que no deja rastreadores antes de que alguien
- * pulse reproducir. En una aplicación de salud, la lista de lo que consultas
- * no debería salir de tu navegador por mirar una pantalla.
- */
-const EmbedBlock = ({ url, title }: EmbedData) => {
   const embedUrl = toEmbedUrl(url);
 
   if (embedUrl === null) {
@@ -63,7 +64,7 @@ const EmbedBlock = ({ url, title }: EmbedData) => {
 
   return (
     <figure className="embed-block" data-testid="EmbedBlock">
-      <div className="embed-block__frame">
+      <div className="embed-block__frame" style={{ aspectRatio: ratio }}>
         <iframe
           src={embedUrl}
           title={title}

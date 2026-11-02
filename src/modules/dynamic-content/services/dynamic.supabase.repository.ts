@@ -30,7 +30,13 @@ import {
   type MediaRow,
   type ModuleRow,
 } from './dynamic.mappers';
-import { buildStoragePath, prepareImage } from './media.prepare';
+import {
+  buildStoragePath,
+  isVideoFile,
+  prepareImage,
+  prepareVideo,
+} from './media.prepare';
+import { collectMediaIds, removedMediaIds } from './media.refs';
 
 const BUCKET = 'module-media';
 
@@ -160,6 +166,122 @@ const applyReorder = async (
 
   const failed = results.find((result) => result.error);
   if (failed?.error) throw toAppError(failed.error, `reordenar ${table}`);
+};
+
+// ===========================================================================
+// LIMPIEZA DEL BUCKET
+// ===========================================================================
+// El almacenamiento es el recurso más escaso del proyecto, así que todo borrado
+// de contenido arrastra sus archivos.
+//
+// Tiene que hacerse desde aquí, por la API de Storage. Un trigger en Postgres
+// parecería más seguro —imposible olvidarse— pero borrar filas de
+// `storage.objects` con SQL solo quita los metadatos: los bytes se quedan en el
+// almacén, ya sin forma de listarlos ni de borrarlos, consumiendo cuota para
+// siempre. Supabase lo documenta y lo desaconseja explícitamente.
+// ===========================================================================
+
+type Client = ReturnType<typeof getSupabaseClient>;
+
+/**
+ * Borra archivos del bucket y sus registros.
+ *
+ * No lanza NUNCA. Es una limpieza, no una operación que el administrador haya
+ * pedido: si falla, el peor caso es un archivo de más ocupando sitio, y eso no
+ * justifica abortar el borrado del contenido ni mostrar un error en pantalla.
+ *
+ * Cuando el borrado del bucket falla, la fila de `media` SE CONSERVA a
+ * propósito. Su `path` es lo único que permite reintentarlo: sin ella el
+ * archivo queda inalcanzable. Como la fila mantiene su `module_id`, el borrado
+ * del módulo acabará recogiéndolo.
+ */
+const purgeMedia = async (client: Client, mediaIds: string[]): Promise<void> => {
+  if (mediaIds.length === 0) return;
+
+  const { data, error } = await client
+    .from('media')
+    .select('id, bucket, path')
+    .in('id', mediaIds);
+
+  if (error) {
+    logger.warn('No pudimos localizar los archivos a borrar', {
+      count: mediaIds.length,
+    });
+    return;
+  }
+
+  const rows = (data ?? []) as { id: string; bucket: string; path: string }[];
+  if (rows.length === 0) return;
+
+  /**
+   * Se agrupa por bucket porque cada fila guarda el suyo. Hoy todas apuntan a
+   * `module-media`, pero `remove` trabaja sobre un bucket concreto: dar por
+   * supuesto cuál es convertiría el día que haya dos en un borrado silencioso
+   * del archivo equivocado.
+   */
+  const byBucket = new Map<string, { ids: string[]; paths: string[] }>();
+
+  rows.forEach((row) => {
+    const group = byBucket.get(row.bucket) ?? { ids: [], paths: [] };
+    group.ids.push(row.id);
+    group.paths.push(row.path);
+    byBucket.set(row.bucket, group);
+  });
+
+  await Promise.all(
+    [...byBucket].map(async ([bucket, group]) => {
+      // Una sola llamada por bucket: `remove` acepta una lista de rutas.
+      const { error: storageError } = await client.storage.from(bucket).remove(group.paths);
+
+      if (storageError) {
+        logger.warn('Quedaron archivos sin borrar en el bucket', {
+          bucket,
+          count: group.paths.length,
+          message: storageError.message,
+        });
+        return;
+      }
+
+      const { error: rowError } = await client.from('media').delete().in('id', group.ids);
+      if (rowError) {
+        logger.warn('Archivos borrados pero sus registros siguen en la tabla', {
+          count: group.ids.length,
+        });
+      }
+    }),
+  );
+};
+
+/** Archivos referenciados por los bloques de una sección. */
+const mediaOfSection = async (client: Client, sectionId: string): Promise<string[]> => {
+  const { data, error } = await client.from('blocks').select('data').eq('section_id', sectionId);
+
+  if (error) {
+    logger.warn('No pudimos leer los bloques de la sección para limpiar', { sectionId });
+    return [];
+  }
+
+  return collectMediaIds(data ?? []);
+};
+
+/** Archivos referenciados por los bloques de todas las secciones de una página. */
+const mediaOfPage = async (client: Client, pageId: string): Promise<string[]> => {
+  /**
+   * `sections!inner(page_id)` filtra por la página subiendo un nivel. Es la
+   * única forma de pedir los bloques de una página en una sola consulta: no
+   * guardan `page_id`, solo `section_id`.
+   */
+  const { data, error } = await client
+    .from('blocks')
+    .select('data, sections!inner(page_id)')
+    .eq('sections.page_id', pageId);
+
+  if (error) {
+    logger.warn('No pudimos leer los bloques de la página para limpiar', { pageId });
+    return [];
+  }
+
+  return collectMediaIds(data ?? []);
 };
 
 /**
@@ -509,8 +631,26 @@ export const dynamicSupabaseRepository: DynamicContentRepository = {
   },
 
   async deletePage(moduleId: string, pageId: string): Promise<ContentModule> {
-    const { error } = await getSupabaseClient().from('pages').delete().eq('id', pageId);
+    const client = getSupabaseClient();
+
+    /**
+     * Los archivos se anotan ANTES de borrar: con la página fuera, sus
+     * secciones y bloques se van con la cascada y ya no hay dónde leer qué
+     * imágenes usaban.
+     */
+    const assets = await mediaOfPage(client, pageId);
+
+    const { error } = await client.from('pages').delete().eq('id', pageId);
     if (error) throw toAppError(error, 'eliminar la página');
+
+    /**
+     * La limpieza va DESPUÉS del borrado. Al contrario, un fallo al borrar la
+     * página dejaría sus bloques apuntando a archivos que ya no existen: la
+     * pantalla pública mostraría huecos. Un archivo de más es un problema de
+     * cuota; una página rota lo es de alguien buscando cómo actuar.
+     */
+    await purgeMedia(client, assets);
+
     return fetchModule(moduleId);
   },
 
@@ -561,8 +701,14 @@ export const dynamicSupabaseRepository: DynamicContentRepository = {
   },
 
   async deleteSection(moduleId: string, sectionId: string): Promise<ContentModule> {
-    const { error } = await getSupabaseClient().from('sections').delete().eq('id', sectionId);
+    const client = getSupabaseClient();
+    const assets = await mediaOfSection(client, sectionId);
+
+    const { error } = await client.from('sections').delete().eq('id', sectionId);
     if (error) throw toAppError(error, 'eliminar la sección');
+
+    await purgeMedia(client, assets);
+
     return fetchModule(moduleId);
   },
 
@@ -616,9 +762,9 @@ export const dynamicSupabaseRepository: DynamicContentRepository = {
      */
     const { data: current, error: readError } = await client
       .from('blocks')
-      .select('kind')
+      .select('kind, data')
       .eq('id', blockId)
-      .single<{ kind: string }>();
+      .single<{ kind: string; data: Record<string, unknown> }>();
 
     if (readError) throw toAppError(readError, 'leer el bloque');
 
@@ -638,14 +784,39 @@ export const dynamicSupabaseRepository: DynamicContentRepository = {
     if (Object.keys(patch).length > 0) {
       const { error } = await client.from('blocks').update(patch).eq('id', blockId);
       if (error) throw toAppError(error, 'actualizar el bloque');
+
+      /**
+       * Lo que ya no se usa se va del bucket. Es el caso que más sitio gasta:
+       * cambiar la imagen de un bloque cinco veces dejaba cinco archivos, y
+       * solo el último se veía en algún sitio.
+       *
+       * Se compara contra `patch.data`, que es el contenido SANEADO —el que de
+       * verdad se ha guardado—, no contra el borrador que llegó del editor.
+       */
+      if (patch.data !== undefined) {
+        await purgeMedia(client, removedMediaIds(current.data, patch.data));
+      }
     }
 
     return fetchModule(moduleId);
   },
 
   async deleteBlock(moduleId: string, blockId: string): Promise<ContentModule> {
-    const { error } = await getSupabaseClient().from('blocks').delete().eq('id', blockId);
+    const client = getSupabaseClient();
+
+    // Hay que leer su contenido antes: al borrar el bloque desaparece la única
+    // pista de qué archivos usaba.
+    const { data: current } = await client
+      .from('blocks')
+      .select('data')
+      .eq('id', blockId)
+      .maybeSingle<{ data: Record<string, unknown> }>();
+
+    const { error } = await client.from('blocks').delete().eq('id', blockId);
     if (error) throw toAppError(error, 'eliminar el bloque');
+
+    await purgeMedia(client, collectMediaIds(current?.data));
+
     return fetchModule(moduleId);
   },
 
@@ -664,8 +835,16 @@ export const dynamicSupabaseRepository: DynamicContentRepository = {
   ): Promise<MediaAsset> {
     const client = getSupabaseClient();
 
-    // Reduce y recomprime antes de salir del navegador.
-    const prepared = await prepareImage(file);
+    /**
+     * Las imágenes se reducen y recomprimen antes de salir del navegador; los
+     * vídeos solo se comprueban y se miden. Recomprimir vídeo en el cliente
+     * exigiría WebCodecs o un ffmpeg en WASM, que son megabytes de código y
+     * minutos de proceso.
+     */
+    const prepared = isVideoFile(file)
+      ? await prepareVideo(file)
+      : await prepareImage(file);
+
     const path = buildStoragePath(moduleId, prepared.file);
 
     const { error: uploadError } = await client.storage
@@ -715,24 +894,17 @@ export const dynamicSupabaseRepository: DynamicContentRepository = {
     return mapMedia(data);
   },
 
-  async deleteMedia(mediaId: string): Promise<void> {
-    const client = getSupabaseClient();
-
-    const { data, error: readError } = await client
-      .from('media')
-      .select('bucket, path')
-      .eq('id', mediaId)
-      .single<{ bucket: string; path: string }>();
-
-    if (readError) throw toAppError(readError, 'leer la imagen');
-
-    const { error: storageError } = await client.storage.from(data.bucket).remove([data.path]);
-    if (storageError) {
-      logger.warn('No se pudo borrar el archivo del bucket', { path: data.path });
-    }
-
-    const { error } = await client.from('media').delete().eq('id', mediaId);
-    if (error) throw toAppError(error, 'eliminar el registro de la imagen');
+  /**
+   * Descarta archivos que nadie va a usar.
+   *
+   * Lo llama el formulario al cerrarse: una subida ocurre en el momento de
+   * elegir el archivo, antes de guardar, así que cancelar el formulario —o
+   * cambiar de imagen dos veces— deja subidas que ningún bloque referencia.
+   * Sin esta llamada ese archivo no aparecería en ninguna parte y seguiría
+   * ocupando sitio.
+   */
+  async discardMedia(mediaIds: string[]): Promise<void> {
+    await purgeMedia(getSupabaseClient(), mediaIds);
   },
 };
 
@@ -755,5 +927,50 @@ export const dynamicSupabaseRepository: DynamicContentRepository = {
  * con `rpc`, que sí es atómica. No lo hago ahora porque son dos funciones SQL
  * más que mantener para cubrir un fallo cuyo peor caso es cosmético, con un
  * único administrador usando el editor.
+ * ===========================================================================
+ */
+
+/**
+ * ===========================================================================
+ * PENDIENTE: BARRIDO DE ARCHIVOS HUÉRFANOS
+ * ===========================================================================
+ * Todo borrado de contenido arrastra sus archivos, y el formulario descarta las
+ * subidas que no llegó a usar. Quedan dos huecos por los que un archivo puede
+ * sobrevivir sin que nadie lo referencie:
+ *
+ * 1. Cerrar la pestaña con el formulario abierto después de subir. El diálogo
+ *    no llega a desmontarse, así que nunca avisa de que esa subida sobraba.
+ * 2. Un fallo de red en `storage.remove`. La fila de `media` se conserva a
+ *    propósito para poder reintentarlo, pero nadie lo reintenta todavía.
+ *
+ * El primero es el que de verdad pasa: subir una imagen, dudar, y cerrar.
+ *
+ * CÓMO RESOLVERLO
+ * Un botón de limpieza en el panel de administración. La parte que cuesta
+ * pensar es saber qué archivos están en uso, y Postgres puede calcularlo sin
+ * conocer la forma de cada tipo de bloque:
+ *
+ *   create or replace view media_en_uso as
+ *   select distinct (ref #>> '{}')::uuid as media_id
+ *   from blocks b,
+ *        lateral jsonb_path_query(b.data, '$.**.mediaId') ref
+ *   where jsonb_typeof(ref) = 'string';
+ *
+ * `$.**.mediaId` es el equivalente en SQL del recorrido de `media.refs.ts`:
+ * busca la clave a cualquier profundidad, así que cubre imagen, galería, vídeo
+ * y las imágenes dentro de un paso sin enumerarlos.
+ *
+ * Con eso, los huérfanos son `select * from media where id not in (select
+ * media_id from media_en_uso)`, y el botón los pasa por `purgeMedia`, que ya
+ * borra del bucket y de la tabla en el orden correcto.
+ *
+ * NO basta con comparar el bucket contra la tabla `media`: un archivo cuya
+ * fila existe pero que ningún bloque referencia es precisamente el caso 1, y
+ * esa comparación no lo vería.
+ *
+ * Y el borrado tiene que seguir saliendo de aquí, por la API de Storage. La
+ * tentación es resolverlo entero en SQL con un `delete from storage.objects`:
+ * eso quita los metadatos y deja los bytes en el almacén, ya sin forma de
+ * listarlos ni de borrarlos, ocupando cuota para siempre.
  * ===========================================================================
  */

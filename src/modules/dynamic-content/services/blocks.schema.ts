@@ -124,6 +124,10 @@ const parseImage = (d: Record<string, unknown>): ImageData | null => {
     media,
     caption: optStr(d.caption, 300) ?? undefined,
     fit: optOneOf(d.fit, ['contain', 'cover'] as const) ?? undefined,
+    // Tope de 4000: por encima de eso no es un tamaño de visualización sino un
+    // error de tecleo, y un valor absurdo descuadraría la página entera.
+    displayWidth: optNum(d.displayWidth, 16, 4000) ?? undefined,
+    displayHeight: optNum(d.displayHeight, 16, 4000) ?? undefined,
   };
 };
 
@@ -142,7 +146,17 @@ const parseEmbed = (d: Record<string, unknown>): EmbedData | null => {
   const title = str(d.title, 200);
   if (url === null || title === null) return null;
 
-  return { url, title };
+  return {
+    url,
+    title,
+    // `provider` por defecto: es lo que había antes de poder subir archivos,
+    // así que los bloques ya guardados siguen interpretándose igual.
+    source: optOneOf(d.source, ['provider', 'file'] as const) ?? 'provider',
+    mediaId: str(d.mediaId, 80) ?? null,
+    width: optNum(d.width, 16, 8000) ?? undefined,
+    height: optNum(d.height, 16, 8000) ?? undefined,
+    posterUrl: httpUrl(d.posterUrl) ?? undefined,
+  };
 };
 
 const parseCallout = (d: Record<string, unknown>): CalloutData | null => {
