@@ -1,0 +1,48 @@
+@use 'styles/variables' as v;
+@use 'styles/mixins' as m;
+
+.catalog {
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-5;
+  padding-top: v.$space-4;
+  padding-bottom: v.$space-6;
+
+  &__modules {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-4;
+  }
+
+  &__section-title {
+    font-size: v.$font-size-lg;
+    font-weight: v.$font-weight-extrabold;
+    letter-spacing: v.$tracking-tight;
+    color: v.$color-brand-navy;
+  }
+
+  &__grid {
+    display: grid;
+    gap: v.$space-3;
+    // Dos columnas desde el móvil más estrecho: es la rejilla que la gente
+    // espera en una aplicación y duplica lo visible sin hacer scroll.
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    @include m.from(v.$bp-md) {
+      gap: v.$space-4;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    @include m.from(v.$bp-lg) {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+
+  &__item {
+    display: flex;
+
+    > * {
+      width: 100%;
+    }
+  }
+}

@@ -1,0 +1,71 @@
+@use 'styles/variables' as v;
+@use 'styles/mixins' as m;
+
+.accordion {
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-3;
+
+  &__title {
+    font-size: v.$font-size-md;
+    font-weight: v.$font-weight-extrabold;
+    letter-spacing: v.$tracking-tight;
+    color: v.$color-brand-navy;
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-2;
+  }
+
+  &__item {
+    padding: v.$space-3 v.$space-4;
+    border-radius: v.$radius-lg;
+    background: v.$color-surface-alt;
+  }
+
+  &__question {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: v.$space-3;
+    cursor: pointer;
+    font-size: v.$font-size-base;
+    font-weight: v.$font-weight-bold;
+    line-height: v.$line-height-snug;
+    color: v.$color-brand-navy;
+    // Oculta el triángulo nativo, que cambia de forma en cada navegador.
+    list-style: none;
+
+    @include m.focus-ring;
+
+    &::-webkit-details-marker {
+      display: none;
+    }
+
+    // Flecha propia, girada cuando está abierto. `::after` y no un icono para
+    // no cargar un SVG por cada pregunta de la lista.
+    &::after {
+      content: '';
+      flex: 0 0 auto;
+      width: 8px;
+      height: 8px;
+      border-right: 2px solid v.$color-ink-muted;
+      border-bottom: 2px solid v.$color-ink-muted;
+      transform: rotate(45deg);
+      transition: transform v.$transition-base;
+    }
+  }
+
+  &__item[open] &__question::after {
+    transform: rotate(-135deg);
+  }
+
+  &__answer {
+    padding-top: v.$space-3;
+    font-size: v.$font-size-base;
+    line-height: v.$line-height-base;
+    color: v.$color-ink-soft;
+  }
+}

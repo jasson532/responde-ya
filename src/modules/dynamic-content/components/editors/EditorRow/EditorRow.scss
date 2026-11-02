@@ -1,0 +1,144 @@
+@use 'styles/variables' as v;
+@use 'styles/mixins' as m;
+
+.editor-row {
+  display: flex;
+  flex-direction: column;
+  border-radius: v.$radius-lg;
+  border: 1px solid v.$color-line;
+  background: v.$color-surface;
+
+  &__main {
+    display: flex;
+    align-items: center;
+    gap: v.$space-3;
+    padding: v.$space-3;
+  }
+
+  &__icon {
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    width: 32px;
+    height: 32px;
+    border-radius: v.$radius-sm;
+    background: v.$color-surface-alt;
+    color: v.$color-brand-navy;
+
+    svg {
+      width: 1.125rem;
+      height: 1.125rem;
+    }
+  }
+
+  &__text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    // Permite que el texto largo se recorte en vez de empujar las acciones
+    // fuera de la fila.
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  &__title-line {
+    display: flex;
+    align-items: center;
+    gap: v.$space-2;
+    min-width: 0;
+  }
+
+  &__title,
+  &__open {
+    font-size: v.$font-size-base;
+    font-weight: v.$font-weight-bold;
+    line-height: v.$line-height-snug;
+    color: v.$color-brand-navy;
+    text-align: start;
+
+    @include m.line-clamp(1);
+  }
+
+  &__open {
+    @include m.focus-ring;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  &__badge {
+    flex: 0 0 auto;
+    padding: 0.0625rem v.$space-2;
+    border-radius: v.$radius-pill;
+    background: v.$color-surface-alt;
+    font-size: 0.625rem;
+    font-weight: v.$font-weight-extrabold;
+    text-transform: uppercase;
+    letter-spacing: v.$tracking-wide;
+    color: v.$color-ink-soft;
+  }
+
+  &__subtitle {
+    font-size: v.$font-size-sm;
+    line-height: v.$line-height-snug;
+    color: v.$color-ink-muted;
+
+    @include m.line-clamp(1);
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: v.$space-1;
+    flex: 0 0 auto;
+  }
+
+  &__action {
+    display: grid;
+    place-items: center;
+    // 36px es el mínimo con el que cuatro botones caben en una fila de móvil
+    // sin que el título se quede sin espacio.
+    width: 36px;
+    height: 36px;
+    border-radius: v.$radius-sm;
+    color: v.$color-ink-soft;
+    transition:
+      background v.$transition-fast,
+      color v.$transition-fast;
+
+    @include m.focus-ring;
+
+    &:hover:not(:disabled) {
+      background: v.$color-surface-alt;
+      color: v.$color-brand-navy;
+    }
+
+    &:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    &--danger:hover:not(:disabled) {
+      background: v.$color-emergency-light;
+      color: v.$color-emergency;
+    }
+
+    svg {
+      width: 1.0625rem;
+      height: 1.0625rem;
+    }
+  }
+
+  // Contenido anidado: las secciones dentro de una página, los bloques dentro
+  // de una sección. La línea vertical a la izquierda marca la jerarquía sin
+  // necesidad de sangrar mucho, que en móvil se come el ancho.
+  &__nested {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-2;
+    margin: 0 v.$space-3 v.$space-3 calc(v.$space-3 + 16px);
+    padding-left: v.$space-3;
+    border-left: 2px solid v.$color-line;
+  }
+}

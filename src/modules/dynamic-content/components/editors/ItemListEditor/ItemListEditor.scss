@@ -1,0 +1,87 @@
+@use 'styles/variables' as v;
+@use 'styles/mixins' as m;
+
+.item-list {
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-3;
+  border: 0;
+  padding: 0;
+
+  &__legend {
+    font-size: v.$font-size-sm;
+    font-weight: v.$font-weight-bold;
+    color: v.$color-brand-navy;
+  }
+
+  &__hint {
+    font-size: v.$font-size-xs;
+    line-height: v.$line-height-snug;
+    color: v.$color-ink-muted;
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-3;
+  }
+
+  &__item {
+    display: flex;
+    align-items: flex-start;
+    gap: v.$space-2;
+    padding: v.$space-3;
+    border-radius: v.$radius-md;
+    background: v.$color-surface-alt;
+  }
+
+  &__fields {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-2;
+    // Sin esto, un campo de texto largo empuja los botones fuera de la fila.
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  &__actions {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 0 0 auto;
+  }
+
+  &__action {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border-radius: v.$radius-sm;
+    color: v.$color-ink-muted;
+    transition:
+      background v.$transition-fast,
+      color v.$transition-fast;
+
+    @include m.focus-ring;
+
+    &:hover:not(:disabled) {
+      background: v.$color-surface;
+      color: v.$color-brand-navy;
+    }
+
+    &:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    &--danger:hover:not(:disabled) {
+      background: v.$color-emergency-light;
+      color: v.$color-emergency;
+    }
+
+    svg {
+      width: 1rem;
+      height: 1rem;
+    }
+  }
+}

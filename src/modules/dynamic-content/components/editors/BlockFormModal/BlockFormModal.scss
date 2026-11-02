@@ -1,0 +1,25 @@
+@use 'styles/variables' as v;
+
+.block-form {
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-4;
+
+  // Nota de los componentes sin opciones o sin páginas a las que enlazar.
+  &__note {
+    padding: v.$space-4;
+    border-radius: v.$radius-md;
+    background: v.$color-surface-alt;
+    font-size: v.$font-size-sm;
+    line-height: v.$line-height-base;
+    color: v.$color-ink-soft;
+  }
+
+  // El respaldo de JSON va en monoespaciada: se lee carácter a carácter y la
+  // sangría importa para encontrar el campo que falta.
+  textarea[spellcheck='false'] {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: v.$font-size-sm;
+    line-height: 1.5;
+  }
+}

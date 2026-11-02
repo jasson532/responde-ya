@@ -1,0 +1,70 @@
+@use 'styles/variables' as v;
+@use 'styles/mixins' as m;
+
+.table-block {
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-3;
+
+  &__title {
+    font-size: v.$font-size-md;
+    font-weight: v.$font-weight-extrabold;
+    letter-spacing: v.$tracking-tight;
+    color: v.$color-brand-navy;
+  }
+
+  // Desplazamiento horizontal en pantallas estrechas. Enfocable para que se
+  // pueda desplazar con el teclado.
+  &__scroller {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: v.$radius-lg;
+    border: 1px solid v.$color-line;
+
+    @include m.focus-ring;
+  }
+
+  &__table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: v.$font-size-sm;
+  }
+
+  // Visible para los lectores de pantalla, no para la vista: el título ya está
+  // escrito encima como encabezado.
+  &__caption {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  th,
+  td {
+    padding: v.$space-3;
+    text-align: start;
+    // `nowrap` evita que una celda de dos palabras se parta en dos líneas y
+    // descuadre la altura de toda la fila.
+    white-space: nowrap;
+    border-bottom: 1px solid v.$color-line-soft;
+  }
+
+  th {
+    background: v.$color-surface-alt;
+    font-weight: v.$font-weight-extrabold;
+    color: v.$color-brand-navy;
+  }
+
+  td {
+    color: v.$color-ink-soft;
+  }
+
+  tbody tr:last-child {
+    th,
+    td {
+      border-bottom: none;
+    }
+  }
+}

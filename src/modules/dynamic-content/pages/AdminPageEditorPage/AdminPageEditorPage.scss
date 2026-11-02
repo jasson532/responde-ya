@@ -1,0 +1,72 @@
+@use 'styles/variables' as v;
+
+.page-editor {
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-4;
+  padding-top: v.$space-5;
+  padding-bottom: v.$space-6;
+
+  &__head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: v.$space-3;
+  }
+
+  &__head-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  &__title {
+    font-size: v.$font-size-lg;
+    font-weight: v.$font-weight-extrabold;
+    line-height: v.$line-height-snug;
+    letter-spacing: v.$tracking-tight;
+    color: v.$color-brand-navy;
+  }
+
+  &__slug {
+    font-size: v.$font-size-xs;
+    // Monoespaciada: es una dirección y se comprueba carácter a carácter.
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    color: v.$color-ink-muted;
+    word-break: break-all;
+  }
+
+  &__sections {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-3;
+  }
+
+  &__confirm {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-3;
+    margin-top: v.$space-2;
+    padding: v.$space-4;
+    border-radius: v.$radius-lg;
+    background: v.$color-emergency-light;
+    border: 1px solid rgba(215, 38, 61, 0.25);
+  }
+
+  &__confirm-text {
+    font-size: v.$font-size-sm;
+    line-height: v.$line-height-snug;
+    color: v.$color-emergency-dark;
+  }
+
+  &__confirm-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: v.$space-2;
+  }
+
+  &__error {
+    padding-top: v.$space-5;
+  }
+}

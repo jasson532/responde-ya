@@ -1,0 +1,73 @@
+@use 'styles/variables' as v;
+@use 'styles/mixins' as m;
+
+.module-form {
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-4;
+
+  // Dos campos cortos en la misma fila cuando hay sitio: gravedad y minutos
+  // juntos ahorran desplazamiento en un formulario ya largo.
+  &__row {
+    display: grid;
+    gap: v.$space-4;
+    grid-template-columns: 1fr;
+
+    @include m.from(v.$bp-sm) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  &__icons {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-2;
+    border: 0;
+    padding: 0;
+  }
+
+  &__legend {
+    font-size: v.$font-size-sm;
+    font-weight: v.$font-weight-bold;
+    color: v.$color-brand-navy;
+  }
+
+  &__icon-grid {
+    display: grid;
+    // `auto-fill` con mínimo de 52px: la rejilla se adapta al ancho del
+    // diálogo sin que haya que declarar un número de columnas por breakpoint.
+    grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
+    gap: v.$space-2;
+  }
+
+  &__icon {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 1;
+    border-radius: v.$radius-md;
+    border: 1px solid v.$color-line;
+    background: v.$color-surface;
+    color: v.$color-ink-soft;
+    transition:
+      border-color v.$transition-fast,
+      background v.$transition-fast,
+      color v.$transition-fast;
+
+    @include m.focus-ring;
+
+    &:hover {
+      border-color: v.$color-emergency;
+    }
+
+    &.is-active {
+      border-color: v.$color-emergency;
+      background: v.$color-emergency-light;
+      color: v.$color-emergency;
+    }
+
+    svg {
+      width: 1.5rem;
+      height: 1.5rem;
+    }
+  }
+}

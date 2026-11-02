@@ -1,0 +1,54 @@
+@use 'styles/variables' as v;
+@use 'styles/mixins' as m;
+
+.search-page {
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-4;
+  padding-top: v.$space-4;
+  padding-bottom: v.$space-6;
+
+  // Los filtros se desplazan en horizontal sangrando a los bordes: con seis
+  // categorías no caben en el ancho de un móvil, y partirlos en dos filas
+  // gasta altura que necesitan los resultados.
+  &__filters {
+    display: flex;
+    gap: v.$space-2;
+
+    @include m.bleed-scroller(v.$space-4);
+
+    @include m.from(v.$bp-md) {
+      margin-inline: 0;
+      padding-inline: 0;
+      flex-wrap: wrap;
+    }
+  }
+
+  &__count {
+    font-size: v.$font-size-sm;
+    color: v.$color-ink-muted;
+  }
+
+  &__grid {
+    display: grid;
+    gap: v.$space-3;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    @include m.from(v.$bp-md) {
+      gap: v.$space-4;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    @include m.from(v.$bp-lg) {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+
+  &__item {
+    display: flex;
+
+    > * {
+      width: 100%;
+    }
+  }
+}

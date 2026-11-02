@@ -1,0 +1,36 @@
+@use 'styles/variables' as v;
+
+.media-figure {
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-2;
+
+  &__img {
+    width: 100%;
+    height: auto;
+    border-radius: v.$radius-lg;
+    // La miniatura en base64 se pinta de fondo, ampliada: ocupa el hueco con
+    // los colores de la imagen final mientras esta llega.
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+
+    &--cover {
+      // Proporción fija para que varias imágenes recortadas se alineen entre
+      // sí aunque las originales tengan formatos distintos.
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+    }
+
+    &--contain {
+      object-fit: contain;
+    }
+  }
+
+  &__caption {
+    font-size: v.$font-size-sm;
+    line-height: v.$line-height-snug;
+    color: v.$color-ink-muted;
+    text-align: center;
+  }
+}

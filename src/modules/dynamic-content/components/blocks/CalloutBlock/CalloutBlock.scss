@@ -1,0 +1,89 @@
+@use 'styles/variables' as v;
+
+.callout {
+  display: flex;
+  align-items: flex-start;
+  gap: v.$space-3;
+  padding: v.$space-4;
+  border-radius: v.$radius-lg;
+  // Barra lateral además del relleno: el color de fondo es suave y en una
+  // pantalla con brillo alto puede pasar desapercibido.
+  border-left: 4px solid;
+
+  &__icon {
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+
+    svg {
+      width: 1.25rem;
+      height: 1.25rem;
+    }
+  }
+
+  &__body {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  &__title {
+    font-size: v.$font-size-base;
+    font-weight: v.$font-weight-bold;
+    line-height: v.$line-height-snug;
+    color: v.$color-brand-navy;
+  }
+
+  &__text {
+    font-size: v.$font-size-base;
+    line-height: v.$line-height-base;
+    color: v.$color-ink-soft;
+  }
+
+  // --- Tonos ---
+  &--neutral {
+    background: v.$color-surface-alt;
+    border-left-color: v.$color-ink-muted;
+
+    .callout__icon {
+      color: v.$color-ink-soft;
+    }
+  }
+
+  &--info {
+    background: v.$color-info-light;
+    border-left-color: v.$color-info;
+
+    .callout__icon {
+      color: v.$color-info;
+    }
+  }
+
+  &--success {
+    background: v.$color-safe-light;
+    border-left-color: v.$color-safe;
+
+    .callout__icon {
+      color: v.$color-safe;
+    }
+  }
+
+  &--warning {
+    background: v.$color-warning-light;
+    border-left-color: v.$color-warning;
+
+    .callout__icon {
+      color: #8a5a0b;
+    }
+  }
+
+  &--danger {
+    background: v.$color-emergency-light;
+    border-left-color: v.$color-emergency;
+
+    .callout__icon {
+      color: v.$color-emergency-dark;
+    }
+  }
+}

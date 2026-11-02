@@ -4,7 +4,6 @@ import { BookOpen } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from 'modules/shared/store/hooks';
 import { LoadingStatus } from 'modules/shared/types/common.types';
 import { ROUTES } from 'modules/shared/constants/routes';
-import appConfig from 'modules/shared/services/config/appConfig';
 import BrandLogo from 'modules/shared/components/atoms/BrandLogo/BrandLogo';
 import LinkButton from 'modules/shared/components/atoms/LinkButton/LinkButton';
 import welcomeArtSrc from 'modules/shared/assets/images/img-welcome.jpg';
@@ -16,6 +15,7 @@ import {
   selectAuthStatus,
 } from 'modules/auth/store/authSlice';
 import AdminLoginForm from 'modules/auth/components/molecules/AdminLoginForm/AdminLoginForm';
+import { isRealAuth } from 'modules/auth/services/auth.service';
 import { DEMO_CREDENTIALS } from 'modules/auth/services/auth.local.repository';
 import type { LoginCredentials } from 'modules/auth/types/auth.types';
 import './WelcomePage.scss';
@@ -138,7 +138,11 @@ const WelcomePage = () => {
             isSubmitting={status === LoadingStatus.Pending}
           />
 
-          {appConfig.persistenceDriver === 'local' && (
+          {/* Las credenciales de demostración solo se anuncian cuando el
+              acceso ES de demostración. Con Supabase Auth configurado ya no
+              funcionan, y mostrarlas mandaría al administrador a probar una
+              contraseña que va a fallar. */}
+          {!isRealAuth() && (
             <aside className="welcome__demo">
               <p className="welcome__demo-title">Cuenta de demostración</p>
               <ul className="welcome__demo-list">

@@ -1,0 +1,116 @@
+@use 'styles/variables' as v;
+@use 'styles/mixins' as m;
+
+.modal {
+  // El `<dialog>` nativo trae margen automático, borde y relleno. Se anulan
+  // todos: el posicionamiento lo hace el navegador al centrarlo.
+  margin: auto;
+  padding: 0;
+  border: 0;
+  width: calc(100vw - #{v.$space-5});
+  max-height: calc(100dvh - #{v.$space-6});
+  background: transparent;
+  overflow: visible;
+
+  &--md {
+    max-width: 480px;
+  }
+
+  &--lg {
+    max-width: 680px;
+  }
+
+  // Fondo oscuro. Es un pseudoelemento del propio diálogo, no un nodo.
+  &::backdrop {
+    background: v.$color-backdrop;
+    backdrop-filter: blur(2px);
+  }
+
+  @include m.motion-safe {
+    &[open] {
+      animation: modal-in 200ms cubic-bezier(0.22, 0.9, 0.3, 1);
+    }
+  }
+
+  &__panel {
+    display: flex;
+    flex-direction: column;
+    // Tope en la altura del diálogo para que el cuerpo sea el que haga scroll
+    // y la cabecera y el pie queden siempre visibles.
+    max-height: calc(100dvh - #{v.$space-6});
+    background: v.$color-surface;
+    border-radius: v.$radius-xl;
+    box-shadow: v.$shadow-lg;
+    overflow: hidden;
+  }
+
+  &__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: v.$space-3;
+    flex: 0 0 auto;
+    padding: v.$space-4 v.$space-5;
+    border-bottom: 1px solid v.$color-line;
+  }
+
+  &__title {
+    font-size: v.$font-size-md;
+    font-weight: v.$font-weight-extrabold;
+    letter-spacing: v.$tracking-tight;
+    color: v.$color-brand-navy;
+  }
+
+  &__close {
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    // 40px: por debajo de 44 el objetivo táctil se queda corto, y este botón
+    // está en la esquina, que es donde peor se acierta.
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    color: v.$color-ink-soft;
+    transition: background v.$transition-fast;
+
+    @include m.focus-ring;
+
+    &:hover {
+      background: v.$color-surface-alt;
+    }
+
+    svg {
+      width: 1.25rem;
+      height: 1.25rem;
+    }
+  }
+
+  &__body {
+    flex: 1 1 auto;
+    padding: v.$space-5;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  &__foot {
+    display: flex;
+    flex-wrap: wrap;
+    gap: v.$space-3;
+    flex: 0 0 auto;
+    padding: v.$space-4 v.$space-5;
+    border-top: 1px solid v.$color-line;
+    background: v.$color-surface-alt;
+  }
+}
+
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}

@@ -34,8 +34,11 @@ const BottomNav = () => {
   const items: NavItem[] = [
     { to: ROUTES.MODULES, label: 'Inicio', icon: <House /> },
     { to: ROUTES.SEARCH, label: 'Buscar', icon: <Search /> },
+    // «Gestionar» lleva al editor de contenido dinámico, que es donde se
+    // trabaja. El contenido antiguo sigue en `/admin/modulos` para quien
+    // necesite llegar, pero ya no ocupa la pestaña.
     isAdmin
-      ? { to: ROUTES.ADMIN_MODULES, label: 'Gestionar', icon: <Settings /> }
+      ? { to: ROUTES.ADMIN_DYN, label: 'Gestionar', icon: <Settings /> }
       : { to: ROUTES.WELCOME, label: 'Admin', icon: <ShieldUser />, end: true },
   ];
 

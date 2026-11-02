@@ -14,6 +14,10 @@ import AboutPage from 'modules/shared/components/pages/AboutPage/AboutPage';
 import { bootstrapSession } from 'modules/auth';
 import { authRoutes } from 'modules/auth/routes';
 import { contentAdminRoutes, contentRoutes } from 'modules/content/routes';
+import {
+  dynamicContentAdminRoutes,
+  dynamicContentRoutes,
+} from 'modules/dynamic-content/routes';
 
 /**
  * Rehidrata una eventual sesión de admin. No bloquea nada: el contenido es
@@ -43,11 +47,17 @@ const AppRoutes = () => (
         </Route>
 
         {/* Contenido: público, sin autenticacion */}
-        <Route element={<AppShell />}>{contentRoutes}</Route>
+        <Route element={<AppShell />}>
+          {contentRoutes}
+          {dynamicContentRoutes}
+        </Route>
 
         {/* Administración: requiere rol admin */}
         <Route element={<AdminRoute />}>
-          <Route element={<AppShell />}>{contentAdminRoutes}</Route>
+          <Route element={<AppShell />}>
+            {contentAdminRoutes}
+            {dynamicContentAdminRoutes}
+          </Route>
         </Route>
 
         <Route path={ROUTES.NOT_FOUND} element={<NotFoundPage />} />

@@ -1,0 +1,100 @@
+@use 'styles/variables' as v;
+
+.dyn-module {
+  padding-bottom: v.$space-6;
+
+  // --- Héroe ---
+  // Degradado tintado con la gravedad: al abrir el módulo, el color dice de qué
+  // va antes de que se lea el título.
+  &__hero {
+    padding: v.$space-5 0;
+
+    &--critical {
+      background: linear-gradient(180deg, v.$color-emergency-light, v.$color-canvas);
+    }
+
+    &--urgent {
+      background: linear-gradient(180deg, v.$color-warning-light, v.$color-canvas);
+    }
+
+    &--basic {
+      background: linear-gradient(180deg, v.$color-safe-light, v.$color-canvas);
+    }
+  }
+
+  &__hero-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: v.$space-3;
+  }
+
+  &__title {
+    font-size: v.$font-size-xl;
+    font-weight: v.$font-weight-extrabold;
+    line-height: v.$line-height-snug;
+    letter-spacing: v.$tracking-tight;
+    color: v.$color-brand-navy;
+    text-wrap: balance;
+  }
+
+  &__summary {
+    max-width: 62ch;
+    font-size: v.$font-size-base;
+    line-height: v.$line-height-base;
+    color: v.$color-ink-soft;
+  }
+
+  &__meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: v.$space-3;
+  }
+
+  &__badge {
+    padding: 0.1875rem v.$space-3;
+    border-radius: v.$radius-pill;
+    font-size: 0.625rem;
+    font-weight: v.$font-weight-extrabold;
+    text-transform: uppercase;
+    letter-spacing: v.$tracking-wide;
+
+    &--critical {
+      background: v.$color-emergency;
+      color: #fff;
+    }
+
+    &--urgent {
+      background: v.$color-warning;
+      color: #fff;
+    }
+
+    &--basic {
+      background: v.$color-safe;
+      color: #fff;
+    }
+  }
+
+  &__stat {
+    display: inline-flex;
+    align-items: center;
+    gap: v.$space-1;
+    font-size: v.$font-size-sm;
+    color: v.$color-ink-soft;
+
+    svg {
+      width: 0.9rem;
+      height: 0.9rem;
+    }
+  }
+
+  // --- Contenido del administrador ---
+  &__content {
+    padding-top: v.$space-5;
+  }
+
+  &__error {
+    padding-top: v.$space-5;
+  }
+}

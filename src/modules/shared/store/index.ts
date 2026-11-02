@@ -1,6 +1,7 @@
 import { configureStore } from '@reduxjs/toolkit';
 import { authReducer } from 'modules/auth';
 import { contentReducer } from 'modules/content';
+import dynamicReducer from 'modules/dynamic-content/store/dynamicSlice';
 import uiReducer from './slices/uiSlice';
 
 /**
@@ -13,6 +14,7 @@ export const store = configureStore({
     ui: uiReducer,
     auth: authReducer,
     content: contentReducer,
+    dynamic: dynamicReducer,
   },
 });
 

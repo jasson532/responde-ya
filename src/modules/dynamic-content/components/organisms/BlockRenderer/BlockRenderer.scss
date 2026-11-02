@@ -1,0 +1,61 @@
+@use 'styles/variables' as v;
+
+.block-renderer {
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-5;
+
+  &__item {
+    min-width: 0;
+  }
+}
+
+// --- Bloques simples, pintados por el propio renderizador ---
+// Están aquí y no en su carpeta porque son un solo elemento sin lógica: crear
+// tres componentes para un `h2`, un `p` y un `hr` sería andamiaje vacío.
+
+.block-heading {
+  font-weight: v.$font-weight-extrabold;
+  line-height: v.$line-height-snug;
+  letter-spacing: v.$tracking-tight;
+  color: v.$color-brand-navy;
+  text-wrap: balance;
+
+  &--h2 {
+    font-size: v.$font-size-lg;
+  }
+
+  &--h3 {
+    font-size: v.$font-size-md;
+  }
+
+  &--center {
+    text-align: center;
+  }
+}
+
+.block-text {
+  font-size: v.$font-size-base;
+  line-height: v.$line-height-base;
+  color: v.$color-ink-soft;
+  // Las líneas muy largas cansan: a partir de unos 70 caracteres el ojo pierde
+  // el renglón al volver al margen.
+  max-width: 68ch;
+
+  &--center {
+    margin-inline: auto;
+    text-align: center;
+  }
+
+  &--lead {
+    font-size: v.$font-size-md;
+    color: v.$color-brand-navy;
+  }
+}
+
+.block-divider {
+  width: 100%;
+  height: 1px;
+  border: 0;
+  background: v.$color-line;
+}

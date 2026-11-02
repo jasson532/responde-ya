@@ -1,0 +1,23 @@
+@use 'styles/variables' as v;
+@use 'styles/mixins' as m;
+
+.gallery {
+  display: grid;
+  gap: v.$space-3;
+  // Una sola columna en el móvil más estrecho: dos fotos a 160 px no se ven.
+  grid-template-columns: 1fr;
+
+  @include m.from(v.$bp-sm) {
+    &--cols-2 {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    &--cols-3 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  &__item {
+    min-width: 0;
+  }
+}

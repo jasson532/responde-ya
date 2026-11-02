@@ -1,0 +1,92 @@
+@use 'styles/variables' as v;
+@use 'styles/mixins' as m;
+
+.block-palette {
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-5;
+
+  &__group {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-3;
+  }
+
+  &__group-title {
+    font-size: v.$font-size-xs;
+    font-weight: v.$font-weight-extrabold;
+    text-transform: uppercase;
+    letter-spacing: v.$tracking-wide;
+    color: v.$color-ink-muted;
+  }
+
+  &__list {
+    display: grid;
+    gap: v.$space-2;
+    grid-template-columns: 1fr;
+
+    // Dos columnas en cuanto el diálogo da ancho: con una sola, la paleta
+    // obliga a desplazarse mucho para ver las seis familias.
+    @include m.from(v.$bp-sm) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  &__option {
+    display: flex;
+    align-items: flex-start;
+    gap: v.$space-3;
+    width: 100%;
+    padding: v.$space-3;
+    border-radius: v.$radius-lg;
+    border: 1px solid v.$color-line;
+    background: v.$color-surface;
+    text-align: start;
+    transition:
+      border-color v.$transition-fast,
+      background v.$transition-fast;
+
+    @include m.focus-ring;
+
+    &:hover {
+      border-color: v.$color-emergency;
+      background: v.$color-emergency-tint;
+    }
+  }
+
+  &__icon {
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    width: 32px;
+    height: 32px;
+    border-radius: v.$radius-sm;
+    background: v.$color-surface-alt;
+    color: v.$color-brand-navy;
+
+    svg {
+      width: 1.125rem;
+      height: 1.125rem;
+    }
+  }
+
+  &__text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  &__label {
+    font-size: v.$font-size-base;
+    font-weight: v.$font-weight-bold;
+    line-height: v.$line-height-snug;
+    color: v.$color-brand-navy;
+  }
+
+  &__description {
+    font-size: v.$font-size-xs;
+    line-height: v.$line-height-snug;
+    color: v.$color-ink-muted;
+  }
+}
