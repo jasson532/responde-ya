@@ -1,0 +1,9 @@
+@use 'styles/variables' as v;
+
+.survey-group-field {
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: v.$space-2;
+  }
+}

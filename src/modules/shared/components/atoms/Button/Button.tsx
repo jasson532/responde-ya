@@ -1,4 +1,5 @@
 import type { ButtonHTMLAttributes, ReactNode, Ref } from 'react';
+import { Pointer } from 'lucide-react';
 import Spinner from 'modules/shared/components/atoms/Spinner/Spinner';
 import './Button.scss';
 
@@ -12,6 +13,18 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   fullWidth?: boolean;
   iconStart?: ReactNode;
   iconEnd?: ReactNode;
+  /**
+   * Llama la atención sobre el botón: un aro que late y una mano que flota
+   * sobre su borde y lo va tocando.
+   *
+   * Para el botón que hay que pulsar en esa pantalla, no para todos. Si todos
+   * se movieran, moverse dejaría de significar nada.
+   *
+   * La mano aparece siempre, también si el botón ya trae `iconEnd`. La flecha
+   * de «siguiente» dice a DÓNDE lleva y la mano dice QUE hay que pulsarlo: no
+   * son lo mismo, y la mano queda por debajo del borde, donde no estorba.
+   */
+  nudge?: boolean;
   /**
    * Acceso al `<button>` real.
    *
@@ -33,6 +46,7 @@ const Button = ({
   fullWidth = false,
   iconStart,
   iconEnd,
+  nudge = false,
   children,
   className = '',
   disabled,
@@ -44,11 +58,15 @@ const Button = ({
     `button--${variant}`,
     `button--${size}`,
     fullWidth ? 'button--full' : '',
+    nudge ? 'button--nudge' : '',
     loading ? 'is-loading' : '',
     className,
   ]
     .filter(Boolean)
     .join(' ');
+
+  // Cargando no se pulsa nada: no hay nada que indicar.
+  const showPointer = nudge && !loading;
 
   return (
     <button
@@ -72,6 +90,11 @@ const Button = ({
       {!loading && iconEnd && (
         <span className="button__icon" aria-hidden="true">
           {iconEnd}
+        </span>
+      )}
+      {showPointer && (
+        <span className="button__nudge" aria-hidden="true">
+          <Pointer />
         </span>
       )}
     </button>

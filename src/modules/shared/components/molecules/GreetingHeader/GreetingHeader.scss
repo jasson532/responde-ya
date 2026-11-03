@@ -1,6 +1,28 @@
 @use 'styles/variables' as v;
 @use 'styles/mixins' as m;
 
+.home-header {
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-4;
+
+  /**
+   * La marca solo en móvil: desde `$bp-lg` la pinta `AppHeader`, y tenerla en
+   * los dos sitios la mostraría dos veces en la misma pantalla.
+   *
+   * `align-self` para que el enlace mida lo que su contenido y no todo el
+   * ancho de la columna: un enlace invisible de borde a borde se pulsa sin
+   * querer al tocar al lado del nombre.
+   */
+  &__brand {
+    align-self: flex-start;
+
+    @include m.from(v.$bp-lg) {
+      display: none;
+    }
+  }
+}
+
 .greeting {
   display: flex;
   align-items: center;

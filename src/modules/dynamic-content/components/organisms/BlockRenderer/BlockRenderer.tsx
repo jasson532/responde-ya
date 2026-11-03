@@ -19,6 +19,8 @@ import GalleryBlock from '../../blocks/GalleryBlock/GalleryBlock';
 import KeyPointsBlock from '../../blocks/KeyPointsBlock/KeyPointsBlock';
 import MediaFigure from '../../blocks/MediaFigure/MediaFigure';
 import PageLinksBlock from '../../blocks/PageLinksBlock/PageLinksBlock';
+import SurveyBlock from '../../blocks/SurveyBlock/SurveyBlock';
+import SurveyStatsBlock from '../../blocks/SurveyStatsBlock/SurveyStatsBlock';
 import TableBlock from '../../blocks/TableBlock/TableBlock';
 import './BlockRenderer.scss';
 
@@ -192,6 +194,27 @@ const renderBlock = (block: ContentBlock, context: BlockContext) => {
         <EmergencyCallButton
           phoneNumber={block.data.phoneNumber}
           label={block.data.label}
+        />
+      );
+
+    case BlockKind.Survey:
+      return (
+        <SurveyBlock
+          groupId={block.data.groupId}
+          title={block.data.title}
+          intro={block.data.intro}
+          lowLabel={block.data.lowLabel}
+          highLabel={block.data.highLabel}
+          questions={block.data.questions}
+        />
+      );
+
+    case BlockKind.SurveyStats:
+      return (
+        <SurveyStatsBlock
+          groupId={block.data.groupId}
+          title={block.data.title}
+          chart={block.data.chart}
         />
       );
 

@@ -1,5 +1,6 @@
 import { Link, type LinkProps } from 'react-router-dom';
 import type { ReactNode } from 'react';
+import { Pointer } from 'lucide-react';
 import type { ButtonSize, ButtonVariant } from 'modules/shared/components/atoms/Button/Button';
 import 'modules/shared/components/atoms/Button/Button.scss';
 
@@ -9,6 +10,12 @@ export interface LinkButtonProps extends LinkProps {
   fullWidth?: boolean;
   iconStart?: ReactNode;
   iconEnd?: ReactNode;
+  /**
+   * Llama la atención sobre el enlace: un aro que late y una mano flotante que
+   * lo va tocando. Ver la prop homónima de `Button`, con la que comparte
+   * estilos.
+   */
+  nudge?: boolean;
 }
 
 /**
@@ -24,6 +31,7 @@ const LinkButton = ({
   fullWidth = false,
   iconStart,
   iconEnd,
+  nudge = false,
   children,
   className = '',
   ...rest
@@ -33,6 +41,7 @@ const LinkButton = ({
     `button--${variant}`,
     `button--${size}`,
     fullWidth ? 'button--full' : '',
+    nudge ? 'button--nudge' : '',
     className,
   ]
     .filter(Boolean)
@@ -49,6 +58,11 @@ const LinkButton = ({
       {iconEnd && (
         <span className="button__icon" aria-hidden="true">
           {iconEnd}
+        </span>
+      )}
+      {nudge && (
+        <span className="button__nudge" aria-hidden="true">
+          <Pointer />
         </span>
       )}
     </Link>

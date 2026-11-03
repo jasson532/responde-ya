@@ -83,11 +83,19 @@ const PageLinksBlock = ({
                   {String(index + 1).padStart(2, '0')}
                 </span>
               ) : (
-                item.iconName && (
-                  <span className="page-links__icon" aria-hidden="true">
-                    <HealthIcon name={item.iconName as HealthIconName} />
-                  </span>
-                )
+                /**
+                 * Sin icono se pinta la pastilla vacía con un punto, no nada.
+                 * El índice automático nunca trae icono —sus fichas se derivan
+                 * de las páginas y solo llevan el identificador—, y omitir la
+                 * pastilla dejaba ese texto desalineado respecto al de las
+                 * fichas que sí lo tienen.
+                 */
+                <span
+                  className={`page-links__icon${item.iconName ? '' : ' page-links__icon--empty'}`}
+                  aria-hidden="true"
+                >
+                  {item.iconName && <HealthIcon name={item.iconName as HealthIconName} />}
+                </span>
               )}
 
               <span className="page-links__body">

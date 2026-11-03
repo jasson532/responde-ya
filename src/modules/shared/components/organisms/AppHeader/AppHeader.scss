@@ -22,41 +22,7 @@
     height: 72px;
   }
 
-  &__brand {
-    display: flex;
-    align-items: center;
-    gap: v.$space-3;
-
-    @include m.focus-ring;
-  }
-
-  // Marca compacta: el lockup completo (BrandLogo) es 523x375 y recortarlo a
-  // 40px de alto lo volvería ilegible. Aquí se reproduce su reparto de color.
-  &__logo {
-    display: grid;
-    place-items: center;
-    width: 40px;
-    height: 40px;
-    border-radius: v.$radius-md;
-    background: v.$color-brand-navy;
-    color: #fff;
-
-    svg {
-      width: 1.3rem;
-      height: 1.3rem;
-    }
-  }
-
-  &__name {
-    font-size: v.$font-size-md;
-    font-weight: v.$font-weight-extrabold;
-    letter-spacing: v.$tracking-tight;
-    color: v.$color-brand-navy;
-
-    strong {
-      color: v.$color-brand-red;
-    }
-  }
+  // La marca es `BrandWordmark`, que trae sus propios estilos.
 
   &__nav {
     display: flex;

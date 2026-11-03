@@ -303,6 +303,40 @@ export const BLOCK_LIBRARY: { [K in BlockKind]: BlockDefinition<K> } = {
     },
   },
 
+  /**
+   * Las dos de encuesta nacen SIN grupo: `groupId` vacío.
+   *
+   * No se puede inventar aquí, porque un grupo es una fila de la base de datos
+   * y el valor por defecto no puede crearla. El validador rechaza el bloque sin
+   * grupo, así que el formulario obliga a elegir o crear uno antes de guardar.
+   */
+  [BlockKind.Survey]: {
+    kind: BlockKind.Survey,
+    label: 'Encuesta 1 a 5',
+    description: 'Preguntas que se contestan en una escala de acuerdo',
+    icon: <ListOrdered />,
+    group: BlockGroup.Interactive,
+    defaultData: {
+      groupId: '',
+      title: '¿Qué te ha parecido?',
+      lowLabel: 'Muy en desacuerdo',
+      highLabel: 'De acuerdo',
+      questions: [{ id: 'q-1', text: '' }],
+    },
+  },
+
+  [BlockKind.SurveyStats]: {
+    kind: BlockKind.SurveyStats,
+    label: 'Resultados de encuesta',
+    description: 'Gráficos de las respuestas. Solo los ves tú',
+    icon: <ChartColumn />,
+    group: BlockGroup.Interactive,
+    defaultData: {
+      groupId: '',
+      chart: 'both',
+    },
+  },
+
   // --- Navegación ---
   [BlockKind.PageLinks]: {
     kind: BlockKind.PageLinks,

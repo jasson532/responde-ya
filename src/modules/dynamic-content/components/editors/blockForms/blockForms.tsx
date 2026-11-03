@@ -14,12 +14,16 @@ import {
   type PageLinksData,
   type StatsData,
   type StepsData,
+  type SurveyChart,
+  type SurveyData,
+  type SurveyStatsData,
   type TextData,
 } from 'modules/dynamic-content/types/blocks.types';
 import type { Page } from 'modules/dynamic-content/types/dynamic.types';
 import { embedProvider } from 'modules/dynamic-content/services/embed';
 import ItemListEditor from '../ItemListEditor/ItemListEditor';
 import ImageUploadField from '../ImageUploadField/ImageUploadField';
+import SurveyGroupField from '../SurveyGroupField/SurveyGroupField';
 import VideoUploadField from '../VideoUploadField/VideoUploadField';
 
 /**
@@ -774,5 +778,117 @@ export const ChecklistForm = ({ data, onChange }: BlockFormProps<ChecklistData>)
         </FormField>
       )}
     />
+  </>
+);
+
+// ---------------------------------------------------------------------------
+// Encuesta de 1 a 5
+// ---------------------------------------------------------------------------
+
+export const SurveyForm = ({ data, onChange }: BlockFormProps<SurveyData>) => (
+  <>
+    <SurveyGroupField
+      value={data.groupId}
+      onChange={(groupId) => onChange({ ...data, groupId })}
+    />
+
+    <FormField label="Título" hint="Opcional. Se lee sobre las preguntas.">
+      <Input
+        value={data.title ?? ''}
+        onChange={(event) => onChange({ ...data, title: event.target.value })}
+        placeholder="¿Qué te ha parecido este módulo?"
+      />
+    </FormField>
+
+    <FormField label="Introducción" hint="Opcional. Una o dos líneas antes de la escala.">
+      <Textarea
+        rows={2}
+        value={data.intro ?? ''}
+        onChange={(event) => onChange({ ...data, intro: event.target.value })}
+        placeholder="Tus respuestas son anónimas y nos ayudan a mejorar."
+      />
+    </FormField>
+
+    {/* Las etiquetas son del grupo entero, no de cada pregunta: una escala que
+        cambiara de significado entre preguntas no se podría agregar. */}
+    <FormField label="Qué significa el 1" required>
+      <Input
+        value={data.lowLabel}
+        onChange={(event) => onChange({ ...data, lowLabel: event.target.value })}
+        placeholder="Muy en desacuerdo"
+      />
+    </FormField>
+
+    <FormField label="Qué significa el 5" required>
+      <Input
+        value={data.highLabel}
+        onChange={(event) => onChange({ ...data, highLabel: event.target.value })}
+        placeholder="De acuerdo"
+      />
+    </FormField>
+
+    <ItemListEditor
+      label="Preguntas"
+      hint="Cada una se contesta en la escala de 1 a 5."
+      items={data.questions}
+      onChange={(questions) => onChange({ ...data, questions })}
+      createItem={(index) => ({ id: `q-${index + 1}-${Date.now()}`, text: '' })}
+      addLabel="Añadir pregunta"
+      maxItems={40}
+      renderItem={(question, update) => (
+        <FormField label="Enunciado" required>
+          <Textarea
+            rows={2}
+            value={question.text}
+            onChange={(event) => update({ text: event.target.value })}
+            placeholder="Después de leer esto, me siento capaz de actuar"
+          />
+        </FormField>
+      )}
+    />
+  </>
+);
+
+// ---------------------------------------------------------------------------
+// Resultados de encuesta
+// ---------------------------------------------------------------------------
+
+export const SurveyStatsForm = ({ data, onChange }: BlockFormProps<SurveyStatsData>) => (
+  <>
+    <SurveyGroupField
+      value={data.groupId}
+      onChange={(groupId) => onChange({ ...data, groupId })}
+      hint="De qué grupo se muestran los resultados."
+    />
+
+    <p className="block-form__note">
+      Este componente solo lo ves tú. Quien visite la página no verá nada en su lugar:
+      ni los gráficos ni un aviso de permisos.
+    </p>
+
+    <FormField label="Título" hint="Opcional.">
+      <Input
+        value={data.title ?? ''}
+        onChange={(event) => onChange({ ...data, title: event.target.value })}
+        placeholder="Resultados de la encuesta"
+      />
+    </FormField>
+
+    <FormField
+      label="Qué gráficos mostrar"
+      hint="La tabla de números aparece siempre: es lo que hace legibles los gráficos con un lector de pantalla."
+    >
+      <Select
+        options={[
+          { value: 'both', label: 'Barras por pregunta y rosco del total' },
+          { value: 'bars', label: 'Solo barras por pregunta' },
+          { value: 'donut', label: 'Solo el rosco del total' },
+        ]}
+        value={data.chart}
+        onChange={(event) =>
+          onChange({ ...data, chart: event.target.value as SurveyChart })
+        }
+      />
+    </FormField>
   </>
 );

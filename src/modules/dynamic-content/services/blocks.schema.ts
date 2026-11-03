@@ -20,6 +20,8 @@ import {
   type QuizData,
   type StatsData,
   type StepsData,
+  type SurveyData,
+  type SurveyStatsData,
   type TableData,
   type TextData,
 } from 'modules/dynamic-content/types/blocks.types';
@@ -402,6 +404,51 @@ const parsePageLinks = (d: Record<string, unknown>): PageLinksData | null => {
   };
 };
 
+const parseSurvey = (d: Record<string, unknown>): SurveyData | null => {
+  /**
+   * Sin grupo no hay dónde guardar las respuestas, así que el bloque no se
+   * puede guardar. El formulario obliga a elegir o crear uno antes.
+   */
+  const groupId = str(d.groupId, 80);
+  if (groupId === null) return null;
+
+  const questions = list(
+    d.questions,
+    (raw, index) => {
+      if (!isObject(raw)) return null;
+      const text = str(raw.text, 400);
+      if (text === null) return null;
+      return { id: itemId(raw.id, index, 'q'), text };
+    },
+    40,
+  );
+
+  // Una encuesta sin preguntas es un formulario vacío.
+  if (questions.length === 0) return null;
+
+  return {
+    groupId,
+    questions,
+    // Los extremos tienen respaldo: son lo que da sentido a la escala, y un
+    // bloque sin ellos mostraría cinco círculos sin explicar qué significan.
+    lowLabel: str(d.lowLabel, 60) ?? 'Muy en desacuerdo',
+    highLabel: str(d.highLabel, 60) ?? 'De acuerdo',
+    title: optStr(d.title, 200) ?? undefined,
+    intro: optStr(d.intro, 600) ?? undefined,
+  };
+};
+
+const parseSurveyStats = (d: Record<string, unknown>): SurveyStatsData | null => {
+  const groupId = str(d.groupId, 80);
+  if (groupId === null) return null;
+
+  return {
+    groupId,
+    chart: oneOf(d.chart, ['bars', 'donut', 'both'] as const) ?? 'both',
+    title: optStr(d.title, 200) ?? undefined,
+  };
+};
+
 // ---------------------------------------------------------------------------
 // Registro
 // ---------------------------------------------------------------------------
@@ -432,6 +479,8 @@ const GUARDS: { [K in BlockKind]: Guard<K> } = {
   [BlockKind.Quiz]: parseQuiz,
   [BlockKind.EmergencyCall]: parseEmergencyCall,
   [BlockKind.Metronome]: parseMetronome,
+  [BlockKind.Survey]: parseSurvey,
+  [BlockKind.SurveyStats]: parseSurveyStats,
   [BlockKind.PageLinks]: parsePageLinks,
 };
 

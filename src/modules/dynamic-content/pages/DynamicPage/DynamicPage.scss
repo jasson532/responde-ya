@@ -1,4 +1,5 @@
 @use 'styles/variables' as v;
+@use 'styles/mixins' as m;
 
 .dyn-page {
   padding-bottom: v.$space-6;
@@ -41,9 +42,59 @@
 
   // Separado por una línea: cierra la página y deja claro que lo de abajo
   // lleva a otra pantalla, no es parte de la explicación.
+  /**
+   * Navegación entre páginas.
+   *
+   * En móvil, apilados y a ancho completo: no caben en una fila, y el pulgar
+   * alcanza mejor un objetivo que ocupa todo el ancho.
+   *
+   * Desde 768px pasan a una sola línea, con la acción principal quedándose
+   * todo el espacio sobrante.
+   */
   &__nav {
+    display: flex;
+    flex-direction: column;
+    // Hueco generoso entre la acción principal y el retroceso: la mano que
+    // anima el botón asoma unos 20px por debajo de su borde.
+    gap: v.$space-4;
     padding-top: v.$space-4;
     border-top: 1px solid v.$color-line;
+
+    @include m.from(v.$bp-md) {
+      flex-direction: row;
+      // Misma altura los dos, aunque el título de la siguiente ocupe dos
+      // líneas y «Anterior» solo una.
+      align-items: stretch;
+      gap: v.$space-3;
+    }
+  }
+
+  &__primary {
+    @include m.from(v.$bp-md) {
+      // Se queda todo lo que sobre: es la acción que se espera.
+      flex: 1 1 auto;
+    }
+  }
+
+  &__back {
+    @include m.from(v.$bp-md) {
+      /**
+       * A la izquierda, como en cualquier paginación.
+       *
+       * El `order` invierte la posición respecto al documento, donde la
+       * principal va primero. Es un desajuste entre orden visual y orden de
+       * tabulación, y lo acepto SOLO aquí: en una fila los dos botones se ven
+       * a la vez, así que saltar al de la derecha primero sorprende poco. En
+       * móvil no se hace, porque apilados y sin ver los dos de golpe el salto
+       * sí desorienta.
+       */
+      order: -1;
+      flex: 0 0 auto;
+      // Cancela el `width: 100%` de `button--full`, que es lo que lo estira en
+      // móvil.
+      width: auto;
+      min-width: 180px;
+    }
   }
 
   &__error {

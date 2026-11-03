@@ -61,6 +61,12 @@ export enum BlockKind {
   /** Metrónomo audible para marcar un ritmo. */
   Metronome = 'metronome',
 
+  // --- Encuestas ---
+  /** Preguntas con escala de 1 a 5. Las respuestas van a la base de datos. */
+  Survey = 'survey',
+  /** Gráficos de las respuestas de un grupo. Solo lo ve el administrador. */
+  SurveyStats = 'surveyStats',
+
   // --- Navegación ---
   /**
    * El índice. Fichas que llevan a otras páginas del mismo módulo.
@@ -307,6 +313,51 @@ export interface MetronomeData {
 }
 
 // ---------------------------------------------------------------------------
+// Encuestas
+// ---------------------------------------------------------------------------
+
+export interface SurveyQuestionData {
+  id: string;
+  text: string;
+}
+
+/**
+ * Encuesta de escala 1–5.
+ *
+ * Las preguntas son contenido y viajan aquí; las respuestas son datos de uso y
+ * van a la tabla `survey_answers`. `groupId` es lo que une las dos mitades, y
+ * permite que el mismo bloque puesto en varias páginas sume en un solo sitio.
+ *
+ * Las etiquetas son del GRUPO entero, no de cada pregunta: una escala que
+ * cambiara de significado entre preguntas sería imposible de agregar.
+ */
+export interface SurveyData {
+  groupId: string;
+  title?: string;
+  intro?: string;
+  /** Qué significa el 1. Ej. «Muy en desacuerdo». */
+  lowLabel: string;
+  /** Qué significa el 5. Ej. «De acuerdo». */
+  highLabel: string;
+  questions: SurveyQuestionData[];
+}
+
+/** Qué gráficos pinta el bloque de estadísticas. */
+export type SurveyChart = 'bars' | 'donut' | 'both';
+
+/**
+ * Estadísticas de un grupo de preguntas.
+ *
+ * No lleva datos: los pide a la base al montarse. Solo guarda QUÉ grupo mirar y
+ * CÓMO pintarlo.
+ */
+export interface SurveyStatsData {
+  groupId: string;
+  title?: string;
+  chart: SurveyChart;
+}
+
+// ---------------------------------------------------------------------------
 // Navegación
 // ---------------------------------------------------------------------------
 
@@ -381,6 +432,8 @@ export type TableBlock = Block<BlockKind.Table, TableData>;
 export type QuizBlock = Block<BlockKind.Quiz, QuizData>;
 export type EmergencyCallBlock = Block<BlockKind.EmergencyCall, EmergencyCallData>;
 export type MetronomeBlock = Block<BlockKind.Metronome, MetronomeData>;
+export type SurveyBlock = Block<BlockKind.Survey, SurveyData>;
+export type SurveyStatsBlock = Block<BlockKind.SurveyStats, SurveyStatsData>;
 export type PageLinksBlock = Block<BlockKind.PageLinks, PageLinksData>;
 
 /**
@@ -406,6 +459,8 @@ export type ContentBlock =
   | QuizBlock
   | EmergencyCallBlock
   | MetronomeBlock
+  | SurveyBlock
+  | SurveyStatsBlock
   | PageLinksBlock;
 
 /** Mapa de `kind` al tipo de su `data`. Lo usan el registro y los editores. */
@@ -427,5 +482,7 @@ export interface BlockDataByKind {
   [BlockKind.Quiz]: QuizData;
   [BlockKind.EmergencyCall]: EmergencyCallData;
   [BlockKind.Metronome]: MetronomeData;
+  [BlockKind.Survey]: SurveyData;
+  [BlockKind.SurveyStats]: SurveyStatsData;
   [BlockKind.PageLinks]: PageLinksData;
 }

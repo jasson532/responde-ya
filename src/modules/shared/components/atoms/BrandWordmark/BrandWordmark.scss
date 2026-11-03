@@ -1,0 +1,40 @@
+@use 'styles/variables' as v;
+@use 'styles/mixins' as m;
+
+.brand-wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: v.$space-3;
+  // El área de toque mínima: en móvil es un enlace que se pulsa con el pulgar.
+  min-height: v.$touch-target-min;
+
+  @include m.focus-ring;
+
+  &__badge {
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    width: 40px;
+    height: 40px;
+    border-radius: v.$radius-md;
+    background: v.$color-brand-navy;
+    color: #fff;
+
+    svg {
+      width: 1.3rem;
+      height: 1.3rem;
+    }
+  }
+
+  &__name {
+    font-size: v.$font-size-md;
+    font-weight: v.$font-weight-extrabold;
+    letter-spacing: v.$tracking-tight;
+    color: v.$color-brand-navy;
+
+    // La sílaba «Ya» en rojo, como en el logo.
+    strong {
+      color: v.$color-brand-red;
+    }
+  }
+}

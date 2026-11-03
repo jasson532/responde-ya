@@ -88,7 +88,7 @@ const DynamicModulePage = () => {
       <article className="dyn-module rise-in" data-testid="DynamicModulePage">
         <header className={`dyn-module__hero dyn-module__hero--${module.severity}`}>
           <div className="app-container dyn-module__hero-inner">
-            <IconBubble tone={SEVERITY_TONE[module.severity]} size="2xl">
+            <IconBubble tone={SEVERITY_TONE[module.severity]} size="3xl">
               {getModuleIcon(module.iconName)}
             </IconBubble>
 

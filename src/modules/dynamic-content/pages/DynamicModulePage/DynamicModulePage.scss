@@ -38,9 +38,19 @@
     text-wrap: balance;
   }
 
+  /**
+   * El resumen.
+   *
+   * A 15px y en regular se leía como una nota al pie del título, cuando es lo
+   * que de verdad dice si este módulo es el que buscas. Sube a 17px y a peso
+   * medio; el color se queda en `ink-soft` porque el contraste nunca fue el
+   * problema —ya ronda 7:1 sobre el degradado— y oscurecerlo más lo habría
+   * puesto a competir con el título.
+   */
   &__summary {
     max-width: 62ch;
-    font-size: v.$font-size-base;
+    font-size: v.$font-size-md;
+    font-weight: v.$font-weight-medium;
     line-height: v.$line-height-base;
     color: v.$color-ink-soft;
   }

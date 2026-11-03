@@ -1,0 +1,320 @@
+@use 'styles/variables' as v;
+@use 'styles/mixins' as m;
+
+/**
+ * ===========================================================================
+ * ENCUESTA DE 1 A 5
+ * ===========================================================================
+ * Mismo lenguaje que el resto: tarjeta blanca con borde de un píxel, pastilla
+ * sólida en la cabecera y filas tintadas al elegir.
+ *
+ * La escala va en una fila con las etiquetas de los extremos a los lados. Por
+ * debajo de 600px esas etiquetas pasan debajo de los círculos: a 320px de
+ * ancho, «Muy en desacuerdo» a la izquierda dejaba a los cinco círculos unos
+ * 120px y se tocaban entre ellos.
+ * ===========================================================================
+ */
+.survey {
+  @include m.card-surface(v.$space-5, v.$radius-xl);
+
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-4;
+  box-shadow: v.$shadow-sm;
+
+  // -------------------------------------------------------------------------
+  // Cabecera
+  // -------------------------------------------------------------------------
+  &__head {
+    display: flex;
+    align-items: center;
+    gap: v.$space-3;
+  }
+
+  &__badge {
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    width: 44px;
+    height: 44px;
+    border-radius: v.$radius-md;
+    background: v.$color-violet;
+    color: #fff;
+    box-shadow: 0 5px 14px rgba(v.$color-violet, 0.28);
+
+    svg {
+      width: 55%;
+      height: 55%;
+      stroke-width: 2.2;
+    }
+  }
+
+  &__head-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  &__title {
+    font-size: v.$font-size-md;
+    font-weight: v.$font-weight-extrabold;
+    line-height: v.$line-height-snug;
+    letter-spacing: v.$tracking-tight;
+    color: v.$color-brand-navy;
+  }
+
+  &__progress {
+    font-size: v.$font-size-sm;
+    font-weight: v.$font-weight-semibold;
+    color: v.$color-ink-muted;
+  }
+
+  &__intro {
+    font-size: v.$font-size-base;
+    line-height: v.$line-height-base;
+    color: v.$color-ink-soft;
+  }
+
+  // -------------------------------------------------------------------------
+  // Leyenda de la escala
+  // -------------------------------------------------------------------------
+  &__legend {
+    display: flex;
+    justify-content: space-between;
+    gap: v.$space-3;
+    padding: v.$space-2 v.$space-3;
+    border-radius: v.$radius-md;
+    background: v.$color-violet-light;
+    font-size: v.$font-size-xs;
+    font-weight: v.$font-weight-bold;
+    color: #4a32a8;
+  }
+
+  // -------------------------------------------------------------------------
+  // Preguntas
+  // -------------------------------------------------------------------------
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-3;
+  }
+
+  &__field {
+    // Un `fieldset` trae borde, relleno y márgenes propios del navegador.
+    margin: 0;
+    padding: v.$space-4;
+    border: 1px solid v.$color-line;
+    border-radius: v.$radius-lg;
+    background: v.$color-surface;
+    transition:
+      background-color v.$transition-base,
+      border-color v.$transition-base;
+  }
+
+  /**
+   * La pregunta va en `<legend>`, que es lo que asocia el enunciado con el
+   * grupo de radios para un lector de pantalla.
+   *
+   * `float: left` + `width: 100%`: un `legend` no admite `display: flex` de
+   * forma fiable, y sin sacarlo del flujo normal no se puede poner el número
+   * al lado del texto.
+   */
+  &__question {
+    float: left;
+    width: 100%;
+    margin-bottom: v.$space-3;
+    padding: 0;
+    font-size: v.$font-size-base;
+    font-weight: v.$font-weight-bold;
+    line-height: v.$line-height-snug;
+    color: v.$color-brand-navy;
+  }
+
+  &__number {
+    display: inline-grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    margin-right: v.$space-2;
+    border-radius: 50%;
+    background: v.$color-brand-navy;
+    color: #fff;
+    font-size: v.$font-size-xs;
+    font-weight: v.$font-weight-extrabold;
+    font-variant-numeric: tabular-nums;
+    vertical-align: middle;
+  }
+
+  &__scale {
+    display: flex;
+    align-items: center;
+    gap: v.$space-3;
+    clear: both;
+  }
+
+  // Las etiquetas de los extremos se encogen antes que los círculos, que son
+  // el objetivo de toque y no pueden bajar de 40px.
+  &__scale-label {
+    flex: 0 1 auto;
+    min-width: 0;
+    font-size: v.$font-size-xs;
+    line-height: v.$line-height-snug;
+    color: v.$color-ink-muted;
+  }
+
+  &__options {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: v.$space-2;
+    flex: 1 1 auto;
+  }
+
+  &__option {
+    position: relative;
+    display: grid;
+    place-items: center;
+  }
+
+  /**
+   * El radio nativo, invisible pero presente.
+   *
+   * No se oculta con `display: none` ni `visibility: hidden`: eso lo saca del
+   * orden de tabulación y se pierden el recorrido con flechas y el anuncio del
+   * lector de pantalla. Se deja encima del círculo, transparente, así que el
+   * clic lo sigue recibiendo él.
+   */
+  &__radio {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    appearance: none;
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 1;
+  }
+
+  &__option-label {
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: v.$color-surface;
+    border: 2px solid v.$color-line;
+    font-size: v.$font-size-base;
+    font-weight: v.$font-weight-extrabold;
+    font-variant-numeric: tabular-nums;
+    color: v.$color-ink-muted;
+    cursor: pointer;
+    transition:
+      background-color v.$transition-fast,
+      border-color v.$transition-fast,
+      color v.$transition-fast,
+      transform v.$transition-fast;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    &__radio:not(:disabled):hover + &__option-label {
+      border-color: v.$color-violet;
+      color: v.$color-violet;
+    }
+  }
+
+  // El foco se dibuja sobre el círculo visible, porque el que lo recibe es el
+  // radio transparente que tiene encima.
+  &__radio:focus-visible + &__option-label {
+    outline: 3px solid v.$color-violet;
+    outline-offset: 2px;
+  }
+
+  &__radio:checked + &__option-label {
+    background: v.$color-violet;
+    border-color: v.$color-violet;
+    color: #fff;
+    box-shadow: 0 5px 14px rgba(v.$color-violet, 0.32);
+  }
+
+  &__radio:disabled + &__option-label {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  // La pregunta contestada se tiñe: permite ver de un vistazo lo que falta.
+  &__field:has(&__radio:checked) {
+    background: #faf8ff;
+    border-color: rgba(v.$color-violet, 0.3);
+  }
+
+  // -------------------------------------------------------------------------
+  // Enviada
+  // -------------------------------------------------------------------------
+  &--sent {
+    flex-direction: row;
+    align-items: center;
+    gap: v.$space-4;
+    background: v.$color-safe-tint;
+    border-color: rgba(v.$color-safe, 0.3);
+  }
+
+  &__done-icon {
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: v.$color-safe;
+    color: #fff;
+    box-shadow: 0 6px 16px rgba(v.$color-safe, 0.3);
+
+    svg {
+      width: 55%;
+      height: 55%;
+      stroke-width: 3;
+    }
+  }
+
+  &__done-title {
+    font-size: v.$font-size-md;
+    font-weight: v.$font-weight-extrabold;
+    color: #0b7a44;
+  }
+
+  &__done-text {
+    font-size: v.$font-size-sm;
+    color: v.$color-ink-soft;
+  }
+
+  // -------------------------------------------------------------------------
+  // Pantallas estrechas
+  // -------------------------------------------------------------------------
+  // Las etiquetas de los extremos bajan a los lados de la fila de círculos:
+  // con ellas en línea, a 320px los cinco círculos no caben.
+  @include m.until(600px) {
+    padding: v.$space-4;
+
+    &__scale {
+      flex-direction: column;
+      align-items: stretch;
+      gap: v.$space-2;
+    }
+
+    &__options {
+      justify-content: space-between;
+    }
+
+    &__scale-label {
+      display: none;
+    }
+
+    // En su lugar, los extremos se marcan bajo los círculos primero y último.
+    &__options::before,
+    &__options::after {
+      content: none;
+    }
+  }
+}

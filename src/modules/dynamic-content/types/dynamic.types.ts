@@ -138,6 +138,55 @@ export interface MediaAsset {
 }
 
 // ---------------------------------------------------------------------------
+// Encuestas
+// ---------------------------------------------------------------------------
+
+/**
+ * Un grupo de preguntas.
+ *
+ * Es lo que une varias colocaciones del bloque: el mismo grupo en dos páginas
+ * suma sus respuestas en un solo sitio, y el bloque de estadísticas ofrece una
+ * lista con nombres en vez de identificadores.
+ */
+export interface SurveyGroup {
+  id: string;
+  title: string;
+  createdAt: string;
+}
+
+/** Una respuesta suelta, tal como la manda el navegador. */
+export interface SurveyAnswerDraft {
+  questionId: string;
+  /** Copia del enunciado: el bloque puede reescribirlo después. */
+  questionText: string;
+  /** De 1 a 5. */
+  value: number;
+}
+
+export interface SurveySubmission {
+  groupId: string;
+  answers: SurveyAnswerDraft[];
+}
+
+/** Lo que se pinta: cuántos votos tiene cada valor de cada pregunta. */
+export interface SurveyQuestionSummary {
+  questionId: string;
+  questionText: string;
+  /** Cinco posiciones, de 1 a 5. */
+  votes: [number, number, number, number, number];
+  total: number;
+  /** Media de los valores. `null` cuando la pregunta no tiene respuestas. */
+  average: number | null;
+}
+
+export interface SurveySummary {
+  groupId: string;
+  /** Envíos, no respuestas: quien contesta 3 de 5 preguntas suma 1 envío. */
+  submissions: number;
+  questions: SurveyQuestionSummary[];
+}
+
+// ---------------------------------------------------------------------------
 // Payloads de escritura
 // ---------------------------------------------------------------------------
 
@@ -260,6 +309,20 @@ export interface DynamicContentRepository {
   ): Promise<ContentModule>;
   deleteBlock(moduleId: string, blockId: string): Promise<ContentModule>;
   reorderBlocks(moduleId: string, items: ReorderItem[]): Promise<ContentModule>;
+
+  // --- Encuestas ---
+  /** Grupos existentes. Los necesita el formulario para ofrecer una lista. */
+  listSurveyGroups(): Promise<SurveyGroup[]>;
+  createSurveyGroup(title: string): Promise<SurveyGroup>;
+
+  /**
+   * Envía las respuestas de un visitante. Es la ÚNICA escritura que no exige
+   * ser administrador: quien lee el contenido es anónimo.
+   */
+  submitSurveyAnswers(submission: SurveySubmission): Promise<void>;
+
+  /** Recuento por pregunta y valor. Solo responde al administrador. */
+  getSurveySummary(groupId: string): Promise<SurveySummary>;
 
   // --- Archivos ---
   uploadMedia(file: File, moduleId: string | null, alt: string): Promise<MediaAsset>;

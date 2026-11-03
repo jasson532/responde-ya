@@ -10,7 +10,7 @@ export type BubbleTone =
   | 'teal'
   | 'neutral';
 
-export type BubbleSize = 'sm' | 'md' | 'lg' | 'xl' | '2xl';
+export type BubbleSize = 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl';
 
 export interface IconBubbleProps {
   children: ReactNode;

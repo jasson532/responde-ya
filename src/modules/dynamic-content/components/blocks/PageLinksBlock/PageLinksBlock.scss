@@ -1,6 +1,22 @@
 @use 'styles/variables' as v;
 @use 'styles/mixins' as m;
 
+/**
+ * ===========================================================================
+ * ÍNDICE DE PÁGINAS
+ * ===========================================================================
+ * Eran tarjetas grises planas sobre el lienzo. No estaban mal, pero desde que
+ * el aviso, las fichas y los pasos son superficies blancas con borde de un
+ * píxel y sombra difusa, el índice era la única pieza con otro acabado.
+ *
+ * Ahora comparte ese lenguaje y gana dos cosas que antes no decía:
+ *
+ * - El número lleva un halo de color, como las pastillas de icono del resto.
+ * - La flecha vive en su propia pastilla y se rellena de rojo al apuntarla.
+ *   Antes era un gris suelto en el borde: la tarjeta entera era pulsable pero
+ *   nada lo señalaba.
+ * ===========================================================================
+ */
 .page-links {
   display: flex;
   flex-direction: column;
@@ -25,8 +41,9 @@
     gap: v.$space-4;
     padding: v.$space-4;
     border-radius: v.$radius-lg;
-    background: v.$color-surface-alt;
-    border: 1.5px solid transparent;
+    background: v.$color-surface;
+    border: 1px solid v.$color-line;
+    box-shadow: v.$shadow-xs;
     transition:
       transform v.$transition-base,
       border-color v.$transition-base,
@@ -38,7 +55,18 @@
       &:hover {
         transform: translateY(-2px);
         border-color: v.$color-emergency;
-        box-shadow: 0 10px 24px rgba(215, 38, 61, 0.14);
+        box-shadow: 0 10px 24px rgba(v.$color-emergency, 0.14);
+
+        .page-links__chevron {
+          background: v.$color-emergency;
+          border-color: v.$color-emergency;
+          color: #fff;
+          transform: translateX(2px);
+        }
+
+        .page-links__label {
+          color: v.$color-emergency-dark;
+        }
       }
     }
 
@@ -54,22 +82,24 @@
     display: grid;
     place-items: center;
     flex: 0 0 auto;
-    width: 36px;
-    height: 36px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
   }
 
   &__number {
     background: v.$color-brand-navy;
     color: #fff;
-    font-size: v.$font-size-sm;
+    font-size: v.$font-size-base;
     font-weight: v.$font-weight-extrabold;
     // Cifras de ancho fijo: sin esto, el «1» estrecho descoloca el «01».
     font-variant-numeric: tabular-nums;
+    box-shadow: 0 5px 14px rgba(v.$color-brand-navy, 0.26);
   }
 
   &__icon {
     background: v.$color-emergency-light;
+    border: 1px solid rgba(v.$color-emergency, 0.22);
     color: v.$color-emergency;
 
     svg {
@@ -78,38 +108,98 @@
     }
   }
 
+  /**
+   * Hueco del icono cuando la ficha no trae ninguno.
+   *
+   * Pasa siempre en el índice automático: sus fichas se derivan de las páginas
+   * y solo llevan el identificador. Sin este punto, esas tarjetas no pintaban
+   * nada en la primera columna y su texto arrancaba pegado al borde, desalineado
+   * respecto a las que sí tienen icono.
+   */
+  &__icon--empty::before {
+    content: '';
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
   &__body {
     display: flex;
     flex-direction: column;
     gap: 2px;
-    // Permite que el texto se recorte dentro del flex en lugar de empujar el
-    // chevron fuera de la tarjeta.
+    // Permite que el texto se recorte dentro del flex en lugar de empujar la
+    // flecha fuera de la tarjeta.
     min-width: 0;
     flex: 1 1 auto;
   }
 
   &__label {
     font-size: v.$font-size-base;
-    font-weight: v.$font-weight-bold;
+    font-weight: v.$font-weight-extrabold;
     line-height: v.$line-height-snug;
     color: v.$color-brand-navy;
+    transition: color v.$transition-base;
   }
 
+  /**
+   * El subtítulo se topa en dos líneas.
+   *
+   * Es el de la página de destino y puede ser un párrafo entero; sin tope, una
+   * tarjeta crecía al triple de las demás y la lista dejaba de leerse como un
+   * índice.
+   */
   &__description {
     font-size: v.$font-size-sm;
     line-height: v.$line-height-snug;
     color: v.$color-ink-muted;
+
+    @include m.line-clamp(2);
   }
 
+  /**
+   * La flecha, en su propia pastilla.
+   *
+   * Es lo que convierte la tarjeta en algo que se pulsa: un chevron gris
+   * suelto en el borde no se leía como un control.
+   */
   &__chevron {
     display: grid;
     place-items: center;
     flex: 0 0 auto;
-    color: v.$color-ink-muted;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: v.$color-surface-alt;
+    border: 1px solid v.$color-line;
+    color: v.$color-ink-soft;
+    transition:
+      background-color v.$transition-base,
+      border-color v.$transition-base,
+      color v.$transition-base,
+      transform v.$transition-base;
 
     svg {
-      width: 1.25rem;
-      height: 1.25rem;
+      width: 1.15rem;
+      height: 1.15rem;
+      stroke-width: 2.4;
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // Pantallas estrechas
+  // -------------------------------------------------------------------------
+  // El número conserva sus 40px: es la columna que guía la lectura de la
+  // lista. Lo que se aprieta es el relleno y la pastilla de la flecha.
+  @include m.until(v.$bp-sm) {
+    &__link {
+      gap: v.$space-3;
+      padding: v.$space-3;
+    }
+
+    &__chevron {
+      width: 28px;
+      height: 28px;
     }
   }
 }

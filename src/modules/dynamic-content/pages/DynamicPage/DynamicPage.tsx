@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
-import { ArrowRight, List } from 'lucide-react';
+import { ArrowLeft, ArrowRight, List } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from 'modules/shared/store/hooks';
 import { LoadingStatus } from 'modules/shared/types/common.types';
 import { ROUTES, buildRoute } from 'modules/shared/constants/routes';
@@ -80,6 +80,20 @@ const DynamicPage = () => {
     );
   }
 
+  /**
+   * Vecinas en la secuencia.
+   *
+   * Sin nada que consultar: el orden vive en la columna `position` de las
+   * páginas, que ya viene en el módulo completo. Una tabla de «siguiente» y
+   * «anterior» en la base de datos sería una segunda fuente de verdad que
+   * habría que mantener a mano cada vez que se reordena una página.
+   *
+   * `ordered` excluye la portada, así que en la primera página `previous` es
+   * `undefined` y no hay botón: lo anterior a la primera no es otra página,
+   * es la portada, y a eso ya llevan la flecha de la barra superior y el botón
+   * «Volver al módulo».
+   */
+  const previous = position > 0 ? ordered[position - 1] : undefined;
   const next = ordered[position + 1];
 
   return (
@@ -106,14 +120,22 @@ const DynamicPage = () => {
 
           <PageRenderer page={page} context={context} />
 
-          <nav className="dyn-page__nav" aria-label="Continuar en el módulo">
+          <nav className="dyn-page__nav" aria-label="Páginas del módulo">
             {next ? (
               <LinkButton
                 to={buildRoute.dynPage(module.slug, next.slug)}
                 variant="emergency"
                 size="lg"
                 fullWidth
+                className="dyn-page__primary"
                 iconEnd={<ArrowRight />}
+                /**
+                 * Es la acción que se espera al acabar de leer la página, y
+                 * queda al final de un desplazamiento largo.
+                 *
+                 * «Volver al módulo» NO lo lleva: es la salida, no el camino.
+                 */
+                nudge
               >
                 {next.title}
               </LinkButton>
@@ -123,9 +145,42 @@ const DynamicPage = () => {
                 variant="secondary"
                 size="md"
                 fullWidth
+                className="dyn-page__primary"
                 iconStart={<List />}
               >
                 Volver al módulo
+              </LinkButton>
+            )}
+
+            {/**
+             * La anterior va DEBAJO de la principal y en secundario: retroceder
+             * es la excepción, y ponerla antes competiría con la acción que se
+             * espera al acabar de leer.
+             *
+             * La etiqueta visible es corta —«Anterior»— porque el título de la
+             * página ya ocupa el botón de arriba y dos títulos largos seguidos
+             * no se distinguen de un vistazo. El destino concreto va en el
+             * `aria-label`, para que quien use lector de pantalla no oiga solo
+             * «Anterior».
+             */}
+            {previous && (
+              <LinkButton
+                to={buildRoute.dynPage(module.slug, previous.slug)}
+                /**
+                 * `secondary` y no `ghost`: la variante fantasma no tiene fondo
+                 * ni borde, así que sobre el lienzo claro era texto suelto y
+                 * no se leía como un botón. Esta es blanca con borde, que es lo
+                 * que la hace visible sin competir con el rojo de la acción
+                 * principal.
+                 */
+                variant="secondary"
+                size="md"
+                fullWidth
+                iconStart={<ArrowLeft />}
+                className="dyn-page__back"
+                aria-label={`Anterior: ${previous.title}`}
+              >
+                Anterior
               </LinkButton>
             )}
           </nav>

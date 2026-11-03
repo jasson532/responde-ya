@@ -24,6 +24,8 @@ import {
   PageLinksForm,
   StatsForm,
   StepsForm,
+  SurveyForm,
+  SurveyStatsForm,
   TextForm,
 } from '../blockForms/blockForms';
 import './BlockFormModal.scss';
@@ -195,6 +197,10 @@ const BlockFormModal = ({
             onUploaded={registerUpload}
           />
         );
+      case BlockKind.Survey:
+        return <SurveyForm data={data as never} onChange={setData as never} />;
+      case BlockKind.SurveyStats:
+        return <SurveyStatsForm data={data as never} onChange={setData as never} />;
       case BlockKind.PageLinks:
         return (
           <PageLinksForm data={data as never} onChange={setData as never} pages={pages} />

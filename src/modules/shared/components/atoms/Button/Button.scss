@@ -2,6 +2,9 @@
 @use 'styles/mixins' as m;
 
 .button {
+  // `relative` para el aro de la animación de atención, que va en un
+  // pseudoelemento y se posiciona sobre el botón.
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -44,6 +47,9 @@
 
   &__label {
     line-height: 1;
+    // Deja que el flex encoja la etiqueta. Sin esto su tamaño mínimo es el del
+    // contenido y el texto empuja los iconos fuera del relleno.
+    min-width: 0;
   }
 
   // --- Tamanos ---
@@ -121,11 +127,175 @@
     }
   }
 
+  /**
+   * Botón a ancho completo.
+   *
+   * Es el único que PARTE el texto en varias líneas. El `nowrap` general existe
+   * por una razón: un «Añadir sección» partido en dos dentro de una fila
+   * estrecha queda peor que ocupando su ancho. Pero a ancho completo el botón
+   * ya tiene un ancho fijo, y con `nowrap` una etiqueta larga —«5. Aprende a
+   * realizar las compresiones torácicas»— no se ajustaba: se salía del botón y
+   * el texto acababa pegado a los bordes redondeados.
+   *
+   * `balance` reparte las líneas en bloques parecidos en vez de dejar una
+   * palabra suelta en la última.
+   */
   &--full {
     width: 100%;
+    white-space: normal;
+    text-wrap: balance;
+    // Un poco más de aire a los lados: con el radio de pastilla, el texto a dos
+    // líneas se acerca a la curva de los extremos.
+    padding-inline: v.$space-6;
+
+    .button__label {
+      // Interlineado para texto de varias líneas; el 1 de una sola línea las
+      // dejaría pegadas.
+      line-height: v.$line-height-snug;
+    }
   }
 
   &.is-loading {
     cursor: progress;
+  }
+}
+
+/**
+ * ===========================================================================
+ * LLAMADA DE ATENCIÓN (prop `nudge`)
+ * ===========================================================================
+ * Para el botón que hay que pulsar: «Comenzar» en la portada y el que lleva a
+ * la página siguiente. Es OPCIONAL a propósito: si todos los botones se
+ * movieran, moverse dejaría de significar nada.
+ *
+ * Son dos cosas a la vez, y ninguna cambia el tamaño del botón:
+ *
+ * 1. Un aro que se expande y se desvanece, en un pseudoelemento. Va ahí y no
+ *    en el `box-shadow` del botón porque las variantes `primary` y `emergency`
+ *    ya tienen su propia sombra y la animación la pisaría.
+ * 2. Una mano que flota por fuera del borde inferior y sube a tocarlo.
+ *
+ * La mano se pinta también cuando el botón trae `iconEnd`. Antes en ese caso
+ * se animaba la flecha en su lugar, para no poner dos glifos señalando; pero
+ * no señalan lo mismo —la flecha dice a dónde lleva y la mano dice que hay que
+ * pulsar— y la mano cuelga por debajo del borde, donde no se cruza con ella.
+ *
+ * Se detiene al pasar el cursor: quien ya está encima del botón lo ha
+ * encontrado, y seguir agitándolo solo molesta.
+ * ===========================================================================
+ */
+@keyframes button-nudge-ring {
+  0% {
+    box-shadow: 0 0 0 0 rgba(215, 38, 61, 0.45);
+  }
+  // El aro se expande en el primer tercio y el resto del ciclo es pausa: un
+  // latido continuo en una pantalla de primeros auxilios cansa la vista.
+  35% {
+    box-shadow: 0 0 0 14px rgba(215, 38, 61, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(215, 38, 61, 0);
+  }
+}
+
+/**
+ * El dedo sube hacia el botón, lo toca y vuelve.
+ *
+ * La rotación se repite en cada fotograma a propósito: `transform` es una sola
+ * propiedad, y un fotograma que solo declare `translateY` perdería el giro.
+ */
+@keyframes button-nudge-tap {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-8deg) scale(1);
+  }
+  // Toca: sube al borde del botón y se achica un poco, como un dedo que
+  // aplasta la punta al apretar.
+  45% {
+    transform: translateY(-12px) rotate(-8deg) scale(0.94);
+  }
+  65% {
+    transform: translateY(0) rotate(-8deg) scale(1);
+  }
+}
+
+.button--nudge {
+  @include m.motion-safe {
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      // El aro es decorativo y no debe robar el clic.
+      pointer-events: none;
+      animation: button-nudge-ring 2.8s ease-out infinite;
+    }
+
+    .button__nudge {
+      animation: button-nudge-tap 1.4s ease-in-out infinite;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      &:hover::after,
+      &:hover .button__nudge {
+        animation: none;
+      }
+    }
+  }
+
+  // Un botón deshabilitado o cargando no se pulsa: nada que indicar.
+  &:disabled,
+  &.is-loading {
+    &::after,
+    .button__nudge {
+      animation: none;
+    }
+  }
+}
+
+/**
+ * El dedo flota FUERA del botón, asomando por su borde inferior derecho y
+ * apuntando hacia arriba: la postura de una mano que lo está pulsando.
+ *
+ * Va posicionado en absoluto, así que no ocupa sitio dentro del botón. Antes
+ * era un elemento más del flex y empujaba la etiqueta hacia la izquierda; al
+ * sacarlo, el texto vuelve a quedar centrado.
+ */
+.button__nudge {
+  position: absolute;
+  // Algo menos de la mitad del disco queda por debajo del botón.
+  bottom: -22px;
+  right: 18px;
+  /**
+   * Por encima del aro.
+   *
+   * Los dos son absolutos y están al mismo nivel de apilado, así que sin esto
+   * decide el orden del documento: `::after` se pinta DESPUÉS de los hijos y el
+   * aro acabaría sobre la mano.
+   *
+   * Un valor local y pequeño, no uno de la escala de capas: la mano tiene que
+   * ganarle al aro de su propio botón, no a la barra de navegación ni a los
+   * diálogos.
+   */
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  // Disco blanco: el dedo cruza el rojo del botón y el lienzo claro de la
+  // página, y ningún color plano se lee bien en los dos. Con fondo propio, el
+  // glifo siempre va sobre blanco.
+  background: v.$color-surface;
+  border: 1px solid v.$color-line;
+  box-shadow: 0 6px 18px rgba(16, 25, 43, 0.22);
+  color: v.$color-brand-navy;
+  // Decorativo: el clic lo recibe el botón que tiene debajo.
+  pointer-events: none;
+
+  svg {
+    width: 28px;
+    height: 28px;
+    stroke-width: 2.1;
   }
 }

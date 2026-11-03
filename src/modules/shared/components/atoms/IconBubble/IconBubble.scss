@@ -47,6 +47,13 @@
     height: 96px;
     border-radius: v.$radius-2xl;
   }
+  // Para la portada de un módulo, donde el icono es el primer elemento de la
+  // pantalla y carga con identificar el tema antes de que se lea el título.
+  &--3xl {
+    width: 120px;
+    height: 120px;
+    border-radius: v.$radius-2xl;
+  }
 
   // --- Tonos ---
   &--emergency {

@@ -16,6 +16,10 @@ import {
   type PageDraft,
   type ReorderItem,
   type SectionDraft,
+  type SurveyGroup,
+  type SurveyQuestionSummary,
+  type SurveySubmission,
+  type SurveySummary,
 } from 'modules/dynamic-content/types/dynamic.types';
 import { sanitizeBlockData } from './blocks.schema';
 import {
@@ -892,6 +896,145 @@ export const dynamicSupabaseRepository: DynamicContentRepository = {
     }
 
     return mapMedia(data);
+  },
+
+  // =========================================================================
+  // Encuestas
+  // =========================================================================
+  async listSurveyGroups(): Promise<SurveyGroup[]> {
+    const { data, error } = await getSupabaseClient()
+      .from('survey_groups')
+      .select('id, title, created_at')
+      .order('created_at', { ascending: false });
+
+    if (error) throw toAppError(error, 'listar los grupos de preguntas');
+
+    return (data as { id: string; title: string; created_at: string }[]).map((row) => ({
+      id: row.id,
+      title: row.title,
+      createdAt: row.created_at,
+    }));
+  },
+
+  async createSurveyGroup(title: string): Promise<SurveyGroup> {
+    const { data, error } = await getSupabaseClient()
+      .from('survey_groups')
+      .insert({ title: title.trim() })
+      .select('id, title, created_at')
+      .single<{ id: string; title: string; created_at: string }>();
+
+    if (error) throw toAppError(error, 'crear el grupo de preguntas');
+
+    return { id: data.id, title: data.title, createdAt: data.created_at };
+  },
+
+  /**
+   * Envía las respuestas de un visitante.
+   *
+   * Es la única escritura de la aplicación que NO exige ser administrador: la
+   * política de la tabla deja insertar a cualquiera, porque quien lee el
+   * contenido es anónimo. Leer esas respuestas sigue siendo cosa del admin.
+   *
+   * Las respuestas de un envío comparten `submission_id`, generado aquí. No
+   * identifica a nadie entre visitas; sirve para poder contar envíos, que no es
+   * lo mismo que respuestas: quien contesta 3 de 5 preguntas suma 3 respuestas
+   * y 1 envío.
+   */
+  async submitSurveyAnswers(submission: SurveySubmission): Promise<void> {
+    if (submission.answers.length === 0) {
+      throw validationError('No hay respuestas que enviar.');
+    }
+
+    const submissionId = crypto.randomUUID();
+
+    const { error } = await getSupabaseClient()
+      .from('survey_answers')
+      .insert(
+        submission.answers.map((answer) => ({
+          group_id: submission.groupId,
+          question_id: answer.questionId,
+          question_text: answer.questionText,
+          value: answer.value,
+          submission_id: submissionId,
+        })),
+      );
+
+    if (error) throw toAppError(error, 'enviar las respuestas');
+  },
+
+  /**
+   * Recuento por pregunta y valor.
+   *
+   * Agrega en Postgres con `survey_summary`, no en el navegador: con unos
+   * cientos de envíos, traerse las filas una a una para contarlas aquí sería
+   * descargar un montón de datos para calcular treinta números.
+   */
+  async getSurveySummary(groupId: string): Promise<SurveySummary> {
+    const client = getSupabaseClient();
+
+    const [summary, submissions] = await Promise.all([
+      client.rpc('survey_summary', { p_group_id: groupId }),
+      client.rpc('survey_submissions', { p_group_id: groupId }),
+    ]);
+
+    if (summary.error) throw toAppError(summary.error, 'leer las estadísticas');
+    if (submissions.error) throw toAppError(submissions.error, 'contar los envíos');
+
+    type Row = {
+      question_id: string;
+      question_text: string;
+      value: number;
+      votes: number;
+    };
+
+    /**
+     * La función devuelve una fila por pregunta Y valor, así que una pregunta
+     * aparece hasta cinco veces. Aquí se pliega a una entrada por pregunta con
+     * sus cinco recuentos.
+     *
+     * Se conserva el orden de llegada para que dos cargas seguidas no muestren
+     * las preguntas en distinto orden.
+     */
+    const byQuestion = new Map<string, SurveyQuestionSummary>();
+
+    ((summary.data ?? []) as Row[]).forEach((row) => {
+      const current = byQuestion.get(row.question_id) ?? {
+        questionId: row.question_id,
+        questionText: row.question_text,
+        votes: [0, 0, 0, 0, 0] as [number, number, number, number, number],
+        total: 0,
+        average: null,
+      };
+
+      // `value` viene de una columna con `check (value between 1 and 5)`, así
+      // que el índice siempre cae dentro; la guarda es por si alguien tocó la
+      // tabla a mano.
+      if (row.value >= 1 && row.value <= 5) {
+        current.votes[row.value - 1] = Number(row.votes);
+      }
+
+      byQuestion.set(row.question_id, current);
+    });
+
+    const questions = [...byQuestion.values()].map((question) => {
+      const total = question.votes.reduce((sum, votes) => sum + votes, 0);
+      const weighted = question.votes.reduce(
+        (sum, votes, index) => sum + votes * (index + 1),
+        0,
+      );
+
+      return {
+        ...question,
+        total,
+        average: total === 0 ? null : weighted / total,
+      };
+    });
+
+    return {
+      groupId,
+      submissions: Number(submissions.data ?? 0),
+      questions,
+    };
   },
 
   /**

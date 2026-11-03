@@ -172,7 +172,9 @@ const WelcomePage = () => {
       </p>
 
       <div className="welcome__actions">
-        <LinkButton to={ROUTES.MODULES} variant="emergency" size="lg" fullWidth>
+        {/* La única acción de la portada: lleva el dedo que indica que hay que
+            pulsarla. Sin icono propio, así que lo añade el componente. */}
+        <LinkButton to={ROUTES.MODULES} variant="emergency" size="lg" fullWidth nudge>
           <span className="welcome__cta-label">Comenzar</span>
         </LinkButton>
 
