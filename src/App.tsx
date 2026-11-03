@@ -7,6 +7,7 @@ import { ROUTES } from 'modules/shared/constants/routes';
 import Spinner from 'modules/shared/components/atoms/Spinner/Spinner';
 import ErrorBoundary from 'modules/shared/components/organisms/ErrorBoundary/ErrorBoundary';
 import AdminRoute from 'modules/shared/components/organisms/AdminRoute/AdminRoute';
+import ScrollToTop from 'modules/shared/components/organisms/ScrollToTop/ScrollToTop';
 import AuthLayout from 'modules/shared/components/templates/AuthLayout/AuthLayout';
 import AppShell from 'modules/shared/components/templates/AppShell/AppShell';
 import NotFoundPage from 'modules/shared/components/pages/NotFoundPage/NotFoundPage';
@@ -36,6 +37,7 @@ const SessionBootstrapper = () => {
 const AppRoutes = () => (
   <BrowserRouter>
     <SessionBootstrapper />
+    <ScrollToTop />
 
     <Suspense fallback={<Spinner size="lg" label="Cargando" />}>
       <Routes>

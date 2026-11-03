@@ -3,16 +3,12 @@ import CprMetronome from 'modules/content/components/molecules/CprMetronome/CprM
 import DoDontGrid from 'modules/content/components/molecules/DoDontGrid/DoDontGrid';
 import EmergencyCallButton from 'modules/content/components/molecules/EmergencyCallButton/EmergencyCallButton';
 import InteractiveChecklist from 'modules/content/components/molecules/InteractiveChecklist/InteractiveChecklist';
-import KeyPointsList from 'modules/content/components/molecules/KeyPointsList/KeyPointsList';
 import QuizCard from 'modules/content/components/molecules/QuizCard/QuizCard';
 import StatsRow from 'modules/content/components/molecules/StatsRow/StatsRow';
 import StepsSequence from 'modules/content/components/molecules/StepsSequence/StepsSequence';
-import { KeyPointTone } from 'modules/content/types/content.types';
 import {
   BlockKind,
-  BlockTone,
   type ContentBlock,
-  type KeyPointItemData,
   type StepItemData,
 } from 'modules/dynamic-content/types/blocks.types';
 import type { Page } from 'modules/dynamic-content/types/dynamic.types';
@@ -20,6 +16,7 @@ import AccordionBlock from '../../blocks/AccordionBlock/AccordionBlock';
 import CalloutBlock from '../../blocks/CalloutBlock/CalloutBlock';
 import EmbedBlock from '../../blocks/EmbedBlock/EmbedBlock';
 import GalleryBlock from '../../blocks/GalleryBlock/GalleryBlock';
+import KeyPointsBlock from '../../blocks/KeyPointsBlock/KeyPointsBlock';
 import MediaFigure from '../../blocks/MediaFigure/MediaFigure';
 import PageLinksBlock from '../../blocks/PageLinksBlock/PageLinksBlock';
 import TableBlock from '../../blocks/TableBlock/TableBlock';
@@ -43,28 +40,17 @@ export interface BlockRendererProps {
 }
 
 /**
- * DEUDA CONOCIDA: estos tres mapas existen porque las moléculas que pintan
- * pasos y fichas viven todavía en `modules/content` y usan sus tipos.
+ * DEUDA CONOCIDA: este mapa existe porque la molécula que pinta los pasos vive
+ * todavía en `modules/content` y usa sus tipos.
  *
- * Cuando `content` se jubile, las moléculas se mueven a `shared` y adoptan
- * `BlockTone` directamente. Hasta entonces, adaptar aquí es más barato que
- * duplicar ocho componentes que ya funcionan.
+ * Eran tres. Los dos de las fichas desaparecieron al darle a `KeyPoints` su
+ * propio componente: traducían los cinco tonos del bloque a los tres de la
+ * molécula antigua, así que «peligro» y «atención» acababan idénticos en
+ * pantalla aunque el formulario los ofreciera por separado.
+ *
+ * Cuando `content` se jubile, la molécula de pasos se mueve a `shared` y
+ * adopta estos tipos. Hasta entonces, adaptar aquí es más barato que duplicarla.
  */
-const KEY_POINT_TONE: Record<BlockTone, KeyPointTone> = {
-  [BlockTone.Danger]: KeyPointTone.Alert,
-  [BlockTone.Warning]: KeyPointTone.Alert,
-  [BlockTone.Info]: KeyPointTone.Question,
-  [BlockTone.Neutral]: KeyPointTone.Question,
-  [BlockTone.Success]: KeyPointTone.Check,
-};
-
-const toLegacyKeyPoint = (point: KeyPointItemData) => ({
-  id: point.id,
-  title: point.title,
-  detail: point.detail,
-  tone: KEY_POINT_TONE[point.tone],
-});
-
 /** La molécula de pasos espera `imageUrl`; el bloque nuevo guarda un `MediaRef`. */
 const toLegacyStep = (step: StepItemData) => ({
   id: step.id,
@@ -152,12 +138,7 @@ const renderBlock = (block: ContentBlock, context: BlockContext) => {
       );
 
     case BlockKind.KeyPoints:
-      return (
-        <KeyPointsList
-          title={block.data.title}
-          points={block.data.points.map(toLegacyKeyPoint)}
-        />
-      );
+      return <KeyPointsBlock title={block.data.title} points={block.data.points} />;
 
     case BlockKind.Stats:
       return <StatsRow title={block.data.title} stats={block.data.stats} />;

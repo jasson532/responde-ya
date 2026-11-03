@@ -1,19 +1,52 @@
 @use 'styles/variables' as v;
 @use 'styles/mixins' as m;
 
+/**
+ * ===========================================================================
+ * PASOS ENUMERADOS
+ * ===========================================================================
+ * Antes era una pila de tarjetas, cada una con una barra roja a la izquierda.
+ * Se leía como una lista de avisos: nada decía que hubiera un orden, que es
+ * justo lo único que importa en una secuencia.
+ *
+ * Ahora es una línea de tiempo. El número sale FUERA de la tarjeta, a un
+ * canal propio, y un riel vertical une un número con el siguiente. El riel se
+ * pinta en verde por debajo de cada paso ya marcado, así que el avance se ve
+ * de un vistazo sin leer el contador.
+ *
+ * Los números van en círculo y no en cuadrado redondeado como los iconos del
+ * resto de la aplicación: un círculo numerado dice «posición en una serie», y
+ * conviene que no se confunda con las pastillas de icono de los avisos y las
+ * fichas, que no tienen orden.
+ * ===========================================================================
+ */
 .steps {
   display: flex;
   flex-direction: column;
   gap: v.$space-4;
 
+  // -------------------------------------------------------------------------
+  // Cabecera con el anillo de progreso
+  // -------------------------------------------------------------------------
   &__head {
     display: flex;
     align-items: center;
     gap: v.$space-4;
     padding: v.$space-4;
     border-radius: v.$radius-xl;
-    background: v.$color-surface;
-    box-shadow: v.$shadow-xs;
+    background-color: v.$color-surface;
+    // Lavado de color en la esquina del anillo, el mismo recurso que usan el
+    // aviso y las fichas.
+    background-image: radial-gradient(
+      90% 120% at 0% 0%,
+      rgba(v.$color-emergency, 0.08),
+      transparent 60%
+    );
+    border: 1px solid v.$color-line;
+    box-shadow: v.$shadow-sm;
+    transition:
+      background-color v.$transition-base,
+      border-color v.$transition-base;
   }
 
   &__head-text {
@@ -26,6 +59,9 @@
 
   &__title {
     font-size: v.$font-size-md;
+    font-weight: v.$font-weight-extrabold;
+    letter-spacing: v.$tracking-tight;
+    color: v.$color-brand-navy;
   }
 
   &__progress {
@@ -42,7 +78,12 @@
     flex-shrink: 0;
     border-radius: 50%;
     background: v.$color-surface-alt;
+    border: 1px solid v.$color-line;
     color: v.$color-ink-soft;
+    transition:
+      background-color v.$transition-fast,
+      color v.$transition-fast,
+      border-color v.$transition-fast;
 
     @include m.focus-ring;
 
@@ -53,49 +94,83 @@
 
     &:hover {
       background: v.$color-emergency-light;
+      border-color: rgba(v.$color-emergency, 0.3);
       color: v.$color-emergency;
     }
   }
 
+  // -------------------------------------------------------------------------
+  // La secuencia
+  // -------------------------------------------------------------------------
   &__list {
     display: flex;
     flex-direction: column;
     gap: v.$space-3;
   }
 
+  /**
+   * El `li` ya NO es la tarjeta: solo coloca el número y el cuerpo, y aloja el
+   * riel. La tarjeta es `__body`, para que el número quede fuera y el riel
+   * pueda cruzar el hueco entre pasos sin pasar por debajo de un fondo opaco.
+   */
   &__item {
+    position: relative;
     display: flex;
     gap: v.$space-4;
-    padding: v.$space-4;
-    background: v.$color-surface;
-    border-radius: v.$radius-lg;
-    box-shadow: v.$shadow-xs;
-    border-left: 4px solid v.$color-emergency;
-    transition:
-      background-color v.$transition-base,
-      border-color v.$transition-base;
-
-    &.is-done {
-      border-left-color: v.$color-safe;
-      background: v.$color-safe-tint;
-    }
   }
 
+  /**
+   * El riel. Va del número de este paso al del siguiente, cruzando el hueco de
+   * la lista: de ahí el `bottom` negativo, que vale exactamente el `gap`.
+   *
+   * Centrado en el número: 21px = la mitad de los 44px del botón, menos el
+   * grosor de la línea.
+   */
+  &__item::before {
+    content: '';
+    position: absolute;
+    top: 50px;
+    bottom: calc(-1 * v.$space-3);
+    left: 21px;
+    width: 2px;
+    border-radius: v.$radius-pill;
+    background: v.$color-line;
+    transition: background-color v.$transition-base;
+  }
+
+  // El último paso no tiene a quién unirse.
+  &__item:last-child::before {
+    display: none;
+  }
+
+  /**
+   * El número.
+   *
+   * Pendiente: blanco con borde, para que se lea como algo que se puede
+   * pulsar. Hecho: verde pleno con el visto en blanco. El contraste entre los
+   * dos estados es lo que permite ver por dónde vas sin contar.
+   */
   &__marker {
+    position: relative;
+    z-index: 1;
     display: grid;
     place-items: center;
     width: 44px;
     height: 44px;
     flex-shrink: 0;
-    border-radius: v.$radius-md;
-    background: v.$color-emergency-light;
+    border-radius: 50%;
+    background: v.$color-surface;
+    border: 2px solid rgba(v.$color-emergency, 0.35);
     color: v.$color-emergency-dark;
     font-weight: v.$font-weight-extrabold;
     font-size: v.$font-size-md;
     font-variant-numeric: tabular-nums;
+    box-shadow: v.$shadow-xs;
     transition:
       background-color v.$transition-base,
+      border-color v.$transition-base,
       color v.$transition-base,
+      box-shadow v.$transition-base,
       transform v.$transition-fast;
 
     @include m.focus-ring;
@@ -110,26 +185,46 @@
       transform: scale(0.92);
     }
 
-    .is-done & {
-      background: v.$color-safe;
-      color: #fff;
+    @media (hover: hover) and (pointer: fine) {
+      &:hover {
+        border-color: v.$color-emergency;
+        box-shadow: 0 4px 12px rgba(v.$color-emergency, 0.2);
+      }
     }
   }
 
+  /**
+   * La tarjeta del paso. Pegada al número por el riel, con el borde de un
+   * píxel y el radio del resto de las superficies de la aplicación.
+   */
   &__body {
+    flex: 1;
+    min-width: 0;
     display: flex;
     flex-direction: column;
     gap: v.$space-2;
-    min-width: 0;
+    padding: v.$space-4;
+    background: v.$color-surface;
+    border: 1px solid v.$color-line;
+    border-radius: v.$radius-lg;
+    box-shadow: v.$shadow-xs;
+    transition:
+      background-color v.$transition-base,
+      border-color v.$transition-base;
   }
 
   &__step-title {
     font-size: v.$font-size-base;
+    font-weight: v.$font-weight-extrabold;
+    line-height: v.$line-height-snug;
+    color: v.$color-brand-navy;
   }
 
   &__step-text {
     font-size: v.$font-size-base;
+    line-height: v.$line-height-base;
     color: v.$color-ink-soft;
+    overflow-wrap: anywhere;
   }
 
   &__duration {
@@ -140,9 +235,10 @@
     padding: v.$space-1 v.$space-3;
     border-radius: v.$radius-pill;
     background: v.$color-info-light;
+    border: 1px solid rgba(v.$color-info, 0.22);
     font-size: v.$font-size-xs;
     font-weight: v.$font-weight-bold;
-    color: v.$color-info;
+    color: #1550b8;
 
     svg {
       width: 0.85rem;
@@ -151,8 +247,70 @@
   }
 
   &__image {
-    margin-top: v.$space-2;
+    width: 100%;
+    height: auto;
+    margin-top: v.$space-1;
     border-radius: v.$radius-md;
     border: 1px solid v.$color-line;
+  }
+
+  // -------------------------------------------------------------------------
+  // Paso marcado
+  // -------------------------------------------------------------------------
+  &__item.is-done {
+    .steps__marker {
+      background: v.$color-safe;
+      border-color: v.$color-safe;
+      color: #fff;
+      box-shadow: 0 6px 16px rgba(v.$color-safe, 0.3);
+    }
+
+    .steps__body {
+      background: v.$color-safe-tint;
+      border-color: rgba(v.$color-safe, 0.3);
+    }
+
+    .steps__step-title {
+      color: #0b7a44;
+    }
+
+    // El tramo de riel que sale de un paso hecho ya está recorrido.
+    &::before {
+      background: rgba(v.$color-safe, 0.55);
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // Secuencia completa
+  // -------------------------------------------------------------------------
+  // La cabecera acompaña al anillo, que ya se pone verde al completarse.
+  //
+  // La clase la pone el componente y no un selector `:has()`: «todos hechos»
+  // en CSS es `:not(:has(.item:not(.is-done)))`, una triple negación fácil de
+  // leer al revés. El componente ya tiene el booleano calculado.
+  &__head.is-complete {
+    background-color: v.$color-safe-tint;
+    background-image: none;
+    border-color: rgba(v.$color-safe, 0.3);
+  }
+
+  // -------------------------------------------------------------------------
+  // Pantallas estrechas
+  // -------------------------------------------------------------------------
+  // El número conserva sus 44px: es un botón y ese es el área mínima de toque
+  // recomendada. Lo que se aprieta es la separación y el relleno.
+  @include m.until(v.$bp-sm) {
+    &__item {
+      gap: v.$space-3;
+    }
+
+    &__body {
+      padding: v.$space-3;
+    }
+
+    &__head {
+      gap: v.$space-3;
+      padding: v.$space-3;
+    }
   }
 }

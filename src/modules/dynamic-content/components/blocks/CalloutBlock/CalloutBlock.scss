@@ -1,89 +1,227 @@
 @use 'styles/variables' as v;
+@use 'styles/mixins' as m;
 
+/**
+ * ===========================================================================
+ * AVISO
+ * ===========================================================================
+ * Antes era el recuadro clásico: fondo pastel, barra de 4px a la izquierda e
+ * icono de 20px. Funcionaba y no se distinguía de un aviso de cualquier otro
+ * sitio, así que el ojo lo saltaba como si fuera texto más.
+ *
+ * Ahora es una tarjeta con la misma forma que el resto de la aplicación
+ * —esquinas de 24px, sombra difusa— y el peso lo lleva una pastilla de color
+ * sólido con el icono dentro. El tinte del fondo se queda, pero muy suave: lo
+ * que hace que resalte es la pastilla, no el relleno.
+ * ===========================================================================
+ */
 .callout {
   display: flex;
   align-items: flex-start;
-  gap: v.$space-3;
-  padding: v.$space-4;
-  border-radius: v.$radius-lg;
-  // Barra lateral además del relleno: el color de fondo es suave y en una
-  // pantalla con brillo alto puede pasar desapercibido.
-  border-left: 4px solid;
+  gap: v.$space-4;
+  padding: v.$space-5;
+  border-radius: v.$radius-xl;
+  border: 1px solid;
+  box-shadow: v.$shadow-sm;
 
+  /**
+   * Cuando no hay título, el cuerpo es una sola línea de texto y alinearlo
+   * arriba junto a una pastilla de 48px lo dejaba descolgado en la esquina.
+   */
+  &--untitled {
+    align-items: center;
+  }
+
+  /**
+   * La pastilla del icono.
+   *
+   * Relleno SÓLIDO, al contrario que `IconBubble`, que es pastel. Aquí el
+   * fondo de la tarjeta ya está tintado del mismo color, y un pastel sobre otro
+   * pastel se desvanece: la pastilla dejaba de leerse como un elemento aparte.
+   *
+   * 48px y esquinas de 12px recogen el tamaño `md` de `IconBubble`, para que no
+   * aparezca una tercera forma de pintar un icono en la aplicación.
+   */
   &__icon {
     display: grid;
     place-items: center;
     flex: 0 0 auto;
+    width: 48px;
+    height: 48px;
+    border-radius: v.$radius-md;
+    color: #fff;
 
     svg {
-      width: 1.25rem;
-      height: 1.25rem;
+      // 56% del contenedor, como en `IconBubble`: a tamaños pequeños un trazo
+      // fino cierra el dibujo del icono.
+      width: 56%;
+      height: 56%;
+      stroke-width: 2.2;
     }
   }
 
   &__body {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: v.$space-1;
     min-width: 0;
   }
 
+  /**
+   * El título va en el color del tono, no en el azul de marca.
+   *
+   * Es lo que convierte el aviso en una unidad: antes el titular era navy como
+   * cualquier otro encabezado y el color solo vivía en el borde y el fondo.
+   */
   &__title {
-    font-size: v.$font-size-base;
-    font-weight: v.$font-weight-bold;
+    font-size: v.$font-size-md;
+    font-weight: v.$font-weight-extrabold;
     line-height: v.$line-height-snug;
-    color: v.$color-brand-navy;
+    letter-spacing: v.$tracking-tight;
   }
 
   &__text {
     font-size: v.$font-size-base;
     line-height: v.$line-height-base;
     color: v.$color-ink-soft;
+    // Evita que una palabra larga —un nombre de fármaco, una URL— desborde la
+    // tarjeta en pantallas estrechas.
+    overflow-wrap: anywhere;
   }
 
-  // --- Tonos ---
+  // -------------------------------------------------------------------------
+  // Tonos
+  // -------------------------------------------------------------------------
+  // Cada uno define cuatro cosas: el tinte del fondo, el borde, la pastilla y
+  // el color del título. El degradado radial es un lavado de color en la
+  // esquina de la pastilla; va como capa del `background` y no en un
+  // pseudoelemento para no necesitar `overflow: hidden`, que recortaría el halo
+  // de la propia pastilla.
+  // -------------------------------------------------------------------------
   &--neutral {
-    background: v.$color-surface-alt;
-    border-left-color: v.$color-ink-muted;
+    background-color: v.$color-surface;
+    background-image: radial-gradient(
+      120% 120% at 0% 0%,
+      rgba(v.$color-ink-muted, 0.12),
+      transparent 62%
+    );
+    border-color: v.$color-line;
 
     .callout__icon {
-      color: v.$color-ink-soft;
+      background: v.$color-ink-soft;
+      box-shadow: 0 6px 16px rgba(v.$color-ink-soft, 0.26);
+    }
+
+    .callout__title {
+      color: v.$color-brand-navy;
     }
   }
 
   &--info {
-    background: v.$color-info-light;
-    border-left-color: v.$color-info;
+    background-color: v.$color-info-tint;
+    background-image: radial-gradient(
+      120% 120% at 0% 0%,
+      rgba(v.$color-info, 0.16),
+      transparent 62%
+    );
+    border-color: rgba(v.$color-info, 0.24);
 
     .callout__icon {
-      color: v.$color-info;
+      background: v.$color-info;
+      box-shadow: 0 6px 16px rgba(v.$color-info, 0.3);
+    }
+
+    .callout__title {
+      // Azul oscurecido a mano: no hay token `-dark` para los semánticos y el
+      // $color-info sobre su propio tinte se queda en 3,3:1.
+      color: #1550b8;
     }
   }
 
   &--success {
-    background: v.$color-safe-light;
-    border-left-color: v.$color-safe;
+    background-color: v.$color-safe-tint;
+    background-image: radial-gradient(
+      120% 120% at 0% 0%,
+      rgba(v.$color-safe, 0.16),
+      transparent 62%
+    );
+    border-color: rgba(v.$color-safe, 0.26);
 
     .callout__icon {
-      color: v.$color-safe;
+      background: v.$color-safe;
+      box-shadow: 0 6px 16px rgba(v.$color-safe, 0.28);
+    }
+
+    .callout__title {
+      color: #0b7a44;
     }
   }
 
   &--warning {
-    background: v.$color-warning-light;
-    border-left-color: v.$color-warning;
+    background-color: v.$color-warning-tint;
+    background-image: radial-gradient(
+      120% 120% at 0% 0%,
+      rgba(v.$color-warning, 0.18),
+      transparent 62%
+    );
+    border-color: rgba(v.$color-warning, 0.3);
 
     .callout__icon {
+      // Ámbar más profundo que el token: con `$color-warning` el icono blanco
+      // se queda en 2,1:1 y a este tamaño el dibujo se pierde.
+      background: #c4780f;
+      box-shadow: 0 6px 16px rgba(v.$color-warning, 0.32);
+    }
+
+    .callout__title {
       color: #8a5a0b;
     }
   }
 
+  /**
+   * Peligro. Es el único tono con más presencia que los demás: en una pantalla
+   * de primeros auxilios, «esto puede matar a alguien» no puede verse igual que
+   * «ten en cuenta esto».
+   */
   &--danger {
-    background: v.$color-emergency-light;
-    border-left-color: v.$color-emergency;
+    background-color: v.$color-emergency-light;
+    background-image: radial-gradient(
+      120% 120% at 0% 0%,
+      rgba(v.$color-emergency, 0.2),
+      transparent 62%
+    );
+    border-color: rgba(v.$color-emergency, 0.34);
+    box-shadow: 0 10px 28px rgba(v.$color-emergency, 0.16);
 
     .callout__icon {
+      background: v.$color-emergency;
+      box-shadow: 0 8px 20px rgba(v.$color-emergency, 0.4);
+    }
+
+    .callout__title {
       color: v.$color-emergency-dark;
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // Pantallas estrechas
+  // -------------------------------------------------------------------------
+  // Por debajo de 480px el ancho útil son unos 320px: con la pastilla y su
+  // separación al lado, al texto le quedaban ~230px y los títulos se partían en
+  // tres líneas. Apilado, el texto recupera el ancho completo.
+  @include m.until(v.$bp-sm) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: v.$space-3;
+    padding: v.$space-4;
+
+    &--untitled {
+      align-items: flex-start;
+    }
+
+    &__icon {
+      width: 42px;
+      height: 42px;
     }
   }
 }

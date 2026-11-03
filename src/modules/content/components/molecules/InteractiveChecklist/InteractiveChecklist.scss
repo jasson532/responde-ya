@@ -1,55 +1,252 @@
 @use 'styles/variables' as v;
 @use 'styles/mixins' as m;
 
-.interactive-checklist {
-  @include m.card-surface;
+/**
+ * ===========================================================================
+ * LISTA PARA MARCAR
+ * ===========================================================================
+ * Antes: una tarjeta con casillas nativas, el avance en gris diminuto y el
+ * texto tachado al marcar. Funcionaba y parecía un formulario de 2010; la
+ * casilla del sistema además se dibuja distinta en cada navegador.
+ *
+ * Ahora cada punto es una fila propia con su casilla redondeada, y el avance
+ * se ve en una barra y en una pastilla. Marcado = fila verde con el visto
+ * blanco, que es el estado que se busca de un vistazo mientras se actúa.
+ * ===========================================================================
+ */
+.checklist {
+  @include m.card-surface(v.$space-4, v.$radius-xl);
 
   display: flex;
   flex-direction: column;
   gap: v.$space-3;
+  box-shadow: v.$shadow-sm;
+  transition:
+    background-color v.$transition-base,
+    border-color v.$transition-base;
+
+  // -------------------------------------------------------------------------
+  // Cabecera
+  // -------------------------------------------------------------------------
+  &__head {
+    display: flex;
+    align-items: center;
+    gap: v.$space-3;
+  }
+
+  &__badge {
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    width: 40px;
+    height: 40px;
+    border-radius: v.$radius-md;
+    background: v.$color-safe;
+    color: #fff;
+    box-shadow: 0 5px 14px rgba(v.$color-safe, 0.26);
+    transition: background-color v.$transition-base;
+
+    svg {
+      width: 55%;
+      height: 55%;
+      stroke-width: 2.3;
+    }
+  }
+
+  &__head-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
 
   &__title {
     font-size: v.$font-size-md;
+    font-weight: v.$font-weight-extrabold;
+    line-height: v.$line-height-snug;
+    letter-spacing: v.$tracking-tight;
+    color: v.$color-brand-navy;
   }
 
   &__progress {
-    font-size: v.$font-size-xs;
+    font-size: v.$font-size-sm;
     font-weight: v.$font-weight-semibold;
     color: v.$color-ink-muted;
   }
 
+  // -------------------------------------------------------------------------
+  // Barra de avance
+  // -------------------------------------------------------------------------
+  // Decorativa: el dato exacto está en el texto de la cabecera, que es lo que
+  // lee un lector de pantalla.
+  &__bar {
+    height: 6px;
+    border-radius: v.$radius-pill;
+    background: v.$color-line-soft;
+    overflow: hidden;
+  }
+
+  &__bar-fill {
+    display: block;
+    height: 100%;
+    border-radius: v.$radius-pill;
+    background: v.$color-safe;
+    transition: width v.$transition-base;
+  }
+
+  // -------------------------------------------------------------------------
+  // Los puntos
+  // -------------------------------------------------------------------------
   &__list {
     display: flex;
     flex-direction: column;
     gap: v.$space-2;
   }
 
+  /**
+   * La etiqueta envuelve toda la fila, así que se puede tocar en cualquier
+   * punto, no solo en la casilla. `position: relative` posiciona el visto
+   * sobre el `input`.
+   */
   &__label {
+    position: relative;
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     gap: v.$space-3;
-    padding: v.$space-2;
-    border-radius: v.$radius-sm;
+    min-height: v.$touch-target-min;
+    padding: v.$space-2 v.$space-3;
+    border-radius: v.$radius-md;
+    border: 1px solid v.$color-line;
+    background: v.$color-surface;
     cursor: pointer;
+    transition:
+      background-color v.$transition-fast,
+      border-color v.$transition-fast;
 
-    &:hover {
-      background: v.$color-surface-alt;
-    }
-
-    span.is-checked {
-      color: v.$color-ink-muted;
-      text-decoration: line-through;
+    @media (hover: hover) and (pointer: fine) {
+      &:hover {
+        border-color: rgba(v.$color-safe, 0.4);
+        background: v.$color-safe-tint;
+      }
     }
   }
 
+  /**
+   * La casilla.
+   *
+   * `appearance: none` le quita el dibujo del sistema y deja el elemento, que
+   * es lo que aporta el foco por teclado, la barra espaciadora y el estado que
+   * anuncia un lector de pantalla.
+   */
   &__input {
-    width: 22px;
-    height: 22px;
-    margin-top: 2px;
-    flex-shrink: 0;
-    accent-color: v.$color-safe;
+    flex: 0 0 auto;
+    width: 26px;
+    height: 26px;
+    margin: 0;
+    appearance: none;
+    border: 2px solid v.$color-ink-muted;
+    border-radius: v.$radius-sm;
+    background: v.$color-surface;
     cursor: pointer;
+    transition:
+      background-color v.$transition-fast,
+      border-color v.$transition-fast;
 
-    @include m.focus-ring;
+    &:checked {
+      background: v.$color-safe;
+      border-color: v.$color-safe;
+    }
+
+    // El foco se dibuja sobre el `input`, que sigue siendo el elemento que lo
+    // recibe aunque el visto se pinte encima.
+    @include m.focus-ring(v.$color-safe);
+  }
+
+  /**
+   * El visto. Va encima de la casilla y no dentro: un `<input>` es un elemento
+   * reemplazado y sus pseudoelementos no se pintan de forma fiable en todos
+   * los navegadores.
+   *
+   * `pointer-events: none` para que el clic lo siga recibiendo la casilla.
+   */
+  &__check {
+    position: absolute;
+    // `top` explícito: sin él la posición vertical sería la «posición
+    // estática» de un elemento absoluto dentro de un contenedor flex, que
+    // depende de `align-items` y no se resuelve igual en todos los
+    // navegadores.
+    top: 50%;
+    left: calc(v.$space-3 + 13px);
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    transform: translate(-50%, -50%);
+    color: #fff;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity v.$transition-fast;
+
+    svg {
+      width: 17px;
+      height: 17px;
+      stroke-width: 3.2;
+    }
+  }
+
+  &__input:checked + &__check {
+    opacity: 1;
+  }
+
+  &__text {
+    font-size: v.$font-size-base;
+    line-height: v.$line-height-snug;
+    color: v.$color-ink;
+    overflow-wrap: anywhere;
+    transition: color v.$transition-base;
+  }
+
+  // -------------------------------------------------------------------------
+  // Punto marcado
+  // -------------------------------------------------------------------------
+  &__label.is-checked {
+    background: v.$color-safe-tint;
+    border-color: rgba(v.$color-safe, 0.35);
+
+    .checklist__text {
+      color: v.$color-ink-muted;
+      text-decoration: line-through;
+      // Decoración fina: a 15px una línea gruesa tapa las letras bajas.
+      text-decoration-thickness: 1px;
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // Lista completa
+  // -------------------------------------------------------------------------
+  &.is-complete {
+    border-color: rgba(v.$color-safe, 0.4);
+    background: v.$color-safe-tint;
+
+    .checklist__label {
+      background: v.$color-surface;
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // Pantallas estrechas
+  // -------------------------------------------------------------------------
+  @include m.until(v.$bp-sm) {
+    padding: v.$space-3;
+
+    &__label {
+      gap: v.$space-2;
+      padding: v.$space-2;
+    }
+
+    // El `left` del visto sigue al relleno y a la separación de la etiqueta.
+    &__check {
+      left: calc(v.$space-2 + 13px);
+    }
   }
 }

@@ -1,15 +1,6 @@
-import type { ReactNode } from 'react';
-import { CircleAlert, CircleCheck, Info, OctagonAlert, Lightbulb } from 'lucide-react';
-import { BlockTone, type CalloutData } from 'modules/dynamic-content/types/blocks.types';
+import type { CalloutData } from 'modules/dynamic-content/types/blocks.types';
+import { TONE_ICON } from 'modules/dynamic-content/constants/toneIcons';
 import './CalloutBlock.scss';
-
-const ICON_BY_TONE: Record<BlockTone, ReactNode> = {
-  [BlockTone.Neutral]: <Lightbulb />,
-  [BlockTone.Info]: <Info />,
-  [BlockTone.Success]: <CircleCheck />,
-  [BlockTone.Warning]: <CircleAlert />,
-  [BlockTone.Danger]: <OctagonAlert />,
-};
 
 /**
  * Aviso destacado. Generaliza el antiguo bloque de advertencia, que solo tenía
@@ -19,17 +10,27 @@ const ICON_BY_TONE: Record<BlockTone, ReactNode> = {
  * el rol permite a un lector de pantalla anunciarlo como nota en lugar de leerlo
  * como si fuera otro párrafo más.
  */
-const CalloutBlock = ({ tone, title, text }: CalloutData) => (
-  <aside className={`callout callout--${tone}`} role="note" data-testid="CalloutBlock">
-    <span className="callout__icon" aria-hidden="true">
-      {ICON_BY_TONE[tone]}
-    </span>
+const CalloutBlock = ({ tone, title, text }: CalloutData) => {
+  const hasTitle = title !== undefined && title.trim() !== '';
 
-    <div className="callout__body">
-      {title && <p className="callout__title">{title}</p>}
-      <p className="callout__text">{text}</p>
-    </div>
-  </aside>
-);
+  return (
+    <aside
+      className={`callout callout--${tone}${hasTitle ? '' : ' callout--untitled'}`}
+      role="note"
+      data-testid="CalloutBlock"
+    >
+      {/* El icono es decorativo: repite lo que ya dicen el tono y el texto, así
+          que va oculto para los lectores de pantalla. */}
+      <span className="callout__icon" aria-hidden="true">
+        {TONE_ICON[tone]}
+      </span>
+
+      <div className="callout__body">
+        {hasTitle && <p className="callout__title">{title}</p>}
+        <p className="callout__text">{text}</p>
+      </div>
+    </aside>
+  );
+};
 
 export default CalloutBlock;

@@ -32,8 +32,15 @@ const StepsSequence = ({ title, steps }: StepsSequenceProps) => {
 
   return (
     <section className="steps" data-testid="StepsSequence">
-      <header className="steps__head">
-        <ProgressRing value={doneCount} max={steps.length} size={64} />
+      <header className={`steps__head ${isComplete ? 'is-complete' : ''}`.trim()}>
+        {/* El anillo pasa a verde al completarse: es la confirmación de haber
+            terminado la secuencia, y el rojo de urgencia ahí ya no aplica. */}
+        <ProgressRing
+          value={doneCount}
+          max={steps.length}
+          size={64}
+          tone={isComplete ? 'safe' : 'emergency'}
+        />
 
         <div className="steps__head-text">
           <h3 className="steps__title">{title ?? 'Paso a paso'}</h3>
