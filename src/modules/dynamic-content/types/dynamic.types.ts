@@ -154,6 +154,22 @@ export interface SurveyGroup {
   createdAt: string;
 }
 
+/**
+ * Un grupo y lo que se perdería al borrarlo.
+ *
+ * `blocks` cuenta los componentes que lo usan, y es el dato que de verdad hace
+ * falta antes de confirmar: las respuestas se van por la cascada de la clave
+ * ajena, pero las PREGUNTAS viven dentro del contenido de esos bloques. Borrar
+ * el grupo sin ellos dejaría encuestas apuntando a un grupo que ya no existe,
+ * y al enviar fallaría la clave ajena en la cara del visitante.
+ */
+export interface SurveyGroupUsage {
+  group: SurveyGroup;
+  answers: number;
+  submissions: number;
+  blocks: number;
+}
+
 /** Una respuesta suelta, tal como la manda el navegador. */
 export interface SurveyAnswerDraft {
   questionId: string;
@@ -314,6 +330,18 @@ export interface DynamicContentRepository {
   /** Grupos existentes. Los necesita el formulario para ofrecer una lista. */
   listSurveyGroups(): Promise<SurveyGroup[]>;
   createSurveyGroup(title: string): Promise<SurveyGroup>;
+
+  /** Grupos con lo que cada uno arrastra. Para decidir antes de borrar. */
+  listSurveyGroupUsage(): Promise<SurveyGroupUsage[]>;
+
+  /**
+   * Borra un grupo con sus respuestas Y los componentes que lo usan.
+   *
+   * Los componentes se van porque es donde viven las preguntas: dejarlos
+   * apuntando a un grupo borrado convertiría la encuesta en un formulario que
+   * falla al enviar.
+   */
+  deleteSurveyGroup(groupId: string): Promise<void>;
 
   /**
    * Envía las respuestas de un visitante. Es la ÚNICA escritura que no exige

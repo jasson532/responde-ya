@@ -6,4 +6,90 @@
     flex-wrap: wrap;
     gap: v.$space-2;
   }
+
+  // -------------------------------------------------------------------------
+  // Gestión de grupos
+  // -------------------------------------------------------------------------
+  &__manager {
+    padding: v.$space-3;
+    border-radius: v.$radius-lg;
+    background: v.$color-surface-alt;
+    border: 1px solid v.$color-line;
+  }
+
+  &__empty {
+    font-size: v.$font-size-sm;
+    color: v.$color-ink-muted;
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-2;
+  }
+
+  &__row {
+    display: flex;
+    align-items: center;
+    gap: v.$space-2;
+    // La confirmación entra como tercer hijo y ocupa toda la fila.
+    flex-wrap: wrap;
+    padding: v.$space-2 v.$space-3;
+    border-radius: v.$radius-md;
+    background: v.$color-surface;
+    border: 1px solid v.$color-line;
+  }
+
+  &__row-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  &__row-title {
+    font-size: v.$font-size-base;
+    font-weight: v.$font-weight-bold;
+    line-height: v.$line-height-snug;
+    color: v.$color-brand-navy;
+    overflow-wrap: anywhere;
+  }
+
+  &__row-meta {
+    font-size: v.$font-size-xs;
+    font-weight: v.$font-weight-semibold;
+    color: v.$color-ink-muted;
+  }
+
+  /**
+   * Confirmación en línea, no un `confirm()` del navegador: ese no se puede
+   * estilar, bloquea el hilo y parece un aviso del sistema operativo en lugar
+   * de una decisión sobre este contenido.
+   */
+  &__confirm {
+    flex: 1 1 100%;
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-2;
+    margin-top: v.$space-2;
+    padding-top: v.$space-2;
+    border-top: 1px solid v.$color-line;
+  }
+
+  &__confirm-text {
+    font-size: v.$font-size-sm;
+    line-height: v.$line-height-base;
+    color: v.$color-emergency-dark;
+
+    strong {
+      font-weight: v.$font-weight-extrabold;
+    }
+  }
+
+  &__confirm-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: v.$space-2;
+  }
 }

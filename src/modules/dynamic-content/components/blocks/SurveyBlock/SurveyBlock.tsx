@@ -49,6 +49,8 @@ const SurveyBlock = ({
   const [error, setError] = useState<string | null>(null);
 
   const answered = Object.keys(answers).length;
+  const remaining = questions.length - answered;
+  const isComplete = remaining === 0 && questions.length > 0;
 
   const handleSubmit = async () => {
     setError(null);
@@ -60,9 +62,12 @@ const SurveyBlock = ({
       await repository.submitSurveyAnswers({
         groupId,
         /**
-         * Solo las contestadas. Una pregunta en blanco no se manda como cero:
-         * el valor 0 no existe en la escala, y rellenarla con un 3 inventaría
-         * una opinión que nadie dio.
+         * El filtro se queda aunque el botón ya garantice que están todas.
+         *
+         * Es una red, no una comprobación duplicada: sin él, una pregunta sin
+         * responder viajaría con `value: undefined` y la base devolvería un
+         * error de columna nula en lugar de ignorarla. Cuesta una línea y
+         * convierte un fallo en un no-problema.
          *
          * El enunciado viaja con la respuesta porque puede reescribirse después
          * y las estadísticas tienen que seguir diciendo a qué se contestó.
@@ -198,12 +203,20 @@ const SurveyBlock = ({
         fullWidth
         iconStart={<Send />}
         loading={isSending}
-        // Sin ninguna respuesta no hay nada que enviar. Con algunas sí se
-        // permite: obligar a contestarlo todo hace que se abandone la encuesta.
-        disabled={answered === 0}
+        // Hay que contestarlo todo. Así ninguna pregunta queda sin datos y las
+        // medias de todas se calculan sobre el mismo número de respuestas.
+        disabled={!isComplete}
         onClick={() => void handleSubmit()}
       >
-        {answered === 0 ? 'Elige al menos una respuesta' : 'Enviar respuestas'}
+        {/**
+         * Un botón deshabilitado sin explicación deja a quien lo ve buscando
+         * qué le falta, así que la etiqueta lo dice y se actualiza con cada
+         * respuesta. El contador de la cabecera va en `aria-live`, de modo que
+         * un lector de pantalla también se enterará.
+         */}
+        {isComplete
+          ? 'Enviar respuestas'
+          : `Falta${remaining === 1 ? '' : 'n'} ${remaining} ${remaining === 1 ? 'pregunta' : 'preguntas'} por contestar`}
       </Button>
     </section>
   );

@@ -17,6 +17,7 @@ import {
   type ReorderItem,
   type SectionDraft,
   type SurveyGroup,
+  type SurveyGroupUsage,
   type SurveyQuestionSummary,
   type SurveySubmission,
   type SurveySummary,
@@ -286,6 +287,27 @@ const mediaOfPage = async (client: Client, pageId: string): Promise<string[]> =>
   }
 
   return collectMediaIds(data ?? []);
+};
+
+/**
+ * Los bloques de encuesta que apuntan a un grupo.
+ *
+ * Se filtra en memoria y no con un operador de `jsonb` en la consulta: son los
+ * bloques de dos tipos concretos, nunca muchos, y `data->>groupId` en PostgREST
+ * obliga a escribir el filtro como texto con comillas escapadas, que es un
+ * sitio fácil para un error silencioso.
+ */
+const surveyBlockIds = async (client: Client, groupId: string): Promise<string[]> => {
+  const { data, error } = await client
+    .from('blocks')
+    .select('id, data')
+    .in('kind', ['survey', 'surveyStats']);
+
+  if (error) throw toAppError(error, 'buscar los componentes del grupo');
+
+  return (data as { id: string; data: Record<string, unknown> }[])
+    .filter((row) => row.data?.groupId === groupId)
+    .map((row) => row.id);
 };
 
 /**
@@ -926,6 +948,84 @@ export const dynamicSupabaseRepository: DynamicContentRepository = {
     if (error) throw toAppError(error, 'crear el grupo de preguntas');
 
     return { id: data.id, title: data.title, createdAt: data.created_at };
+  },
+
+  async listSurveyGroupUsage(): Promise<SurveyGroupUsage[]> {
+    const client = getSupabaseClient();
+
+    const [groups, answers, blocks] = await Promise.all([
+      client.from('survey_groups').select('id, title, created_at').order('created_at', { ascending: false }),
+      client.from('survey_answers').select('group_id, submission_id'),
+      client.from('blocks').select('id, data').in('kind', ['survey', 'surveyStats']),
+    ]);
+
+    if (groups.error) throw toAppError(groups.error, 'listar los grupos');
+    if (answers.error) throw toAppError(answers.error, 'contar las respuestas');
+    if (blocks.error) throw toAppError(blocks.error, 'contar los componentes');
+
+    /**
+     * Las cuentas se hacen aquí y no en SQL.
+     *
+     * Serían tres funciones de agregación más que mantener para un panel que
+     * abre una persona de vez en cuando, con unos cientos de filas. Si esto
+     * creciera a miles de respuestas, el cálculo se baja a Postgres.
+     */
+    const answerStats = new Map<string, { answers: number; submissions: Set<string> }>();
+
+    (answers.data as { group_id: string; submission_id: string }[]).forEach((row) => {
+      const current = answerStats.get(row.group_id) ?? {
+        answers: 0,
+        submissions: new Set<string>(),
+      };
+      current.answers += 1;
+      current.submissions.add(row.submission_id);
+      answerStats.set(row.group_id, current);
+    });
+
+    const blockCount = new Map<string, number>();
+
+    (blocks.data as { id: string; data: Record<string, unknown> }[]).forEach((row) => {
+      const groupId = row.data?.groupId;
+      if (typeof groupId !== 'string' || groupId === '') return;
+      blockCount.set(groupId, (blockCount.get(groupId) ?? 0) + 1);
+    });
+
+    return (groups.data as { id: string; title: string; created_at: string }[]).map(
+      (row) => ({
+        group: { id: row.id, title: row.title, createdAt: row.created_at },
+        answers: answerStats.get(row.id)?.answers ?? 0,
+        submissions: answerStats.get(row.id)?.submissions.size ?? 0,
+        blocks: blockCount.get(row.id) ?? 0,
+      }),
+    );
+  },
+
+  /**
+   * Borra un grupo con todo lo suyo.
+   *
+   * Orden: primero los BLOQUES y después el grupo.
+   *
+   * Al contrario, si el grupo desapareciera primero y el borrado de los bloques
+   * fallara, quedarían encuestas publicadas apuntando a un grupo inexistente:
+   * se verían bien y romperían al pulsar enviar, que es el peor momento para
+   * descubrirlo. Con este orden, un fallo a mitad deja el grupo huérfano de
+   * bloques —invisible, inofensivo y borrable otra vez—.
+   *
+   * Las RESPUESTAS no se borran aquí: se las lleva el `on delete cascade` de la
+   * clave ajena al desaparecer el grupo.
+   */
+  async deleteSurveyGroup(groupId: string): Promise<void> {
+    const client = getSupabaseClient();
+
+    const blockIds = await surveyBlockIds(client, groupId);
+
+    if (blockIds.length > 0) {
+      const { error: blocksError } = await client.from('blocks').delete().in('id', blockIds);
+      if (blocksError) throw toAppError(blocksError, 'eliminar los componentes del grupo');
+    }
+
+    const { error } = await client.from('survey_groups').delete().eq('id', groupId);
+    if (error) throw toAppError(error, 'eliminar el grupo');
   },
 
   /**
