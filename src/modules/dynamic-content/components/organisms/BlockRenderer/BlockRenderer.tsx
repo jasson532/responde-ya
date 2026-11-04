@@ -203,9 +203,6 @@ const renderBlock = (block: ContentBlock, context: BlockContext) => {
           groupId={block.data.groupId}
           title={block.data.title}
           intro={block.data.intro}
-          lowLabel={block.data.lowLabel}
-          highLabel={block.data.highLabel}
-          questions={block.data.questions}
         />
       );
 

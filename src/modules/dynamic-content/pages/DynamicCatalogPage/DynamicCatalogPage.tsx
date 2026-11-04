@@ -6,7 +6,7 @@ import Spinner from 'modules/shared/components/atoms/Spinner/Spinner';
 import AlertMessage from 'modules/shared/components/molecules/AlertMessage/AlertMessage';
 import EmptyState from 'modules/shared/components/molecules/EmptyState/EmptyState';
 import GreetingHeader from 'modules/shared/components/molecules/GreetingHeader/GreetingHeader';
-import { selectIsAdmin } from 'modules/auth/store/authSlice';
+import { selectIsAdmin, selectIsAuthBootstrapped } from 'modules/auth/store/authSlice';
 import {
   fetchDynamicModules,
   selectDynamicError,
@@ -37,13 +37,22 @@ const DynamicCatalogPage = () => {
   const dispatch = useAppDispatch();
 
   const isAdmin = useAppSelector(selectIsAdmin);
+  const isBootstrapped = useAppSelector(selectIsAuthBootstrapped);
   const modules = useAppSelector(selectModulesBySeverity);
   const status = useAppSelector(selectDynamicListStatus);
   const error = useAppSelector(selectDynamicError);
 
   const load = useCallback(() => {
+    /**
+     * Hasta que la sesión no se ha restaurado, `isAdmin` es `false` porque
+     * todavía no se sabe quién mira, no porque sea público. Pedir aquí daría
+     * una lista sin borradores que habría que sustituir un instante después.
+     * `isBootstrapped` se pone a `true` tanto si la restauración sale bien
+     * como si falla, así que esto no se queda esperando para siempre.
+     */
+    if (!isBootstrapped) return;
     void dispatch(fetchDynamicModules({ includeDrafts: isAdmin }));
-  }, [dispatch, isAdmin]);
+  }, [dispatch, isAdmin, isBootstrapped]);
 
   // Depende de `isAdmin`: al iniciar sesión, la lista se recarga con los
   // borradores sin que haya que refrescar la página a mano.

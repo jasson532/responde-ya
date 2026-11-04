@@ -404,35 +404,20 @@ const parsePageLinks = (d: Record<string, unknown>): PageLinksData | null => {
   };
 };
 
+/**
+ * El bloque de encuesta es una COLOCACIÓN: solo guarda a qué grupo apunta.
+ *
+ * Las preguntas y las etiquetas de la escala ya no viajan aquí —viven en
+ * `survey_groups`—, así que este guarda no las valida. Si quedan en el `data`
+ * de un bloque antiguo, se descartan al leerlo: la fuente es el grupo.
+ */
 const parseSurvey = (d: Record<string, unknown>): SurveyData | null => {
-  /**
-   * Sin grupo no hay dónde guardar las respuestas, así que el bloque no se
-   * puede guardar. El formulario obliga a elegir o crear uno antes.
-   */
+  // Sin grupo no hay preguntas que mostrar ni dónde guardar las respuestas.
   const groupId = str(d.groupId, 80);
   if (groupId === null) return null;
 
-  const questions = list(
-    d.questions,
-    (raw, index) => {
-      if (!isObject(raw)) return null;
-      const text = str(raw.text, 400);
-      if (text === null) return null;
-      return { id: itemId(raw.id, index, 'q'), text };
-    },
-    40,
-  );
-
-  // Una encuesta sin preguntas es un formulario vacío.
-  if (questions.length === 0) return null;
-
   return {
     groupId,
-    questions,
-    // Los extremos tienen respaldo: son lo que da sentido a la escala, y un
-    // bloque sin ellos mostraría cinco círculos sin explicar qué significan.
-    lowLabel: str(d.lowLabel, 60) ?? 'Muy en desacuerdo',
-    highLabel: str(d.highLabel, 60) ?? 'De acuerdo',
     title: optStr(d.title, 200) ?? undefined,
     intro: optStr(d.intro, 600) ?? undefined,
   };

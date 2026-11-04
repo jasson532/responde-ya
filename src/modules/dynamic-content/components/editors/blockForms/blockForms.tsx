@@ -24,6 +24,7 @@ import { embedProvider } from 'modules/dynamic-content/services/embed';
 import ItemListEditor from '../ItemListEditor/ItemListEditor';
 import ImageUploadField from '../ImageUploadField/ImageUploadField';
 import SurveyGroupField from '../SurveyGroupField/SurveyGroupField';
+import SurveyQuestionsField from '../SurveyQuestionsField/SurveyQuestionsField';
 import VideoUploadField from '../VideoUploadField/VideoUploadField';
 
 /**
@@ -785,6 +786,11 @@ export const ChecklistForm = ({ data, onChange }: BlockFormProps<ChecklistData>)
 // Encuesta de 1 a 5
 // ---------------------------------------------------------------------------
 
+/**
+ * El bloque de encuesta solo guarda a qué grupo apunta y cómo se presenta en
+ * ESTA página. Las preguntas y las etiquetas de la escala son del grupo, así
+ * que se editan en su propio recuadro y con su propio botón de guardar.
+ */
 export const SurveyForm = ({ data, onChange }: BlockFormProps<SurveyData>) => (
   <>
     <SurveyGroupField
@@ -792,7 +798,12 @@ export const SurveyForm = ({ data, onChange }: BlockFormProps<SurveyData>) => (
       onChange={(groupId) => onChange({ ...data, groupId })}
     />
 
-    <FormField label="Título" hint="Opcional. Se lee sobre las preguntas.">
+    <SurveyQuestionsField groupId={data.groupId} />
+
+    <FormField
+      label="Título en esta página"
+      hint="Opcional. Si lo dejas vacío se usa el nombre del grupo."
+    >
       <Input
         value={data.title ?? ''}
         onChange={(event) => onChange({ ...data, title: event.target.value })}
@@ -808,44 +819,6 @@ export const SurveyForm = ({ data, onChange }: BlockFormProps<SurveyData>) => (
         placeholder="Tus respuestas son anónimas y nos ayudan a mejorar."
       />
     </FormField>
-
-    {/* Las etiquetas son del grupo entero, no de cada pregunta: una escala que
-        cambiara de significado entre preguntas no se podría agregar. */}
-    <FormField label="Qué significa el 1" required>
-      <Input
-        value={data.lowLabel}
-        onChange={(event) => onChange({ ...data, lowLabel: event.target.value })}
-        placeholder="Muy en desacuerdo"
-      />
-    </FormField>
-
-    <FormField label="Qué significa el 5" required>
-      <Input
-        value={data.highLabel}
-        onChange={(event) => onChange({ ...data, highLabel: event.target.value })}
-        placeholder="De acuerdo"
-      />
-    </FormField>
-
-    <ItemListEditor
-      label="Preguntas"
-      hint="Cada una se contesta en la escala de 1 a 5."
-      items={data.questions}
-      onChange={(questions) => onChange({ ...data, questions })}
-      createItem={(index) => ({ id: `q-${index + 1}-${Date.now()}`, text: '' })}
-      addLabel="Añadir pregunta"
-      maxItems={40}
-      renderItem={(question, update) => (
-        <FormField label="Enunciado" required>
-          <Textarea
-            rows={2}
-            value={question.text}
-            onChange={(event) => update({ text: event.target.value })}
-            placeholder="Después de leer esto, me siento capaz de actuar"
-          />
-        </FormField>
-      )}
-    />
   </>
 );
 

@@ -318,10 +318,6 @@ export const BLOCK_LIBRARY: { [K in BlockKind]: BlockDefinition<K> } = {
     group: BlockGroup.Interactive,
     defaultData: {
       groupId: '',
-      title: '¿Qué te ha parecido?',
-      lowLabel: 'Muy en desacuerdo',
-      highLabel: 'De acuerdo',
-      questions: [{ id: 'q-1', text: '' }],
     },
   },
 

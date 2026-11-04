@@ -17,6 +17,7 @@ import {
   type ReorderItem,
   type SectionDraft,
   type SurveyGroup,
+  type SurveyGroupDraft,
   type SurveyGroupUsage,
   type SurveyQuestionSummary,
   type SurveySubmission,
@@ -66,6 +67,24 @@ const toAppError = (error: PostgrestError, context: string): Error => {
   logger.error(`Supabase: ${context}`, { code: error.code, message: error.message });
 
   switch (error.code) {
+    /**
+     * La base no tiene la forma que espera el código: falta una columna
+     * (`42703`), falta una tabla (`42P01`) o PostgREST no la encuentra en su
+     * caché de esquema (`PGRST205`).
+     *
+     * Siempre significa lo mismo —hay una migración sin aplicar— y es un
+     * estado que se da de verdad: el esquema vive en `supabase/migrations` y lo
+     * ejecuta una persona a mano. Sin esta traducción, en pantalla aparecía
+     * «column survey_groups.low_label does not exist», que es exacto y no dice
+     * qué hacer con ello.
+     */
+    case '42703':
+    case '42P01':
+    case 'PGRST205':
+      return new Error(
+        'La base de datos no tiene la estructura que espera la aplicación. ' +
+          'Falta ejecutar alguna migración de supabase/migrations.',
+      );
     case '42501':
       return forbidden(
         'No tienes permiso para esta operación. Identifícate como administrador.',
@@ -288,6 +307,49 @@ const mediaOfPage = async (client: Client, pageId: string): Promise<string[]> =>
 
   return collectMediaIds(data ?? []);
 };
+
+// ---------------------------------------------------------------------------
+// Grupos de encuesta
+// ---------------------------------------------------------------------------
+const SURVEY_GROUP_SELECT = 'id, title, low_label, high_label, questions, created_at';
+
+interface SurveyGroupRow {
+  id: string;
+  title: string;
+  low_label: string;
+  high_label: string;
+  questions: unknown;
+  created_at: string;
+}
+
+/**
+ * `questions` llega como `jsonb`, así que es `unknown` hasta demostrar lo
+ * contrario: la base solo garantiza que es una lista. Un elemento sin texto se
+ * descarta en lugar de tumbar la pantalla de quien iba a contestar.
+ */
+const mapSurveyGroup = (row: SurveyGroupRow): SurveyGroup => ({
+  id: row.id,
+  title: row.title,
+  lowLabel: row.low_label,
+  highLabel: row.high_label,
+  questions: Array.isArray(row.questions)
+    ? row.questions.flatMap((raw, index) => {
+        if (typeof raw !== 'object' || raw === null) return [];
+        const candidate = raw as { id?: unknown; text?: unknown };
+        const text = typeof candidate.text === 'string' ? candidate.text.trim() : '';
+        if (text === '') return [];
+        return [
+          {
+            id: typeof candidate.id === 'string' && candidate.id !== ''
+              ? candidate.id
+              : `q-${index + 1}`,
+            text,
+          },
+        ];
+      })
+    : [],
+  createdAt: row.created_at,
+});
 
 /**
  * Los bloques de encuesta que apuntan a un grupo.
@@ -926,35 +988,79 @@ export const dynamicSupabaseRepository: DynamicContentRepository = {
   async listSurveyGroups(): Promise<SurveyGroup[]> {
     const { data, error } = await getSupabaseClient()
       .from('survey_groups')
-      .select('id, title, created_at')
+      .select(SURVEY_GROUP_SELECT)
       .order('created_at', { ascending: false });
 
     if (error) throw toAppError(error, 'listar los grupos de preguntas');
+    return (data as SurveyGroupRow[]).map(mapSurveyGroup);
+  },
 
-    return (data as { id: string; title: string; created_at: string }[]).map((row) => ({
-      id: row.id,
-      title: row.title,
-      createdAt: row.created_at,
-    }));
+  async getSurveyGroup(groupId: string): Promise<SurveyGroup> {
+    const { data, error } = await getSupabaseClient()
+      .from('survey_groups')
+      .select(SURVEY_GROUP_SELECT)
+      .eq('id', groupId)
+      .single<SurveyGroupRow>();
+
+    if (error) throw toAppError(error, 'leer el grupo de preguntas');
+    if (!data) throw notFound('Ese grupo de preguntas no existe o fue eliminado.');
+
+    return mapSurveyGroup(data);
   },
 
   async createSurveyGroup(title: string): Promise<SurveyGroup> {
     const { data, error } = await getSupabaseClient()
       .from('survey_groups')
       .insert({ title: title.trim() })
-      .select('id, title, created_at')
-      .single<{ id: string; title: string; created_at: string }>();
+      .select(SURVEY_GROUP_SELECT)
+      .single<SurveyGroupRow>();
 
     if (error) throw toAppError(error, 'crear el grupo de preguntas');
+    return mapSurveyGroup(data);
+  },
 
-    return { id: data.id, title: data.title, createdAt: data.created_at };
+  async updateSurveyGroup(
+    groupId: string,
+    draft: SurveyGroupDraft,
+  ): Promise<SurveyGroup> {
+    const patch: Record<string, unknown> = {};
+
+    if (draft.title !== undefined) patch.title = draft.title.trim();
+    if (draft.lowLabel !== undefined) patch.low_label = draft.lowLabel.trim();
+    if (draft.highLabel !== undefined) patch.high_label = draft.highLabel.trim();
+
+    if (draft.questions !== undefined) {
+      /**
+       * Se descartan los enunciados vacíos antes de guardar: una fila en blanco
+       * en el editor no es una pregunta, y guardada saldría en la pantalla
+       * pública como un `fieldset` con cinco círculos y ningún texto.
+       */
+      patch.questions = draft.questions
+        .filter((question) => question.text.trim() !== '')
+        .map((question) => ({ id: question.id, text: question.text.trim() }));
+    }
+
+    const { data, error } = await getSupabaseClient()
+      .from('survey_groups')
+      .update(patch)
+      .eq('id', groupId)
+      .select(SURVEY_GROUP_SELECT)
+      .single<SurveyGroupRow>();
+
+    if (error) throw toAppError(error, 'guardar el grupo de preguntas');
+    if (!data) throw notFound('Ese grupo de preguntas no existe o fue eliminado.');
+
+    return mapSurveyGroup(data);
   },
 
   async listSurveyGroupUsage(): Promise<SurveyGroupUsage[]> {
     const client = getSupabaseClient();
 
     const [groups, answers, blocks] = await Promise.all([
-      client.from('survey_groups').select('id, title, created_at').order('created_at', { ascending: false }),
+      client
+        .from('survey_groups')
+        .select(SURVEY_GROUP_SELECT)
+        .order('created_at', { ascending: false }),
       client.from('survey_answers').select('group_id, submission_id'),
       client.from('blocks').select('id, data').in('kind', ['survey', 'surveyStats']),
     ]);
@@ -990,14 +1096,12 @@ export const dynamicSupabaseRepository: DynamicContentRepository = {
       blockCount.set(groupId, (blockCount.get(groupId) ?? 0) + 1);
     });
 
-    return (groups.data as { id: string; title: string; created_at: string }[]).map(
-      (row) => ({
-        group: { id: row.id, title: row.title, createdAt: row.created_at },
-        answers: answerStats.get(row.id)?.answers ?? 0,
-        submissions: answerStats.get(row.id)?.submissions.size ?? 0,
-        blocks: blockCount.get(row.id) ?? 0,
-      }),
-    );
+    return (groups.data as SurveyGroupRow[]).map((row) => ({
+      group: mapSurveyGroup(row),
+      answers: answerStats.get(row.id)?.answers ?? 0,
+      submissions: answerStats.get(row.id)?.submissions.size ?? 0,
+      blocks: blockCount.get(row.id) ?? 0,
+    }));
   },
 
   /**

@@ -34,6 +34,20 @@ export interface DynamicContentState {
   selectedModule: ContentModule | null;
   categoriesStatus: LoadingStatus;
   listStatus: LoadingStatus;
+  /**
+   * Id de la última petición del catálogo que se lanzó.
+   *
+   * El catálogo se pide varias veces seguidas con filtros distintos: al
+   * restaurarse la sesión (`includeDrafts` pasa de `false` a `true`) y a cada
+   * pulsación en el buscador. Las respuestas no vuelven en el orden en que se
+   * pidieron, así que sin esto la última en llegar gana, aunque sea la de la
+   * petición vieja: el administrador veía aparecer sus borradores y
+   * desaparecer acto seguido, pisados por la respuesta anónima.
+   *
+   * No tiene selector: es contabilidad interna del reducer, no algo que una
+   * pantalla deba leer.
+   */
+  listRequestId: string | null;
   detailStatus: LoadingStatus;
   /** Estado de las escrituras del administrador, en bloque. */
   mutationStatus: LoadingStatus;
@@ -49,6 +63,7 @@ const initialState: DynamicContentState = {
   selectedModule: null,
   categoriesStatus: LoadingStatus.Idle,
   listStatus: LoadingStatus.Idle,
+  listRequestId: null,
   detailStatus: LoadingStatus.Idle,
   mutationStatus: LoadingStatus.Idle,
   error: null,
@@ -384,15 +399,19 @@ const dynamicSlice = createSlice({
       })
 
       // --- catálogo ---
-      .addCase(fetchDynamicModules.pending, (state) => {
+      .addCase(fetchDynamicModules.pending, (state, action) => {
         state.listStatus = LoadingStatus.Pending;
+        state.listRequestId = action.meta.requestId;
         state.error = null;
       })
       .addCase(fetchDynamicModules.fulfilled, (state, action) => {
+        // Respuesta de una petición que ya quedó atrás: se descarta entera.
+        if (action.meta.requestId !== state.listRequestId) return;
         state.listStatus = LoadingStatus.Succeeded;
         state.modules = action.payload;
       })
       .addCase(fetchDynamicModules.rejected, (state, action) => {
+        if (action.meta.requestId !== state.listRequestId) return;
         state.listStatus = LoadingStatus.Failed;
         state.error = action.payload ?? 'No pudimos cargar los módulos.';
       })

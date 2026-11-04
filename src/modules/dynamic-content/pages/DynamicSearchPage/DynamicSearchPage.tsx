@@ -8,7 +8,7 @@ import AlertMessage from 'modules/shared/components/molecules/AlertMessage/Alert
 import EmptyState from 'modules/shared/components/molecules/EmptyState/EmptyState';
 import SearchBar from 'modules/shared/components/molecules/SearchBar/SearchBar';
 import TopBar from 'modules/shared/components/organisms/TopBar/TopBar';
-import { selectIsAdmin } from 'modules/auth/store/authSlice';
+import { selectIsAdmin, selectIsAuthBootstrapped } from 'modules/auth/store/authSlice';
 import {
   fetchCategories,
   fetchDynamicModules,
@@ -37,6 +37,7 @@ const DynamicSearchPage = () => {
   const dispatch = useAppDispatch();
 
   const isAdmin = useAppSelector(selectIsAdmin);
+  const isBootstrapped = useAppSelector(selectIsAuthBootstrapped);
   const categories = useAppSelector(selectCategories);
   const modules = useAppSelector(selectModulesBySeverity);
   const status = useAppSelector(selectDynamicListStatus);
@@ -46,6 +47,9 @@ const DynamicSearchPage = () => {
   const [categoryId, setCategoryId] = useState<string | null>(null);
 
   const load = useCallback(() => {
+    // Mientras la sesión se restaura, `isAdmin` todavía no significa nada:
+    // ver el comentario de `DynamicCatalogPage`.
+    if (!isBootstrapped) return;
     void dispatch(
       fetchDynamicModules({
         query: term.trim() === '' ? undefined : term.trim(),
@@ -53,7 +57,7 @@ const DynamicSearchPage = () => {
         includeDrafts: isAdmin,
       }),
     );
-  }, [dispatch, term, categoryId, isAdmin]);
+  }, [dispatch, term, categoryId, isAdmin, isBootstrapped]);
 
   useEffect(load, [load]);
 
@@ -96,7 +100,9 @@ const DynamicSearchPage = () => {
           </nav>
         )}
 
-        {status === LoadingStatus.Pending ? (
+        {/* `Idle` cuenta como carga: es el hueco entre montar la pantalla y
+            tener la sesión restaurada, y ahí «Sin resultados» sería mentira. */}
+        {status === LoadingStatus.Pending || status === LoadingStatus.Idle ? (
           <Spinner size="lg" label="Buscando" />
         ) : status === LoadingStatus.Failed ? (
           <AlertMessage tone="error" title="No pudimos buscar" onRetry={load}>

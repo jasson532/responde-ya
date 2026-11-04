@@ -1,10 +1,12 @@
-import { useId, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import { Check, ClipboardList, Send } from 'lucide-react';
 import Button from 'modules/shared/components/atoms/Button/Button';
+import Spinner from 'modules/shared/components/atoms/Spinner/Spinner';
 import AlertMessage from 'modules/shared/components/molecules/AlertMessage/AlertMessage';
 import { toErrorMessage } from 'modules/shared/utils/errors';
 import { getRepository } from 'modules/dynamic-content/services/dynamic.service';
 import type { SurveyData } from 'modules/dynamic-content/types/blocks.types';
+import type { SurveyGroup } from 'modules/dynamic-content/types/dynamic.types';
 import './SurveyBlock.scss';
 
 /** Los cinco valores de la escala. Fijos: la agregación cuenta con ellos. */
@@ -30,14 +32,48 @@ const SCALE = [1, 2, 3, 4, 5] as const;
  * campo compartido en el store las mezclaría.
  * ===========================================================================
  */
-const SurveyBlock = ({
-  groupId,
-  title,
-  intro,
-  lowLabel,
-  highLabel,
-  questions,
-}: SurveyData) => {
+const SurveyBlock = ({ groupId, title, intro }: SurveyData) => {
+  /**
+   * El grupo trae las preguntas y las etiquetas.
+   *
+   * Son una consulta extra, sí. La alternativa era guardar una copia en el
+   * bloque y sincronizarla al editar, y entonces una encuesta puesta en tres
+   * páginas tendría tres copias que hay que recordar actualizar. Con la lectura
+   * directa, editar el grupo cambia las tres a la vez.
+   */
+  const [group, setGroup] = useState<SurveyGroup | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const load = async () => {
+      setIsLoading(true);
+      setLoadError(null);
+
+      try {
+        const repository = await getRepository();
+        const result = await repository.getSurveyGroup(groupId);
+        if (!cancelled) setGroup(result);
+      } catch (cause) {
+        if (!cancelled) {
+          setLoadError(toErrorMessage(cause, 'No pudimos cargar las preguntas.'));
+        }
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    };
+
+    void load();
+    return () => {
+      cancelled = true;
+    };
+  }, [groupId]);
+
+  const questions = group?.questions ?? [];
+  const lowLabel = group?.lowLabel ?? 'Muy en desacuerdo';
+  const highLabel = group?.highLabel ?? 'Totalmente de acuerdo';
   /** `useId` da un prefijo único por instancia: sin él, dos encuestas en la
    * misma página compartirían los `name` de sus radios y elegir en una
    * desmarcaría la otra. */
@@ -89,6 +125,24 @@ const SurveyBlock = ({
     }
   };
 
+  if (isLoading) {
+    return (
+      <section className="survey" data-testid="SurveyBlock">
+        <Spinner size="md" label="Cargando las preguntas" />
+      </section>
+    );
+  }
+
+  /**
+   * Sin preguntas no se pinta NADA, ni un aviso.
+   *
+   * Pasa con un grupo recién creado al que todavía no se le han escrito
+   * enunciados. Un recuadro vacío entre instrucciones de primeros auxilios
+   * estorba más que la ausencia del bloque, y el administrador ya ve el aviso
+   * en el editor.
+   */
+  if (loadError !== null || questions.length === 0) return null;
+
   if (isSent) {
     return (
       <section className="survey survey--sent" data-testid="SurveyBlock">
@@ -113,7 +167,11 @@ const SurveyBlock = ({
         </span>
 
         <div className="survey__head-text">
-          <h3 className="survey__title">{title ?? 'Cuéntanos tu opinión'}</h3>
+          {/* El encabezado propio de esta colocación gana al del grupo: una
+              misma encuesta puede presentarse distinto en cada página. */}
+          <h3 className="survey__title">
+            {title ?? group?.title ?? 'Cuéntanos tu opinión'}
+          </h3>
           <p className="survey__progress" aria-live="polite">
             {answered} de {questions.length} contestadas
           </p>

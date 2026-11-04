@@ -1,0 +1,61 @@
+@use 'styles/variables' as v;
+
+/**
+ * Las preguntas del grupo van en un recuadro aparte dentro del formulario.
+ *
+ * El borde no es decoración: separa lo que pertenece a ESTE bloque de lo que
+ * pertenece al grupo y afecta a todas las páginas donde esté puesto. Sin esa
+ * frontera visible, el «Guardar preguntas» de dentro parece redundante con el
+ * «Guardar» del diálogo.
+ */
+.survey-questions {
+  display: flex;
+  flex-direction: column;
+  gap: v.$space-3;
+  padding: v.$space-4;
+  border-radius: v.$radius-lg;
+  background: v.$color-violet-light;
+  border: 1px solid rgba(v.$color-violet, 0.28);
+
+  &__head {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  &__title {
+    font-size: v.$font-size-base;
+    font-weight: v.$font-weight-bold;
+    color: v.$color-brand-navy;
+
+    strong {
+      font-weight: v.$font-weight-extrabold;
+      overflow-wrap: anywhere;
+    }
+  }
+
+  &__note {
+    font-size: v.$font-size-xs;
+    color: #4a32a8;
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: v.$space-3;
+  }
+
+  &__state {
+    font-size: v.$font-size-xs;
+    font-weight: v.$font-weight-bold;
+
+    &--dirty {
+      color: v.$color-warning;
+    }
+
+    &--saved {
+      color: v.$color-safe;
+    }
+  }
+}

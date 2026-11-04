@@ -148,10 +148,36 @@ export interface MediaAsset {
  * suma sus respuestas en un solo sitio, y el bloque de estadísticas ofrece una
  * lista con nombres en vez de identificadores.
  */
+/**
+ * Un grupo de preguntas: la unidad completa de una encuesta.
+ *
+ * Título, etiquetas de los extremos y preguntas viven AQUÍ y no en el bloque.
+ * Cuando vivían en el bloque, dos colocaciones del mismo grupo podían preguntar
+ * cosas distintas y las estadísticas, que agregan por grupo, las mezclaban sin
+ * avisar. Ahora el bloque solo dice qué grupo mostrar.
+ */
 export interface SurveyGroup {
   id: string;
   title: string;
+  /** Qué significa el 1. Ej. «Muy en desacuerdo». */
+  lowLabel: string;
+  /** Qué significa el 5. Ej. «Totalmente de acuerdo». */
+  highLabel: string;
+  questions: SurveyQuestion[];
   createdAt: string;
+}
+
+export interface SurveyQuestion {
+  id: string;
+  text: string;
+}
+
+/** Lo que se puede cambiar de un grupo. Todo opcional: se parchea. */
+export interface SurveyGroupDraft {
+  title?: string;
+  lowLabel?: string;
+  highLabel?: string;
+  questions?: SurveyQuestion[];
 }
 
 /**
@@ -330,6 +356,18 @@ export interface DynamicContentRepository {
   /** Grupos existentes. Los necesita el formulario para ofrecer una lista. */
   listSurveyGroups(): Promise<SurveyGroup[]>;
   createSurveyGroup(title: string): Promise<SurveyGroup>;
+
+  /**
+   * Un grupo con sus preguntas.
+   *
+   * Lo piden el bloque público, para saber qué preguntar, y el formulario, para
+   * poder editarlo. Es legible sin ser administrador: las preguntas son el texto
+   * que se muestra en pantalla a quien contesta.
+   */
+  getSurveyGroup(groupId: string): Promise<SurveyGroup>;
+
+  /** Cambia título, etiquetas o preguntas. Solo administrador. */
+  updateSurveyGroup(groupId: string, draft: SurveyGroupDraft): Promise<SurveyGroup>;
 
   /** Grupos con lo que cada uno arrastra. Para decidir antes de borrar. */
   listSurveyGroupUsage(): Promise<SurveyGroupUsage[]>;

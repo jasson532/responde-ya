@@ -316,30 +316,19 @@ export interface MetronomeData {
 // Encuestas
 // ---------------------------------------------------------------------------
 
-export interface SurveyQuestionData {
-  id: string;
-  text: string;
-}
-
 /**
  * Encuesta de escala 1–5.
  *
- * Las preguntas son contenido y viajan aquí; las respuestas son datos de uso y
- * van a la tabla `survey_answers`. `groupId` es lo que une las dos mitades, y
- * permite que el mismo bloque puesto en varias páginas sume en un solo sitio.
- *
- * Las etiquetas son del GRUPO entero, no de cada pregunta: una escala que
- * cambiara de significado entre preguntas sería imposible de agregar.
+ * El bloque es solo una COLOCACIÓN: dice qué grupo mostrar. Las preguntas y las
+ * etiquetas de la escala viven en el grupo (`survey_groups`), así que editarlas
+ * una vez las actualiza en todas las páginas donde esté puesto, y las
+ * estadísticas, que agregan por grupo, nunca mezclan preguntas distintas.
  */
 export interface SurveyData {
   groupId: string;
+  /** Encabezado de ESTA colocación. Si falta se usa el título del grupo. */
   title?: string;
   intro?: string;
-  /** Qué significa el 1. Ej. «Muy en desacuerdo». */
-  lowLabel: string;
-  /** Qué significa el 5. Ej. «De acuerdo». */
-  highLabel: string;
-  questions: SurveyQuestionData[];
 }
 
 /** Qué gráficos pinta el bloque de estadísticas. */
