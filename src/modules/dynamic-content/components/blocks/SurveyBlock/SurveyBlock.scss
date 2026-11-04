@@ -98,6 +98,15 @@
     display: flex;
     flex-direction: column;
     gap: v.$space-3;
+
+    /**
+     * Un grupo puede pedir SOLO opinión, y entonces la lista queda sin
+     * elementos. Sin esto seguiría siendo un hijo de la tarjeta y el `gap` de
+     * arriba dejaría un hueco de 24px sin nada dentro.
+     */
+    &:empty {
+      display: none;
+    }
   }
 
   &__field {
@@ -247,6 +256,78 @@
   &__field:has(&__radio:checked) {
     background: #faf8ff;
     border-color: rgba(v.$color-violet, 0.3);
+  }
+
+  // -------------------------------------------------------------------------
+  // Opinión abierta
+  // -------------------------------------------------------------------------
+  /**
+   * Se distingue de las preguntas sin salirse del lenguaje de la tarjeta:
+   * mismo recuadro de un píxel que un `fieldset`, pero con el fondo violeta
+   * tenue de la leyenda. Es otra clase de respuesta —texto, no escala— y
+   * mezclarla visualmente con las filas de círculos la haría parecer una
+   * pregunta más que hay que contestar.
+   */
+  &__opinion {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-2;
+    padding: v.$space-4;
+    border-radius: v.$radius-lg;
+    background: v.$color-violet-light;
+    border: 1px solid rgba(v.$color-violet, 0.28);
+  }
+
+  &__opinion-label {
+    display: flex;
+    align-items: center;
+    gap: v.$space-2;
+    font-size: v.$font-size-base;
+    font-weight: v.$font-weight-bold;
+    line-height: v.$line-height-snug;
+    color: v.$color-brand-navy;
+    cursor: pointer;
+  }
+
+  &__opinion-icon {
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    width: 28px;
+    height: 28px;
+    border-radius: v.$radius-sm;
+    background: v.$color-violet;
+    color: #fff;
+
+    svg {
+      width: 16px;
+      height: 16px;
+      stroke-width: 2.4;
+    }
+  }
+
+  // El recuadro de texto, sobre fondo blanco para que se lea como algo donde
+  // se escribe y no como parte del aviso violeta.
+  &__opinion-input {
+    background: v.$color-surface;
+    // Crecer sí, encogerse no: un `textarea` se puede arrastrar y a lo ancho
+    // rompería la tarjeta.
+    resize: vertical;
+  }
+
+  &__opinion-foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: v.$space-3;
+    font-size: v.$font-size-xs;
+    color: #4a32a8;
+  }
+
+  &__opinion-count {
+    flex: 0 0 auto;
+    font-weight: v.$font-weight-bold;
+    font-variant-numeric: tabular-nums;
   }
 
   // -------------------------------------------------------------------------

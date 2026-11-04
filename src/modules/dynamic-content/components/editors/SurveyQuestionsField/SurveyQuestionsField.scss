@@ -59,3 +59,60 @@
     }
   }
 }
+/**
+ * La opinión abierta dentro del recuadro del grupo.
+ *
+ * Fondo blanco sobre el violeta del grupo: separa «esto se pide además de los
+ * enunciados» de la lista de enunciados, sin sacarlo del recuadro —porque
+ * también es del grupo y también afecta a todas las páginas—.
+ */
+.survey-questions {
+  &__opinion {
+    display: flex;
+    flex-direction: column;
+    gap: v.$space-3;
+    padding: v.$space-3;
+    border-radius: v.$radius-md;
+    background: v.$color-surface;
+    border: 1px solid rgba(v.$color-violet, 0.2);
+  }
+
+  &__check {
+    display: flex;
+    align-items: flex-start;
+    gap: v.$space-2;
+    cursor: pointer;
+  }
+
+  /**
+   * La casilla nativa, solo repintada.
+   *
+   * `accent-color` basta para que tome el violeta de la marca sin perder nada:
+   * el foco, la barra espaciadora y el anuncio del lector de pantalla siguen
+   * siendo los del navegador. Dibujar una propia costaba reimplementarlos.
+   */
+  &__check-input {
+    flex: 0 0 auto;
+    width: 20px;
+    height: 20px;
+    margin: 0;
+    accent-color: v.$color-violet;
+    cursor: pointer;
+  }
+
+  &__check-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: v.$font-size-sm;
+    font-weight: v.$font-weight-bold;
+    line-height: v.$line-height-snug;
+    color: v.$color-brand-navy;
+  }
+
+  &__check-hint {
+    font-size: v.$font-size-xs;
+    font-weight: v.$font-weight-regular;
+    color: v.$color-ink-muted;
+  }
+}

@@ -1,9 +1,15 @@
 import { useEffect, useId, useState } from 'react';
-import { Check, ClipboardList, Send } from 'lucide-react';
+import { Check, ClipboardList, MessageSquare, Send } from 'lucide-react';
 import Button from 'modules/shared/components/atoms/Button/Button';
 import Spinner from 'modules/shared/components/atoms/Spinner/Spinner';
+import Textarea from 'modules/shared/components/atoms/Textarea/Textarea';
 import AlertMessage from 'modules/shared/components/molecules/AlertMessage/AlertMessage';
 import { toErrorMessage } from 'modules/shared/utils/errors';
+import {
+  SURVEY_OPINION_DEFAULT_LABEL,
+  SURVEY_OPINION_KEY,
+  SURVEY_OPINION_MAX_LENGTH,
+} from 'modules/dynamic-content/constants/survey';
 import { getRepository } from 'modules/dynamic-content/services/dynamic.service';
 import type { SurveyData } from 'modules/dynamic-content/types/blocks.types';
 import type { SurveyGroup } from 'modules/dynamic-content/types/dynamic.types';
@@ -74,19 +80,37 @@ const SurveyBlock = ({ groupId, title, intro }: SurveyData) => {
   const questions = group?.questions ?? [];
   const lowLabel = group?.lowLabel ?? 'Muy en desacuerdo';
   const highLabel = group?.highLabel ?? 'Totalmente de acuerdo';
+  /** El grupo decide si además de puntuar se pide un texto libre. */
+  const wantsOpinion = group?.opinionEnabled ?? false;
+  const opinionLabel = group?.opinionLabel ?? SURVEY_OPINION_DEFAULT_LABEL;
   /** `useId` da un prefijo único por instancia: sin él, dos encuestas en la
    * misma página compartirían los `name` de sus radios y elegir en una
    * desmarcaría la otra. */
   const prefix = useId();
 
   const [answers, setAnswers] = useState<Record<string, number>>({});
+  const [opinion, setOpinion] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [isSent, setIsSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const answered = Object.keys(answers).length;
   const remaining = questions.length - answered;
-  const isComplete = remaining === 0 && questions.length > 0;
+  const opinionText = opinion.trim();
+
+  /**
+   * Qué hace falta para poder enviar.
+   *
+   * La opinión es OPCIONAL: está para quien tenga algo que decir, y exigirla
+   * convertiría una encuesta de dos minutos en una redacción. Las puntuaciones
+   * sí son todas obligatorias, para que las medias de las preguntas se calculen
+   * sobre el mismo número de respuestas.
+   *
+   * El caso sin preguntas no es teórico: un grupo puede pedir solo opinión, y
+   * entonces lo que falta es justamente el texto.
+   */
+  const isComplete =
+    questions.length > 0 ? remaining === 0 : wantsOpinion && opinionText !== '';
 
   const handleSubmit = async () => {
     setError(null);
@@ -108,13 +132,35 @@ const SurveyBlock = ({ groupId, title, intro }: SurveyData) => {
          * El enunciado viaja con la respuesta porque puede reescribirse después
          * y las estadísticas tienen que seguir diciendo a qué se contestó.
          */
-        answers: questions
-          .filter((question) => answers[question.id] !== undefined)
-          .map((question) => ({
-            questionId: question.id,
-            questionText: question.text,
-            value: answers[question.id],
-          })),
+        answers: [
+          ...questions
+            .filter((question) => answers[question.id] !== undefined)
+            .map((question) => ({
+              questionId: question.id,
+              questionText: question.text,
+              value: answers[question.id],
+            })),
+
+          /**
+           * La opinión viaja en la MISMA lista, con la clave reservada y sin
+           * puntuación. Así comparte `submission_id` con las respuestas que la
+           * acompañan y se puede saber qué puntuó quien escribió esto.
+           *
+           * `questionText` lleva el enunciado con el que se pidió, por lo mismo
+           * que las preguntas: el administrador puede reescribirlo después y la
+           * opinión antigua tiene que seguir diciendo a qué contestaba.
+           */
+          ...(wantsOpinion && opinionText !== ''
+            ? [
+                {
+                  questionId: SURVEY_OPINION_KEY,
+                  questionText: opinionLabel,
+                  value: null,
+                  text: opinionText,
+                },
+              ]
+            : []),
+        ],
       });
 
       setIsSent(true);
@@ -141,7 +187,7 @@ const SurveyBlock = ({ groupId, title, intro }: SurveyData) => {
    * estorba más que la ausencia del bloque, y el administrador ya ve el aviso
    * en el editor.
    */
-  if (loadError !== null || questions.length === 0) return null;
+  if (loadError !== null || (questions.length === 0 && !wantsOpinion)) return null;
 
   if (isSent) {
     return (
@@ -172,9 +218,13 @@ const SurveyBlock = ({ groupId, title, intro }: SurveyData) => {
           <h3 className="survey__title">
             {title ?? group?.title ?? 'Cuéntanos tu opinión'}
           </h3>
-          <p className="survey__progress" aria-live="polite">
-            {answered} de {questions.length} contestadas
-          </p>
+          {/* Un «0 de 0 contestadas» en un grupo que solo pide opinión sería
+              una cuenta de nada. */}
+          {questions.length > 0 && (
+            <p className="survey__progress" aria-live="polite">
+              {answered} de {questions.length} contestadas
+            </p>
+          )}
         </div>
       </header>
 
@@ -183,10 +233,12 @@ const SurveyBlock = ({ groupId, title, intro }: SurveyData) => {
       {/* La leyenda de la escala, una vez arriba. Repetirla en cada pregunta
           en pantallas anchas sería ruido; en móvil cada fila la repite porque
           la escala queda lejos de esta cabecera. */}
-      <div className="survey__legend" aria-hidden="true">
-        <span className="survey__legend-end">1 · {lowLabel}</span>
-        <span className="survey__legend-end">5 · {highLabel}</span>
-      </div>
+      {questions.length > 0 && (
+        <div className="survey__legend" aria-hidden="true">
+          <span className="survey__legend-end">1 · {lowLabel}</span>
+          <span className="survey__legend-end">5 · {highLabel}</span>
+        </div>
+      )}
 
       <ol className="survey__list">
         {questions.map((question, index) => (
@@ -253,6 +305,52 @@ const SurveyBlock = ({ groupId, title, intro }: SurveyData) => {
         ))}
       </ol>
 
+      {/**
+       * La opinión abierta, debajo de los enunciados.
+       *
+       * Va al final a propósito: escribir cuesta más que pulsar un círculo, y
+       * puesta arriba haría abandonar a quien solo pensaba puntuar. Aquí llega
+       * con la encuesta ya contestada.
+       *
+       * `label` de verdad con `htmlFor`, no un párrafo encima: es lo que hace
+       * que al pulsar el texto se enfoque el recuadro y que un lector de
+       * pantalla anuncie qué se pide al entrar en él.
+       */}
+      {wantsOpinion && (
+        <div className="survey__opinion">
+          <label className="survey__opinion-label" htmlFor={`${prefix}-opinion`}>
+            <span className="survey__opinion-icon" aria-hidden="true">
+              <MessageSquare />
+            </span>
+            {opinionLabel}
+          </label>
+
+          <Textarea
+            id={`${prefix}-opinion`}
+            className="survey__opinion-input"
+            rows={4}
+            value={opinion}
+            disabled={isSending}
+            // El tope lo repite la base en un `check`. Aquí evita que alguien
+            // escriba de más y lo pierda al enviar.
+            maxLength={SURVEY_OPINION_MAX_LENGTH}
+            onChange={(event) => setOpinion(event.target.value)}
+            placeholder="Lo que quieras contarnos: qué te ha servido, qué no has entendido…"
+          />
+
+          <p className="survey__opinion-foot">
+            <span>Opcional. No pongas datos personales.</span>
+            {/* El recuento aparece solo cuando hay texto: un «0/2000» sobre un
+                recuadro vacío parece un requisito. */}
+            {opinion.length > 0 && (
+              <span className="survey__opinion-count">
+                {opinion.length}/{SURVEY_OPINION_MAX_LENGTH}
+              </span>
+            )}
+          </p>
+        </div>
+      )}
+
       {error && <AlertMessage tone="error">{error}</AlertMessage>}
 
       <Button
@@ -274,7 +372,9 @@ const SurveyBlock = ({ groupId, title, intro }: SurveyData) => {
          */}
         {isComplete
           ? 'Enviar respuestas'
-          : `Falta${remaining === 1 ? '' : 'n'} ${remaining} ${remaining === 1 ? 'pregunta' : 'preguntas'} por contestar`}
+          : questions.length === 0
+            ? 'Escribe tu opinión para poder enviarla'
+            : `Falta${remaining === 1 ? '' : 'n'} ${remaining} ${remaining === 1 ? 'pregunta' : 'preguntas'} por contestar`}
       </Button>
     </section>
   );

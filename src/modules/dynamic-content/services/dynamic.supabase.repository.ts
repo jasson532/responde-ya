@@ -23,6 +23,11 @@ import {
   type SurveySubmission,
   type SurveySummary,
 } from 'modules/dynamic-content/types/dynamic.types';
+import {
+  SURVEY_OPINION_DEFAULT_LABEL,
+  SURVEY_OPINION_KEY,
+  SURVEY_OPINION_MAX_LENGTH,
+} from 'modules/dynamic-content/constants/survey';
 import { sanitizeBlockData } from './blocks.schema';
 import {
   MODULE_SUMMARY_SELECT,
@@ -311,7 +316,8 @@ const mediaOfPage = async (client: Client, pageId: string): Promise<string[]> =>
 // ---------------------------------------------------------------------------
 // Grupos de encuesta
 // ---------------------------------------------------------------------------
-const SURVEY_GROUP_SELECT = 'id, title, low_label, high_label, questions, created_at';
+const SURVEY_GROUP_SELECT =
+  'id, title, low_label, high_label, questions, opinion_enabled, opinion_label, created_at';
 
 interface SurveyGroupRow {
   id: string;
@@ -319,6 +325,8 @@ interface SurveyGroupRow {
   low_label: string;
   high_label: string;
   questions: unknown;
+  opinion_enabled: boolean;
+  opinion_label: string;
   created_at: string;
 }
 
@@ -338,16 +346,34 @@ const mapSurveyGroup = (row: SurveyGroupRow): SurveyGroup => ({
         const candidate = raw as { id?: unknown; text?: unknown };
         const text = typeof candidate.text === 'string' ? candidate.text.trim() : '';
         if (text === '') return [];
-        return [
-          {
-            id: typeof candidate.id === 'string' && candidate.id !== ''
-              ? candidate.id
-              : `q-${index + 1}`,
-            text,
-          },
-        ];
+
+        const id =
+          typeof candidate.id === 'string' && candidate.id !== ''
+            ? candidate.id
+            : `q-${index + 1}`;
+
+        /**
+         * Una pregunta no puede llamarse como la opinión abierta. No se puede
+         * dar editando —los identificadores se generan— pero sí tocando el
+         * `jsonb` a mano, y entonces sus puntuaciones y las opiniones
+         * compartirían clave: las estadísticas mezclarían un texto libre con
+         * una escala de 1 a 5.
+         */
+        if (id === SURVEY_OPINION_KEY) return [];
+
+        return [{ id, text }];
       })
     : [],
+  /**
+   * `!== false` y no `?? true`: si la columna todavía no existe —migración 009
+   * sin ejecutar— llega `undefined` y la encuesta debe pedir opinión, que es el
+   * valor por defecto de la base.
+   */
+  opinionEnabled: row.opinion_enabled !== false,
+  opinionLabel:
+    typeof row.opinion_label === 'string' && row.opinion_label.trim() !== ''
+      ? row.opinion_label.trim()
+      : SURVEY_OPINION_DEFAULT_LABEL,
   createdAt: row.created_at,
 });
 
@@ -1028,15 +1054,31 @@ export const dynamicSupabaseRepository: DynamicContentRepository = {
     if (draft.title !== undefined) patch.title = draft.title.trim();
     if (draft.lowLabel !== undefined) patch.low_label = draft.lowLabel.trim();
     if (draft.highLabel !== undefined) patch.high_label = draft.highLabel.trim();
+    if (draft.opinionEnabled !== undefined) patch.opinion_enabled = draft.opinionEnabled;
+
+    if (draft.opinionLabel !== undefined) {
+      /**
+       * Vacío no se guarda vacío: la columna es `not null` y un texto en blanco
+       * dejaría un recuadro para escribir sin ninguna pregunta encima. Se cae al
+       * texto por defecto, que es lo que ya hacía la base.
+       */
+      const label = draft.opinionLabel.trim();
+      patch.opinion_label = label === '' ? SURVEY_OPINION_DEFAULT_LABEL : label;
+    }
 
     if (draft.questions !== undefined) {
       /**
        * Se descartan los enunciados vacíos antes de guardar: una fila en blanco
        * en el editor no es una pregunta, y guardada saldría en la pantalla
        * pública como un `fieldset` con cinco círculos y ningún texto.
+       *
+       * La clave de la opinión también se descarta: ver `mapSurveyGroup`.
        */
       patch.questions = draft.questions
-        .filter((question) => question.text.trim() !== '')
+        .filter(
+          (question) =>
+            question.text.trim() !== '' && question.id !== SURVEY_OPINION_KEY,
+        )
         .map((question) => ({ id: question.id, text: question.text.trim() }));
     }
 
@@ -1145,7 +1187,34 @@ export const dynamicSupabaseRepository: DynamicContentRepository = {
    * y 1 envío.
    */
   async submitSurveyAnswers(submission: SurveySubmission): Promise<void> {
-    if (submission.answers.length === 0) {
+    /**
+     * Cada fila es una puntuación O un texto, nunca las dos cosas ni ninguna.
+     * La restricción `survey_answers_value_xor_text` lo exige en la base; aquí
+     * se filtra antes para que una opinión en blanco no viaje y vuelva como un
+     * error de restricción en la cara de quien contestaba.
+     *
+     * El texto se recorta al tope de la columna en lugar de rechazarse: quien
+     * escribió dos mil caracteres no debería perderlos todos por el último.
+     */
+    const rows = submission.answers.flatMap((answer) => {
+      const text = answer.text?.trim() ?? '';
+      const hasText = text !== '';
+      const hasValue = typeof answer.value === 'number';
+
+      if (hasText === hasValue) return [];
+
+      return [
+        {
+          group_id: submission.groupId,
+          question_id: answer.questionId,
+          question_text: answer.questionText,
+          value: hasValue ? answer.value : null,
+          text_value: hasText ? text.slice(0, SURVEY_OPINION_MAX_LENGTH) : null,
+        },
+      ];
+    });
+
+    if (rows.length === 0) {
       throw validationError('No hay respuestas que enviar.');
     }
 
@@ -1153,15 +1222,7 @@ export const dynamicSupabaseRepository: DynamicContentRepository = {
 
     const { error } = await getSupabaseClient()
       .from('survey_answers')
-      .insert(
-        submission.answers.map((answer) => ({
-          group_id: submission.groupId,
-          question_id: answer.questionId,
-          question_text: answer.questionText,
-          value: answer.value,
-          submission_id: submissionId,
-        })),
-      );
+      .insert(rows.map((row) => ({ ...row, submission_id: submissionId })));
 
     if (error) throw toAppError(error, 'enviar las respuestas');
   },
@@ -1176,13 +1237,20 @@ export const dynamicSupabaseRepository: DynamicContentRepository = {
   async getSurveySummary(groupId: string): Promise<SurveySummary> {
     const client = getSupabaseClient();
 
-    const [summary, submissions] = await Promise.all([
+    const [summary, submissions, opinions] = await Promise.all([
       client.rpc('survey_summary', { p_group_id: groupId }),
       client.rpc('survey_submissions', { p_group_id: groupId }),
+      /**
+       * Las opiniones van en la misma carga, no en una llamada aparte del
+       * bloque: son parte de los resultados del grupo y pedirlas por separado
+       * daría dos estados de carga y dos errores posibles para una pantalla.
+       */
+      client.rpc('survey_opinions', { p_group_id: groupId }),
     ]);
 
     if (summary.error) throw toAppError(summary.error, 'leer las estadísticas');
     if (submissions.error) throw toAppError(submissions.error, 'contar los envíos');
+    if (opinions.error) throw toAppError(opinions.error, 'leer las opiniones');
 
     type Row = {
       question_id: string;
@@ -1234,10 +1302,24 @@ export const dynamicSupabaseRepository: DynamicContentRepository = {
       };
     });
 
+    type OpinionRow = {
+      id: string;
+      opinion_text: string;
+      submission_id: string;
+      created_at: string;
+    };
+
     return {
       groupId,
       submissions: Number(submissions.data ?? 0),
       questions,
+      // La función ya las devuelve de la más reciente a la más antigua.
+      opinions: ((opinions.data ?? []) as OpinionRow[]).map((row) => ({
+        id: row.id,
+        text: row.opinion_text,
+        submissionId: row.submission_id,
+        createdAt: row.created_at,
+      })),
     };
   },
 

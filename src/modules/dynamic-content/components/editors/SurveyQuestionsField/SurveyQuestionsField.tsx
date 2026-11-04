@@ -7,6 +7,7 @@ import Textarea from 'modules/shared/components/atoms/Textarea/Textarea';
 import FormField from 'modules/shared/components/molecules/FormField/FormField';
 import AlertMessage from 'modules/shared/components/molecules/AlertMessage/AlertMessage';
 import { toErrorMessage } from 'modules/shared/utils/errors';
+import { SURVEY_OPINION_DEFAULT_LABEL } from 'modules/dynamic-content/constants/survey';
 import { getRepository } from 'modules/dynamic-content/services/dynamic.service';
 import type {
   SurveyGroup,
@@ -46,6 +47,8 @@ const SurveyQuestionsField = ({ groupId }: SurveyQuestionsFieldProps) => {
   const [questions, setQuestions] = useState<SurveyQuestion[]>([]);
   const [lowLabel, setLowLabel] = useState('');
   const [highLabel, setHighLabel] = useState('');
+  const [opinionEnabled, setOpinionEnabled] = useState(true);
+  const [opinionLabel, setOpinionLabel] = useState('');
 
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -79,6 +82,8 @@ const SurveyQuestionsField = ({ groupId }: SurveyQuestionsFieldProps) => {
         setQuestions(result.questions);
         setLowLabel(result.lowLabel);
         setHighLabel(result.highLabel);
+        setOpinionEnabled(result.opinionEnabled);
+        setOpinionLabel(result.opinionLabel);
       } catch (cause) {
         if (!cancelled) {
           setError(toErrorMessage(cause, 'No pudimos cargar las preguntas del grupo.'));
@@ -112,12 +117,16 @@ const SurveyQuestionsField = ({ groupId }: SurveyQuestionsFieldProps) => {
         questions,
         lowLabel,
         highLabel,
+        opinionEnabled,
+        opinionLabel,
       });
 
       setGroup(saved);
       // Se recarga desde lo guardado: el repositorio descarta los enunciados
-      // en blanco, y así el editor muestra exactamente lo que hay en la base.
+      // en blanco y repone el texto por defecto de la opinión si se dejó
+      // vacío, así que el editor muestra exactamente lo que hay en la base.
       setQuestions(saved.questions);
+      setOpinionLabel(saved.opinionLabel);
       setIsDirty(false);
       setJustSaved(true);
     } catch (cause) {
@@ -195,6 +204,50 @@ const SurveyQuestionsField = ({ groupId }: SurveyQuestionsFieldProps) => {
           </FormField>
         )}
       />
+
+      {/**
+       * La opinión abierta, debajo de los enunciados igual que en la pantalla
+       * pública: el editor se lee en el mismo orden en que se ve.
+       *
+       * El `label` envuelve a la casilla, así que no necesita `htmlFor`: pulsar
+       * el texto la marca igual.
+       */}
+      <div className="survey-questions__opinion">
+        <label className="survey-questions__check">
+          <input
+            type="checkbox"
+            className="survey-questions__check-input"
+            checked={opinionEnabled}
+            onChange={(event) => {
+              setOpinionEnabled(event.target.checked);
+              touch();
+            }}
+          />
+          <span className="survey-questions__check-text">
+            Pedir también una opinión escrita
+            <span className="survey-questions__check-hint">
+              Un recuadro de texto libre al final, opcional para quien contesta.
+            </span>
+          </span>
+        </label>
+
+        {opinionEnabled && (
+          <FormField
+            label="Qué se le pregunta"
+            hint="Si lo dejas vacío se usa el texto por defecto."
+          >
+            <Textarea
+              rows={2}
+              value={opinionLabel}
+              onChange={(event) => {
+                setOpinionLabel(event.target.value);
+                touch();
+              }}
+              placeholder={SURVEY_OPINION_DEFAULT_LABEL}
+            />
+          </FormField>
+        )}
+      </div>
 
       <div className="survey-questions__actions">
         <Button

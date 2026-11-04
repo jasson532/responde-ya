@@ -164,6 +164,15 @@ export interface SurveyGroup {
   /** Qué significa el 5. Ej. «Totalmente de acuerdo». */
   highLabel: string;
   questions: SurveyQuestion[];
+  /**
+   * Si además de puntuar se pide un texto libre.
+   *
+   * Viene activado: una encuesta de escala dice cuánto, y casi nunca por qué.
+   * Se puede apagar por grupo cuando lo único que interesa son los números.
+   */
+  opinionEnabled: boolean;
+  /** Lo que se le pregunta a quien va a escribir. Editable, como los enunciados. */
+  opinionLabel: string;
   createdAt: string;
 }
 
@@ -178,6 +187,8 @@ export interface SurveyGroupDraft {
   lowLabel?: string;
   highLabel?: string;
   questions?: SurveyQuestion[];
+  opinionEnabled?: boolean;
+  opinionLabel?: string;
 }
 
 /**
@@ -196,13 +207,26 @@ export interface SurveyGroupUsage {
   blocks: number;
 }
 
-/** Una respuesta suelta, tal como la manda el navegador. */
+/**
+ * Una respuesta suelta, tal como la manda el navegador.
+ *
+ * Sirve para las dos clases de respuesta que admite un envío: una puntuación
+ * de la escala y la opinión abierta, que viaja en la misma lista con la clave
+ * reservada `SURVEY_OPINION_KEY`. Van juntas porque comparten envío, y
+ * separarlas en dos tipos obligaría a dos llamadas y dos `submission_id`
+ * distintos para algo que una persona mandó de una vez.
+ *
+ * Exactamente uno de los dos campos lleva valor. La base lo exige con una
+ * restricción, no es solo una convención de aquí.
+ */
 export interface SurveyAnswerDraft {
   questionId: string;
   /** Copia del enunciado: el bloque puede reescribirlo después. */
   questionText: string;
-  /** De 1 a 5. */
-  value: number;
+  /** De 1 a 5. `null` en la opinión abierta, que no se puntúa. */
+  value: number | null;
+  /** Texto libre. Solo lo trae la opinión abierta. */
+  text?: string;
 }
 
 export interface SurveySubmission {
@@ -221,11 +245,27 @@ export interface SurveyQuestionSummary {
   average: number | null;
 }
 
+/**
+ * Una opinión abierta, tal cual se escribió.
+ *
+ * No se agrega ni se cuenta: el texto ES el dato. Es lo único de las
+ * estadísticas que se lee en crudo.
+ */
+export interface SurveyOpinion {
+  id: string;
+  text: string;
+  /** El envío al que pertenece: permite cruzarla con sus propias puntuaciones. */
+  submissionId: string;
+  createdAt: string;
+}
+
 export interface SurveySummary {
   groupId: string;
   /** Envíos, no respuestas: quien contesta 3 de 5 preguntas suma 1 envío. */
   submissions: number;
   questions: SurveyQuestionSummary[];
+  /** Lo más reciente primero. Vacío si el grupo no pide opinión o nadie escribió. */
+  opinions: SurveyOpinion[];
 }
 
 // ---------------------------------------------------------------------------
